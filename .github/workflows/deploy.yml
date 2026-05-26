@@ -44,7 +44,6 @@ jobs:
       TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
       TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME }}
       TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
-      TF_VAR_analytics_sites: '[{"domain":"${{ vars.ANALYTICS_PRIMARY_SITE_DOMAIN }}","route_pattern":"${{ vars.ANALYTICS_PROXY_ROUTE }}"}]'
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_API_TOKEN }}
     steps:
       - name: Checkout
@@ -88,6 +87,15 @@ jobs:
           done
 
           exit "$missing"
+
+      - name: Prepare analytics site settings
+        env:
+          ANALYTICS_PRIMARY_SITE_DOMAIN: ${{ vars.ANALYTICS_PRIMARY_SITE_DOMAIN }}
+          ANALYTICS_PROXY_ROUTE: ${{ vars.ANALYTICS_PROXY_ROUTE }}
+        run: |
+          printf 'TF_VAR_analytics_sites=[{"domain":"%s","route_pattern":"%s"}]\n' \
+            "$ANALYTICS_PRIMARY_SITE_DOMAIN" \
+            "$ANALYTICS_PROXY_ROUTE" >> "$GITHUB_ENV"
 
       - id: auth
         uses: google-github-actions/auth@v3
