@@ -49,6 +49,7 @@ The GitHub deployer service account also needs standing VM provisioning access s
 
 - `roles/compute.viewer`
 - `roles/compute.instanceAdmin.v1`
+- `roles/compute.networkAdmin`
 - `roles/compute.osAdminLogin`
 - `roles/iap.tunnelResourceAccessor`
 - `roles/storage.admin`
