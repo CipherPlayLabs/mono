@@ -62,7 +62,7 @@ resource "google_compute_firewall" "allow_required_egress" {
 
   allow {
     protocol = "tcp"
-    ports    = ["443"]
+    ports    = ["443", "7844"]
   }
 
   allow {
@@ -72,7 +72,7 @@ resource "google_compute_firewall" "allow_required_egress" {
 
   allow {
     protocol = "udp"
-    ports    = ["53", "123"]
+    ports    = ["53", "123", "7844"]
   }
 }
 
