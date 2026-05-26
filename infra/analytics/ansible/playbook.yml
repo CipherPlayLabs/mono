@@ -8,7 +8,7 @@
     apt_keyrings_dir: /etc/apt/keyrings
     docker_apt_key: "{{ apt_keyrings_dir }}/docker.asc"
     google_cloud_apt_key: "{{ apt_keyrings_dir }}/google-cloud-cli.asc"
-    cloudflared_apt_key: "{{ apt_keyrings_dir }}/cloudflare-main.asc"
+    cloudflared_apt_key: "{{ apt_keyrings_dir }}/cloudflare-public-v2.gpg"
 
   handlers:
     - name: Restart docker
@@ -93,7 +93,7 @@
 
     - name: Install cloudflared apt signing key
       ansible.builtin.get_url:
-        url: https://pkg.cloudflare.com/cloudflare-main.gpg
+        url: https://pkg.cloudflare.com/cloudflare-public-v2.gpg
         dest: "{{ cloudflared_apt_key }}"
         owner: root
         group: root
