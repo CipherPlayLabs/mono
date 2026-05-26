@@ -62,6 +62,14 @@ resource "cloudflare_workers_script" "analytics_proxy" {
   compatibility_date = "2026-05-26"
   content            = file("${path.module}/../worker/dist/index.js")
   main_module        = "worker.js"
+
+  bindings = [
+    {
+      name = "PLAUSIBLE_ORIGIN_HOSTNAME"
+      text = var.plausible_hostname
+      type = "plain_text"
+    }
+  ]
 }
 
 resource "cloudflare_workers_route" "analytics_proxy" {

@@ -10,6 +10,8 @@ describe("OpenTofu worker artifact", () => {
     const localsConfig = readFileSync(resolve(opentofuDir, "locals.tf"), "utf8");
 
     expect(cloudflareConfig).toContain('file("${path.module}/../worker/dist/index.js")');
+    expect(cloudflareConfig).toContain('name = "PLAUSIBLE_ORIGIN_HOSTNAME"');
+    expect(cloudflareConfig).toContain("text = var.plausible_hostname");
     expect(localsConfig).not.toContain("analytics_proxy_worker_script");
   });
 });
