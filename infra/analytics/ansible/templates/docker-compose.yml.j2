@@ -3,6 +3,7 @@ services:
   plausible:
     image: "{{ plausible_app_image }}"
     restart: unless-stopped
+    command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
       postgres:
         condition: service_healthy

@@ -35,6 +35,7 @@ Repository variables:
 Repository secrets:
 
 - `CLOUDFLARE_ANALYTICS_API_TOKEN`
+- `CLOUDFLARE_API_TOKEN`
 
 Future repository secrets:
 
@@ -43,6 +44,14 @@ Future repository secrets:
 GCP authentication uses Workload Identity Federation through `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`. Do not add a `GOOGLE_APPLICATION_CREDENTIALS_JSON` repository secret for this infrastructure.
 
 Analytics validation runs from the `Site and Analytics` GitHub Actions workflow when `infra/analytics/**`, `content-site/**`, or the workflow file changes.
+
+The GitHub deployer service account also needs standing VM provisioning access so `Provision Analytics Host` can rebuild or repair the private Plausible host through IAP:
+
+- `roles/compute.viewer`
+- `roles/compute.osAdminLogin`
+- `roles/iap.tunnelResourceAccessor`
+
+These roles let the workflow locate the VM, SSH through IAP with OS Login, and install or restart Docker, Plausible CE, and `cloudflared`. They do not grant broad Compute Admin rights.
 
 ## First Admin Setup
 

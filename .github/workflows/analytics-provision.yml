@@ -1,0 +1,242 @@
+name: Provision Analytics Host
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_provision:
+        description: Type provision to configure the analytics VM.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: analytics-host-provision
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_ZONE: us-east1-b
+  PLAUSIBLE_HOSTNAME: ${{ vars.PLAUSIBLE_HOSTNAME }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_TUNNEL_ID: 4af10406-0f31-46ae-8d00-15ec71d2029f
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  provision:
+    if: inputs.confirm_provision == 'provision'
+    name: Provision Plausible and cloudflared
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Fetch Cloudflare tunnel token
+        run: |
+          response="$(curl -fsS \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel/${CLOUDFLARE_TUNNEL_ID}/token" \
+            --request GET \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --header "Content-Type: application/json")"
+
+          token="$(jq -er '.result' <<< "$response")"
+          echo "::add-mask::$token"
+          printf 'TUNNEL_TOKEN=%s\n' "$token" >> "$GITHUB_ENV"
+
+      - name: Install tunnel token on host
+        run: |
+          printf 'TUNNEL_TOKEN=%s\n' "$TUNNEL_TOKEN" | \
+            gcloud compute ssh plausible-analytics-vm \
+              --project="${GCP_PROJECT_ID}" \
+              --zone="${GCP_ZONE}" \
+              --tunnel-through-iap \
+              --quiet \
+              --command='sudo install -d -m 0700 /etc/cloudflared && sudo tee /etc/cloudflared/token.env >/dev/null && sudo chmod 0600 /etc/cloudflared/token.env'
+
+      - name: Provision Plausible host
+        run: |
+          gcloud compute ssh plausible-analytics-vm \
+            --project="${GCP_PROJECT_ID}" \
+            --zone="${GCP_ZONE}" \
+            --tunnel-through-iap \
+            --quiet \
+            --command='sudo PLAUSIBLE_HOSTNAME="'"${PLAUSIBLE_HOSTNAME}"'" bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          export DEBIAN_FRONTEND=noninteractive
+
+          if [ -f /etc/apt/sources.list ]; then
+            sed -i 's|http://|https://|g' /etc/apt/sources.list
+          fi
+
+          if [ -d /etc/apt/sources.list.d ]; then
+            find /etc/apt/sources.list.d -type f -name '*.list' -o -name '*.sources' | while read -r source_file; do
+              sed -i 's|http://|https://|g' "$source_file"
+            done
+          fi
+
+          apt-get update
+          apt-get install -y ca-certificates curl gnupg lsb-release openssl ufw
+
+          install -d -m 0755 /etc/apt/keyrings
+
+          curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" -o /etc/apt/keyrings/docker.asc
+          chmod 0644 /etc/apt/keyrings/docker.asc
+          . /etc/os-release
+          arch="$(dpkg --print-architecture)"
+          printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu %s stable\n' "$arch" "$VERSION_CODENAME" > /etc/apt/sources.list.d/docker.list
+
+          curl -fsSL "https://pkg.cloudflare.com/cloudflare-main.gpg" -o /etc/apt/keyrings/cloudflare-main.asc
+          chmod 0644 /etc/apt/keyrings/cloudflare-main.asc
+          printf 'deb [signed-by=/etc/apt/keyrings/cloudflare-main.asc] https://pkg.cloudflare.com/cloudflared any main\n' > /etc/apt/sources.list.d/cloudflared.list
+
+          apt-get update
+          apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cloudflared
+
+          systemctl enable --now docker
+
+          install -d -m 0750 /opt/plausible
+          install -d -m 0750 /var/lib/plausible/tmp
+
+          if [ ! -f /opt/plausible/runtime-secrets.env ]; then
+            {
+              printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -base64 32 | tr -d '\n')"
+              printf 'SECRET_KEY_BASE=%s\n' "$(openssl rand -base64 64 | tr -d '\n')"
+            } > /opt/plausible/runtime-secrets.env
+            chmod 0640 /opt/plausible/runtime-secrets.env
+          fi
+
+          set -a
+          . /opt/plausible/runtime-secrets.env
+          set +a
+
+          cat > /opt/plausible/plausible.env <<EOF
+          BASE_URL=https://${PLAUSIBLE_HOSTNAME}
+          SECRET_KEY_BASE=${SECRET_KEY_BASE}
+          DISABLE_REGISTRATION=true
+          TMPDIR=/var/lib/plausible/tmp
+          TZ=UTC
+          DATABASE_URL=postgres://plausible:${POSTGRES_PASSWORD}@postgres:5432/plausible
+          CLICKHOUSE_DATABASE_URL=http://clickhouse:8123/plausible_events_db
+          SMTP_HOST=
+          SMTP_PORT=
+          SMTP_USER_NAME=
+          SMTP_USER_PWD=
+          SMTP_HOST_ADDR=
+          EOF
+          chmod 0640 /opt/plausible/plausible.env
+
+          cat > /opt/plausible/docker-compose.yml <<EOF
+          services:
+            plausible:
+              image: ghcr.io/plausible/community-edition:v2.1.4
+              restart: unless-stopped
+              command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+              depends_on:
+                postgres:
+                  condition: service_healthy
+                clickhouse:
+                  condition: service_healthy
+              env_file:
+                - ./plausible.env
+              ports:
+                - "127.0.0.1:8000:8000"
+              volumes:
+                - plausible_data:/var/lib/plausible
+
+            postgres:
+              image: postgres:16-alpine
+              restart: unless-stopped
+              environment:
+                POSTGRES_DB: plausible
+                POSTGRES_USER: plausible
+                POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U plausible -d plausible"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+              volumes:
+                - postgres_data:/var/lib/postgresql/data
+
+            clickhouse:
+              image: clickhouse/clickhouse-server:24.8-alpine
+              restart: unless-stopped
+              ulimits:
+                nofile:
+                  soft: 262144
+                  hard: 262144
+              healthcheck:
+                test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
+              volumes:
+                - clickhouse_data:/var/lib/clickhouse
+                - clickhouse_logs:/var/log/clickhouse-server
+                - clickhouse_backups:/backups
+
+          volumes:
+            plausible_data:
+            postgres_data:
+            clickhouse_data:
+            clickhouse_logs:
+            clickhouse_backups:
+          EOF
+          chmod 0640 /opt/plausible/docker-compose.yml
+
+          cat > /etc/systemd/system/cloudflared.service <<'EOF'
+          [Unit]
+          Description=Cloudflare Tunnel for Plausible analytics dashboard
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          User=root
+          EnvironmentFile=/etc/cloudflared/token.env
+          ExecStart=/usr/bin/cloudflared tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+          Restart=always
+          RestartSec=5s
+          NoNewPrivileges=true
+          PrivateTmp=true
+          ProtectSystem=full
+          ProtectHome=true
+
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+
+          ufw default deny incoming
+          ufw default allow outgoing
+          ufw --force enable
+
+          systemctl daemon-reload
+          systemctl enable --now cloudflared
+          docker compose --project-directory /opt/plausible up -d
+
+          for _ in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8000; then
+              systemctl is-active --quiet cloudflared
+              docker compose --project-directory /opt/plausible ps
+              exit 0
+            fi
+            sleep 5
+          done
+
+          systemctl --no-pager --full status cloudflared || true
+          docker compose --project-directory /opt/plausible ps || true
+          docker compose --project-directory /opt/plausible logs --tail=200 || true
+          exit 1
+          REMOTE
