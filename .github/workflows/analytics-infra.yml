@@ -1,4 +1,5 @@
 name: Analytics Infrastructure
+run-name: Analytics Infrastructure
 
 on:
   push:
