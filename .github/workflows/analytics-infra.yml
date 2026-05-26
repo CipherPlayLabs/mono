@@ -3,6 +3,7 @@ name: Analytics Infrastructure
 on:
   push:
     branches:
+      - main
       - 'codex/**'
     paths:
       - 'infra/analytics/**'
