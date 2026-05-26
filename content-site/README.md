@@ -84,9 +84,10 @@ All blog posts frontmatter should use `author: allan`.
 ## Deployment
 
 - **baseUrl**: `/info/`
-- **url**: `https://abpiv.github.io`
-- GitHub Actions workflow in `.github/workflows/deploy.yml` deploys to GitHub Pages on push to main
-- Organization: `abpiv`
+- **url**: `https://allanbpediniv.com`
+- GitHub Actions workflow in `.github/workflows/deploy.yml` deploys to Cloudflare Pages on push to `main`
+- Cloudflare Pages project: `abpiv-personal-brand`
+- See [`AI_HANDOFF.md`](./AI_HANDOFF.md) for the current deployment architecture, packaging details, credentials, and verification commands.
 
 ---
 
