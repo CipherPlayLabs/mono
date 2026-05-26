@@ -16,6 +16,17 @@ This directory contains operator documentation and configuration examples for th
 
 The dashboard is an operator-only surface served at `analytics.lobst3rs.com` behind Cloudflare Access. Public website analytics requests should stay same-origin through each site's `/_analytics/*` route and be proxied to Plausible by Cloudflare Worker routing.
 
+## Current Deployed State
+
+As of 2026-05-26, the initial stack is live:
+
+- `https://analytics.lobst3rs.com` is reachable through Cloudflare Access.
+- `https://allanbpediniv.com/_analytics/js/script.js` returns the Plausible browser script.
+- `https://allanbpediniv.com/_analytics/api/event` accepts event POSTs and returns `202`.
+- `content-site/docusaurus.config.ts` injects the production script with both `data-domain="allanbpediniv.com"` and `data-api="/_analytics/api/event"`.
+
+The `data-api` attribute is not optional. Without it, the Plausible script posts to `/api/event` on the site origin, which produced `405 Method Not Allowed` on Cloudflare Pages.
+
 ## Required GitHub Settings
 
 Repository variables:
@@ -43,7 +54,7 @@ Future repository secrets:
 
 GCP authentication uses Workload Identity Federation through `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`. Do not add a `GOOGLE_APPLICATION_CREDENTIALS_JSON` repository secret for this infrastructure.
 
-Analytics validation runs from the `Site and Analytics` GitHub Actions workflow when `infra/analytics/**`, `content-site/**`, or the workflow file changes.
+Analytics validation runs from the `Site and Analytics` GitHub Actions workflow when `infra/analytics/**`, `content-site/**`, or the workflow file changes. Production deploys can pause on the GitHub `production` environment until `BrewDogDev` approves them.
 
 The GitHub deployer service account also needs standing VM provisioning access so `Provision Analytics Host` can rebuild or repair the private Plausible host through IAP:
 
@@ -76,6 +87,28 @@ Because SMTP is not configured in v1, account and recovery flows that depend on 
 5. Verify in browser DevTools that analytics requests use only the site domain, for example `https://allanbpediniv.com/_analytics/*` for the initial site.
 
 There should be no browser-visible analytics requests to non-site domains from public websites.
+
+## Operator Workflows
+
+- `Site and Analytics`: validates analytics infrastructure, tests the Worker, builds the content site, and deploys Cloudflare Pages.
+- `Apply Analytics Infrastructure`: manual `workflow_dispatch`; run with `confirm_apply=apply` to apply OpenTofu changes after reviewing them.
+- `Provision Analytics Host`: manual `workflow_dispatch`; run with `confirm_provision=provision` to converge the Plausible VM and `cloudflared`.
+
+The provisioning workflow currently performs the VM convergence inline over IAP SSH. The Ansible directory contains the intended configuration structure and templates, but do not assume the production workflow is executing Ansible unless that workflow is updated.
+
+## Verification Commands
+
+```bash
+curl -sS -L https://allanbpediniv.com/info/ -o /tmp/abpiv-info.html -w '%{http_code} %{url_effective}\n'
+rg -n 'data-api=|_analytics/js/script.js|/api/event' /tmp/abpiv-info.html
+curl -sS -o /tmp/abpiv-analytics-response.txt -w '%{http_code} %{content_type}\n' \
+  -X POST https://allanbpediniv.com/_analytics/api/event \
+  -H 'content-type: text/plain' \
+  --data '{"n":"pageview","u":"https://allanbpediniv.com/info/","d":"allanbpediniv.com","r":null}'
+cat /tmp/abpiv-analytics-response.txt
+```
+
+Expected result: the page returns `200`, the HTML includes `data-api=/_analytics/api/event`, the event POST returns `202`, and the response body is `ok`.
 
 ## Restore Procedure
 

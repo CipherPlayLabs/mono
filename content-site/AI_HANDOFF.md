@@ -74,7 +74,7 @@ During CI this is copied to `content-site/cloudflare-pages/_headers`.
 
 ## GitHub Actions Setup
 
-The workflow is `Deploy to Cloudflare Pages`.
+The workflow is `Site and Analytics`.
 
 It runs on:
 
@@ -107,7 +107,7 @@ pages deploy content-site/cloudflare-pages \
 
 Production deploys use the GitHub `production` environment. That environment has a required-reviewer gate for `BrewDogDev`, so pushes to `main` can pause until approved.
 
-The workflow `Analytics Infrastructure` validates shared analytics infrastructure. It authenticates to GCP through GitHub OIDC using `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`, then runs OpenTofu validation, Worker tests, content-site typecheck/build, and a blocked-domain scan. It is validation-only: it does not run `tofu apply`, production Ansible, Worker deploys, or Cloudflare Pages deploys.
+The same workflow validates shared analytics infrastructure. It authenticates to GCP through GitHub OIDC using `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`, then runs OpenTofu validation, Worker tests, content-site typecheck/build, and a blocked-domain scan. OpenTofu apply and Plausible VM provisioning are handled by the manual `Apply Analytics Infrastructure` and `Provision Analytics Host` workflows.
 
 ## Analytics Behavior
 
@@ -115,8 +115,10 @@ Production builds inject the Plausible script as:
 
 ```html
 <script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(options){plausible.o=options||{}};plausible.init({endpoint:"/_analytics/api/event"});</script>
-<script defer data-domain="allanbpediniv.com" src="/_analytics/js/script.js"></script>
+<script src="/_analytics/js/script.js" defer data-domain="allanbpediniv.com" data-api="/_analytics/api/event"></script>
 ```
+
+The `data-api` attribute is required. The Plausible CE script falls back to `new URL(script.src).origin + "/api/event"` when `data-api` is absent. Because this site loads the script from `https://allanbpediniv.com/_analytics/js/script.js`, omitting `data-api` makes browsers POST to `https://allanbpediniv.com/api/event`, which returns `405 Method Not Allowed`.
 
 The public site must keep analytics browser requests same-origin through `https://allanbpediniv.com/_analytics/*`. The dashboard/origin hostname is operator infrastructure only and must not appear in public HTML, JavaScript, or browser network requests.
 
@@ -170,6 +172,7 @@ Analytics build-output checks:
 
 ```bash
 rg -n "/_analytics/js/script\\.js" build
+rg -n "data-api=.?/_analytics/api/event" build
 rg -n "lobst3rs|analytics\\.lobst3rs\\.com" build
 ```
 
