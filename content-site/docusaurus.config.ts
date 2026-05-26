@@ -48,6 +48,7 @@ const config: Config = {
           src: '/_analytics/js/script.js',
           defer: true,
           'data-domain': 'allanbpediniv.com',
+          'data-api': '/_analytics/api/event',
         },
       ]
     : [],
