@@ -1,0 +1,88 @@
+name: Apply Analytics Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_apply:
+        description: Type apply to create or update analytics infrastructure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: analytics-infra-apply
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  TOFU_DIR: infra/analytics/opentofu
+  WORKER_DIR: infra/analytics/worker
+  TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_lobst3rs_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_LOBST3RS }}
+  TF_VAR_allanbpediniv_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_ALLANBPEDINIV }}
+  TF_VAR_gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
+  TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
+  TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME }}
+  TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_API_TOKEN }}
+
+jobs:
+  apply:
+    if: inputs.confirm_apply == 'apply'
+    name: Apply analytics infrastructure
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare analytics site settings
+        env:
+          ANALYTICS_PRIMARY_SITE_DOMAIN: ${{ vars.ANALYTICS_PRIMARY_SITE_DOMAIN }}
+          ANALYTICS_PROXY_ROUTE: ${{ vars.ANALYTICS_PROXY_ROUTE }}
+        run: |
+          printf 'TF_VAR_analytics_sites=[{"domain":"%s","route_pattern":"%s"}]\n' \
+            "$ANALYTICS_PRIMARY_SITE_DOMAIN" \
+            "$ANALYTICS_PROXY_ROUTE" >> "$GITHUB_ENV"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install worker dependencies
+        run: npm ci
+        working-directory: ${{ env.WORKER_DIR }}
+
+      - name: Build worker
+        run: npm run build
+        working-directory: ${{ env.WORKER_DIR }}
+
+      - name: Check worker build artifact
+        run: git diff --exit-code infra/analytics/worker/dist/index.js
+
+      - name: Initialize OpenTofu
+        run: tofu -chdir=${{ env.TOFU_DIR }} init -input=false
+
+      - name: Plan analytics infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} plan -input=false -out=tfplan
+
+      - name: Apply analytics infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} apply -input=false -auto-approve tfplan
+
+      - name: Show analytics outputs
+        run: tofu -chdir=${{ env.TOFU_DIR }} output
