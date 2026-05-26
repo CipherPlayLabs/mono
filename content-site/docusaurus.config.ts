@@ -8,7 +8,7 @@ const config: Config = {
 
   favicon: 'img/headshot.png',
 
-  url: 'https://abpiv.github.io',
+  url: 'https://allanbpediniv.com',
   baseUrl: '/info/',
 
   projectName: 'abpiv-personal-brand',

@@ -1,99 +1,92 @@
-name: Deploy
+name: Deploy to Cloudflare Pages
 
 on:
   push:
     branches: [main]
-    paths: ['content-site/**', '.github/workflows/deploy.yml']
+    paths:
+      - 'content-site/**'
+      - '.github/workflows/deploy.yml'
+  pull_request:
+    paths:
+      - 'content-site/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
-    inputs:
-      target:
-        description: 'Where to deploy'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  deployments: write
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
+  group: cloudflare-pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  CONTENT_DIR: content-site
+  BUILD_DIR: content-site/build
+  CLOUDFLARE_PAGES_PROJECT: abpiv-personal-brand
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: content-site/package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        working-directory: content-site
+        working-directory: ${{ env.CONTENT_DIR }}
+
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: ${{ env.CONTENT_DIR }}
 
       - name: Build website
         run: npm run build
-        working-directory: content-site
+        working-directory: ${{ env.CONTENT_DIR }}
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: content-site/build
-
-      - name: Upload build artifact (for Firebase job)
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: site-build
-          path: content-site/build
+          name: cloudflare-pages-build
+          path: ${{ env.BUILD_DIR }}
           retention-days: 7
 
-  deploy-staging:
+  deploy:
     if: >-
       github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+      url: ${{ steps.deploy.outputs.deployment-url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  deploy-production:
-    if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://allanbpediniv.com/info/
-    steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
-          name: site-build
-          path: content-site/build
+          name: cloudflare-pages-build
+          path: ${{ env.BUILD_DIR }}
 
-      - name: Authenticate to Google Cloud (WIF)
-        uses: google-github-actions/auth@v2
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
         with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          projectId: abpiv-personal-brand
-          channelId: live
-          entryPoint: content-site
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy ${{ env.BUILD_DIR }}
+            --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=${{ github.head_ref || github.ref_name }}
+            --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
