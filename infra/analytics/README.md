@@ -50,8 +50,9 @@ The GitHub deployer service account also needs standing VM provisioning access s
 - `roles/compute.viewer`
 - `roles/compute.osAdminLogin`
 - `roles/iap.tunnelResourceAccessor`
+- `roles/iam.serviceAccountUser` on `plausible-analytics-vm@abpiv-personal-brand.iam.gserviceaccount.com`
 
-These roles let the workflow locate the VM, SSH through IAP with OS Login, and install or restart Docker, Plausible CE, and `cloudflared`. They do not grant broad Compute Admin rights.
+These roles let the workflow locate the VM, SSH through IAP with OS Login, act as only the analytics VM service account during SSH, and install or restart Docker, Plausible CE, and `cloudflared`. They do not grant broad Compute Admin rights.
 
 ## First Admin Setup
 
