@@ -42,6 +42,8 @@ Future repository secrets:
 
 GCP authentication uses Workload Identity Federation through `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`. Do not add a `GOOGLE_APPLICATION_CREDENTIALS_JSON` repository secret for this infrastructure.
 
+Analytics validation runs from the `Site and Analytics` GitHub Actions workflow when `infra/analytics/**`, `content-site/**`, or the workflow file changes.
+
 ## First Admin Setup
 
 1. Apply the analytics infrastructure.
