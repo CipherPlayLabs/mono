@@ -30,6 +30,12 @@ resource "cloudflare_dns_record" "plausible_dashboard" {
   proxied = true
 }
 
+resource "cloudflare_zero_trust_access_service_token" "analytics_proxy" {
+  account_id = var.cloudflare_account_id
+  name       = "Analytics proxy Worker"
+  duration   = "8760h"
+}
+
 resource "cloudflare_zero_trust_access_application" "plausible_dashboard" {
   account_id                = var.cloudflare_account_id
   name                      = "Plausible analytics dashboard"
@@ -42,9 +48,21 @@ resource "cloudflare_zero_trust_access_application" "plausible_dashboard" {
 
   policies = [
     {
+      name       = "Allow analytics proxy Worker"
+      decision   = "non_identity"
+      precedence = 1
+      include = [
+        {
+          service_token = {
+            token_id = cloudflare_zero_trust_access_service_token.analytics_proxy.id
+          }
+        }
+      ]
+    },
+    {
       name       = "Allow analytics operator"
       decision   = "allow"
-      precedence = 1
+      precedence = 2
       include = [
         {
           email = {
@@ -68,6 +86,16 @@ resource "cloudflare_workers_script" "analytics_proxy" {
       name = "PLAUSIBLE_ORIGIN_HOSTNAME"
       text = var.plausible_hostname
       type = "plain_text"
+    },
+    {
+      name = "CF_ACCESS_CLIENT_ID"
+      text = cloudflare_zero_trust_access_service_token.analytics_proxy.client_id
+      type = "plain_text"
+    },
+    {
+      name = "CF_ACCESS_CLIENT_SECRET"
+      text = cloudflare_zero_trust_access_service_token.analytics_proxy.client_secret
+      type = "secret_text"
     }
   ]
 }

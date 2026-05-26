@@ -3,6 +3,8 @@ import worker from "../src/index";
 
 const env = {
   PLAUSIBLE_ORIGIN_HOSTNAME: "analytics.lobst3rs.com",
+  CF_ACCESS_CLIENT_ID: "worker-client-id",
+  CF_ACCESS_CLIENT_SECRET: "worker-client-secret",
 };
 
 function makeRequest(path: string, init?: RequestInit) {
@@ -79,6 +81,14 @@ describe("analytics proxy worker", () => {
     expect(upstreamRequest.headers.get("x-forwarded-for")).toBe("203.0.113.9");
     expect(upstreamRequest.headers.get("accept-language")).toBe("en-US,en;q=0.9");
     expect(upstreamRequest.headers.get("referer")).toBe("https://allanbpediniv.com/research");
+  });
+
+  it("authenticates to the Access-protected Plausible origin with a service token", async () => {
+    await worker.fetch(makeRequest("/_analytics/js/script.js"), env);
+
+    const upstreamRequest = vi.mocked(fetch).mock.calls[0]?.[0] as Request;
+    expect(upstreamRequest.headers.get("CF-Access-Client-Id")).toBe("worker-client-id");
+    expect(upstreamRequest.headers.get("CF-Access-Client-Secret")).toBe("worker-client-secret");
   });
 
   it("returns unsupported route errors without calling the Plausible origin", async () => {

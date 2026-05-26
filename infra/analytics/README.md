@@ -48,12 +48,13 @@ Analytics validation runs from the `Site and Analytics` GitHub Actions workflow 
 The GitHub deployer service account also needs standing VM provisioning access so `Provision Analytics Host` can rebuild or repair the private Plausible host through IAP:
 
 - `roles/compute.viewer`
+- `roles/compute.instanceAdmin.v1`
 - `roles/compute.osAdminLogin`
 - `roles/iap.tunnelResourceAccessor`
 - `roles/storage.admin`
 - `roles/iam.serviceAccountUser` on `plausible-analytics-vm@abpiv-personal-brand.iam.gserviceaccount.com`
 
-These roles let the workflow locate the VM, SSH through IAP with OS Login, act as only the analytics VM service account during SSH, manage the Plausible backup bucket, and install or restart Docker, Plausible CE, and `cloudflared`. They do not grant broad Compute Admin rights.
+These roles let the workflow locate and converge the VM, SSH through IAP with OS Login, act as only the analytics VM service account during SSH, manage the Plausible backup bucket, and install or restart Docker, Plausible CE, and `cloudflared`.
 
 ## First Admin Setup
 

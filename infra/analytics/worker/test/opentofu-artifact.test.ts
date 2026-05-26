@@ -12,6 +12,8 @@ describe("OpenTofu worker artifact", () => {
     expect(cloudflareConfig).toContain('file("${path.module}/../worker/dist/index.js")');
     expect(cloudflareConfig).toContain('name = "PLAUSIBLE_ORIGIN_HOSTNAME"');
     expect(cloudflareConfig).toContain("text = var.plausible_hostname");
+    expect(cloudflareConfig).toContain('name = "CF_ACCESS_CLIENT_SECRET"');
+    expect(cloudflareConfig).toContain('type = "secret_text"');
     expect(localsConfig).not.toContain("analytics_proxy_worker_script");
   });
 });

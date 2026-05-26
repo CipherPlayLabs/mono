@@ -40,6 +40,14 @@ function buildHeaders(request) {
     }
     return headers;
 }
+function addAccessServiceTokenHeaders(headers, env) {
+    const clientId = env.CF_ACCESS_CLIENT_ID?.trim();
+    const clientSecret = env.CF_ACCESS_CLIENT_SECRET?.trim();
+    if (clientId && clientSecret) {
+        headers.set("CF-Access-Client-Id", clientId);
+        headers.set("CF-Access-Client-Secret", clientSecret);
+    }
+}
 async function sanitizeResponse(upstream, originHostname, publicHostname) {
     const headers = new Headers(upstream.headers);
     const location = headers.get("location");
@@ -53,19 +61,23 @@ async function sanitizeResponse(upstream, originHostname, publicHostname) {
         headers,
     });
 }
-async function proxyScript(request, originHostname) {
+async function proxyScript(request, env, originHostname) {
+    const headers = buildHeaders(request);
+    addAccessServiceTokenHeaders(headers, env);
     const upstreamRequest = new Request(`https://${originHostname}/js/script.js`, {
         method: "GET",
-        headers: buildHeaders(request),
+        headers,
         redirect: "manual",
     });
     return fetch(upstreamRequest);
 }
-async function proxyEvent(request, originHostname) {
+async function proxyEvent(request, env, originHostname) {
+    const headers = buildHeaders(request);
+    addAccessServiceTokenHeaders(headers, env);
     const body = await request.arrayBuffer();
     const upstreamRequest = new Request(`https://${originHostname}/api/event`, {
         method: "POST",
-        headers: buildHeaders(request),
+        headers,
         body,
         redirect: "manual",
     });
@@ -81,13 +93,13 @@ export default {
                 if (request.method !== "GET") {
                     return textResponse("Method not allowed", 405);
                 }
-                upstream = await proxyScript(request, originHostname);
+                upstream = await proxyScript(request, env, originHostname);
             }
             else if (url.pathname === EVENT_ROUTE) {
                 if (request.method !== "POST") {
                     return textResponse("Method not allowed", 405);
                 }
-                upstream = await proxyEvent(request, originHostname);
+                upstream = await proxyEvent(request, env, originHostname);
             }
             else {
                 return textResponse("Not found", 404);

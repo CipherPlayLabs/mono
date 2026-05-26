@@ -10,6 +10,8 @@ const PRESERVED_REQUEST_HEADERS = [
 
 interface Env {
   PLAUSIBLE_ORIGIN_HOSTNAME: string;
+  CF_ACCESS_CLIENT_ID?: string;
+  CF_ACCESS_CLIENT_SECRET?: string;
 }
 
 function textResponse(message: string, status: number) {
@@ -54,6 +56,16 @@ function buildHeaders(request: Request) {
   return headers;
 }
 
+function addAccessServiceTokenHeaders(headers: Headers, env: Env) {
+  const clientId = env.CF_ACCESS_CLIENT_ID?.trim();
+  const clientSecret = env.CF_ACCESS_CLIENT_SECRET?.trim();
+
+  if (clientId && clientSecret) {
+    headers.set("CF-Access-Client-Id", clientId);
+    headers.set("CF-Access-Client-Secret", clientSecret);
+  }
+}
+
 async function sanitizeResponse(upstream: Response, originHostname: string, publicHostname: string) {
   const headers = new Headers(upstream.headers);
   const location = headers.get("location");
@@ -71,21 +83,27 @@ async function sanitizeResponse(upstream: Response, originHostname: string, publ
   });
 }
 
-async function proxyScript(request: Request, originHostname: string) {
+async function proxyScript(request: Request, env: Env, originHostname: string) {
+  const headers = buildHeaders(request);
+  addAccessServiceTokenHeaders(headers, env);
+
   const upstreamRequest = new Request(`https://${originHostname}/js/script.js`, {
     method: "GET",
-    headers: buildHeaders(request),
+    headers,
     redirect: "manual",
   });
 
   return fetch(upstreamRequest);
 }
 
-async function proxyEvent(request: Request, originHostname: string) {
+async function proxyEvent(request: Request, env: Env, originHostname: string) {
+  const headers = buildHeaders(request);
+  addAccessServiceTokenHeaders(headers, env);
+
   const body = await request.arrayBuffer();
   const upstreamRequest = new Request(`https://${originHostname}/api/event`, {
     method: "POST",
-    headers: buildHeaders(request),
+    headers,
     body,
     redirect: "manual",
   });
@@ -106,13 +124,13 @@ export default {
           return textResponse("Method not allowed", 405);
         }
 
-        upstream = await proxyScript(request, originHostname);
+        upstream = await proxyScript(request, env, originHostname);
       } else if (url.pathname === EVENT_ROUTE) {
         if (request.method !== "POST") {
           return textResponse("Method not allowed", 405);
         }
 
-        upstream = await proxyEvent(request, originHostname);
+        upstream = await proxyEvent(request, env, originHostname);
       } else {
         return textResponse("Not found", 404);
       }
