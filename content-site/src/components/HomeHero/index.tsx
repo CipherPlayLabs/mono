@@ -1,12 +1,15 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
 export function HomeHero(): React.JSX.Element {
+  const avatarUrl = useBaseUrl('/img/headshot.png');
+
   return (
     <section className={styles.hero}>
       <img
-        src="/img/headshot.png"
+        src={avatarUrl}
         alt="Allan B. Pedin IV"
         className={styles.avatar}
       />
