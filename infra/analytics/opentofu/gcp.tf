@@ -4,18 +4,6 @@ resource "google_service_account" "plausible_vm" {
   description  = "Runs the self-hosted Plausible CE analytics stack."
 }
 
-resource "google_project_iam_member" "plausible_vm_logs_writer" {
-  project = var.gcp_project_id
-  role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.plausible_vm.email}"
-}
-
-resource "google_project_iam_member" "plausible_vm_metric_writer" {
-  project = var.gcp_project_id
-  role    = "roles/monitoring.metricWriter"
-  member  = "serviceAccount:${google_service_account.plausible_vm.email}"
-}
-
 resource "google_compute_network" "analytics" {
   name                    = "${local.name_prefix}-network"
   auto_create_subnetworks = false
@@ -149,8 +137,6 @@ resource "google_compute_instance" "plausible" {
 
   depends_on = [
     google_compute_router_nat.analytics,
-    google_project_iam_member.plausible_vm_logs_writer,
-    google_project_iam_member.plausible_vm_metric_writer,
   ]
 }
 
