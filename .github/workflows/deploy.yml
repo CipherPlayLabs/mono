@@ -24,6 +24,7 @@ env:
   NODE_VERSION: '20'
   CONTENT_DIR: content-site
   BUILD_DIR: content-site/build
+  DEPLOY_DIR: content-site/cloudflare-pages
   CLOUDFLARE_PAGES_PROJECT: abpiv-personal-brand
 
 jobs:
@@ -52,11 +53,20 @@ jobs:
         run: npm run build
         working-directory: ${{ env.CONTENT_DIR }}
 
+      - name: Prepare Cloudflare Pages artifact
+        run: |
+          rm -rf cloudflare-pages
+          mkdir -p cloudflare-pages/info
+          cp -R build/. cloudflare-pages/info/
+          cp static/_redirects cloudflare-pages/_redirects
+          cp static/_headers cloudflare-pages/_headers
+        working-directory: ${{ env.CONTENT_DIR }}
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: cloudflare-pages-build
-          path: ${{ env.BUILD_DIR }}
+          path: ${{ env.DEPLOY_DIR }}
           retention-days: 7
 
   deploy:
@@ -76,7 +86,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: cloudflare-pages-build
-          path: ${{ env.BUILD_DIR }}
+          path: ${{ env.DEPLOY_DIR }}
 
       - name: Deploy to Cloudflare Pages
         id: deploy
@@ -85,7 +95,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           command: >-
-            pages deploy ${{ env.BUILD_DIR }}
+            pages deploy ${{ env.DEPLOY_DIR }}
             --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT }}
             --branch=${{ github.head_ref || github.ref_name }}
             --commit-hash=${{ github.sha }}

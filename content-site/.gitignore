@@ -5,6 +5,7 @@ node_modules/
 # Production
 build/
 .docusaurus/
+cloudflare-pages/
 
 # Generated files
 docusaurus.config.js

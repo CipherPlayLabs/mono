@@ -15,7 +15,8 @@ This repo contains a Docusaurus v3 static site in `content-site/`. Production is
 | Production branch | `main` |
 | Build command | `npm run build` |
 | Build root | `content-site` |
-| Output directory | `content-site/build` |
+| Build output directory | `content-site/build` |
+| Cloudflare upload directory | `content-site/cloudflare-pages` |
 
 The Cloudflare Pages project and `allanbpediniv.com` custom domain have been created. DNS has an apex CNAME from `allanbpediniv.com` to `abpiv-personal-brand.pages.dev` with Cloudflare proxying enabled.
 
@@ -38,7 +39,7 @@ The GitHub `production` environment is restricted to the `main` branch and has t
 
 ## Routing
 
-Docusaurus keeps `baseUrl: '/info/'`, so Cloudflare Pages serves the site under `/info/`. The static `_redirects` file redirects the apex path `/` to `/info/`. The static `_headers` file applies long-lived immutable caching to Docusaurus fingerprinted assets under `/info/assets/*`.
+Docusaurus keeps `baseUrl: '/info/'`, so the workflow packages the generated `content-site/build` files under `content-site/cloudflare-pages/info/` before uploading to Cloudflare Pages. The static `_redirects` file is copied to the upload root so `/` redirects to `/info/`. The static `_headers` file is copied to the upload root so long-lived immutable caching applies to Docusaurus fingerprinted assets under `/info/assets/*`.
 
 ## Verification
 
