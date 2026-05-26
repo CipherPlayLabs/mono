@@ -12,7 +12,7 @@ plausible_timezone: UTC
 
 plausible_app_image: ghcr.io/plausible/community-edition:v2.1.4
 plausible_postgres_image: postgres:16-alpine
-plausible_clickhouse_image: clickhouse/clickhouse-server:24.8-alpine
+plausible_clickhouse_image: clickhouse/clickhouse-server:24.3.3.102-alpine
 plausible_postgres_db: plausible
 plausible_postgres_user: plausible
 plausible_postgres_password: "{{ vault_plausible_postgres_password }}"
@@ -38,4 +38,3 @@ analytics_backup_gcloud_project: abpiv-personal-brand
 
 operator_ssh_cidr_allowlist: []
 firewall_allowed_tcp_ports: []
-

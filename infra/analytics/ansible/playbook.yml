@@ -171,6 +171,7 @@
         mode: "{{ item.mode }}"
       loop:
         - { path: "{{ plausible_root }}", mode: "0750" }
+        - { path: "{{ plausible_root }}/clickhouse", mode: "0750" }
         - { path: "{{ plausible_data_root }}", mode: "0750" }
         - { path: "{{ plausible_backup_root }}", mode: "0750" }
         - { path: /etc/plausible-backup, owner: root, group: root, mode: "0700" }
@@ -209,6 +210,19 @@
         owner: root
         group: "{{ plausible_runtime_group }}"
         mode: "0640"
+      notify: Restart plausible stack
+
+    - name: Render ClickHouse config snippets
+      ansible.builtin.template:
+        src: "templates/{{ item }}"
+        dest: "{{ plausible_root }}/clickhouse/{{ item | regex_replace('\\.j2$', '') }}"
+        owner: "{{ plausible_runtime_user }}"
+        group: "{{ plausible_runtime_group }}"
+        mode: "0640"
+      loop:
+        - clickhouse-logs.xml.j2
+        - clickhouse-ipv4-only.xml.j2
+        - clickhouse-low-resources.xml.j2
       notify: Restart plausible stack
 
     - name: Render Docker Compose file

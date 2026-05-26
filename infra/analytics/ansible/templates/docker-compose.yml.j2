@@ -15,6 +15,12 @@ services:
       - "{{ plausible_local_bind_address }}:{{ plausible_local_port }}:8000"
     volumes:
       - plausible_data:/var/lib/plausible
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    environment:
+      ERL_FLAGS: "+sbwt none +sbwtdcpu none +sbwtdio none"
 
   postgres:
     image: "{{ plausible_postgres_image }}"
@@ -39,14 +45,18 @@ services:
         soft: 262144
         hard: 262144
     healthcheck:
-      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 -O - http://127.0.0.1:8123/ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 1m
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       - clickhouse_logs:/var/log/clickhouse-server
       - clickhouse_backups:/backups
+      - ./clickhouse/logs.xml:/etc/clickhouse-server/config.d/logs.xml:ro
+      - ./clickhouse/ipv4-only.xml:/etc/clickhouse-server/config.d/ipv4-only.xml:ro
+      - ./clickhouse/low-resources.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro
 
 volumes:
   plausible_data:
