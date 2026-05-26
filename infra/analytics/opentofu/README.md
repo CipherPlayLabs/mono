@@ -16,6 +16,8 @@ The Google provider uses Application Default Credentials locally or GitHub Actio
 
 The Cloudflare provider reads `CLOUDFLARE_API_TOKEN` from the environment. In GitHub Actions, map the encrypted repository secret `CLOUDFLARE_ANALYTICS_API_TOKEN` to `CLOUDFLARE_API_TOKEN` for the OpenTofu step.
 
+OpenTofu state is stored in the private GCS bucket `abpiv-personal-brand-opentofu-state` under the `infra/analytics` prefix. The bucket is intentionally managed outside this OpenTofu project to avoid a bootstrap cycle.
+
 ## Required Variables
 
 Set these values from repository variables, a local uncommitted `.tfvars` file, or CI environment variables:
@@ -45,7 +47,7 @@ Do not run `tofu apply` until the generated plan, provider permissions, and VM p
 
 ## Caveats
 
-The Worker script is a tiny placeholder proxy because the production Worker implementation belongs to Task 4. The placeholder keeps this infrastructure project wired while avoiding public site changes.
+The Worker script is deployed from `../worker/dist/index.js`, which is generated from the tested TypeScript Worker source in `../worker/src/index.ts`.
 
 Additional analytics sites need zone mapping in `locals.tf` before they can use a different Cloudflare zone. The initial `allanbpediniv.com/_analytics/*` route is fully configured.
 

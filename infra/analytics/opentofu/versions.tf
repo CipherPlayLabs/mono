@@ -1,6 +1,11 @@
 terraform {
   required_version = ">= 1.8.0"
 
+  backend "gcs" {
+    bucket = "abpiv-personal-brand-opentofu-state"
+    prefix = "infra/analytics"
+  }
+
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"

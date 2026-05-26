@@ -130,6 +130,13 @@ jobs:
         run: npm run typecheck
         working-directory: ${{ env.WORKER_DIR }}
 
+      - name: Build worker
+        run: npm run build
+        working-directory: ${{ env.WORKER_DIR }}
+
+      - name: Check worker build artifact
+        run: git diff --exit-code infra/analytics/worker/dist/index.js
+
       - name: Test worker
         run: npm test
         working-directory: ${{ env.WORKER_DIR }}

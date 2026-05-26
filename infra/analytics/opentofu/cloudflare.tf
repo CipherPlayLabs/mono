@@ -60,7 +60,7 @@ resource "cloudflare_workers_script" "analytics_proxy" {
   account_id         = var.cloudflare_account_id
   script_name        = "analytics-proxy"
   compatibility_date = "2026-05-26"
-  content            = local.analytics_proxy_worker_script
+  content            = file("${path.module}/../worker/dist/index.js")
   main_module        = "worker.js"
 }
 

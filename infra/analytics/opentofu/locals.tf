@@ -25,19 +25,4 @@ locals {
       zone_id = lookup(local.analytics_zone_ids_by_domain, site.domain, var.allanbpediniv_zone_id)
     })
   }
-
-  analytics_proxy_worker_script = <<-JS
-    export default {
-      async fetch(request) {
-        const url = new URL(request.url);
-        url.hostname = "${var.plausible_hostname}";
-        url.pathname = url.pathname.replace(/^\\/\\_analytics/, "");
-
-        const proxyRequest = new Request(url.toString(), request);
-        proxyRequest.headers.set("Host", "${var.plausible_hostname}");
-
-        return fetch(proxyRequest);
-      }
-    };
-  JS
 }
