@@ -189,7 +189,7 @@
       ansible.builtin.command:
         cmd: "ufw allow from {{ item }} to any port 22 proto tcp"
       changed_when: false
-      loop: "{{ operator_ssh_cidr_allowlist }}"
+      loop: "{{ ['35.235.240.0/20'] + operator_ssh_cidr_allowlist }}"
 
     - name: Allow additional explicit TCP ports
       ansible.builtin.command:

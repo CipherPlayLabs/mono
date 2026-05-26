@@ -113,10 +113,16 @@ jobs:
           install -d -m 0750 /opt/plausible
           install -d -m 0750 /var/lib/plausible/tmp
 
+          if [ -f /opt/plausible/runtime-secrets.env ] &&
+            ! grep -Eq '^POSTGRES_PASSWORD=[A-Za-z0-9._~-]+$' /opt/plausible/runtime-secrets.env; then
+            docker compose --project-directory /opt/plausible down -v || true
+            rm -f /opt/plausible/runtime-secrets.env
+          fi
+
           if [ ! -f /opt/plausible/runtime-secrets.env ]; then
             {
-              printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -base64 32 | tr -d '\n')"
-              printf 'SECRET_KEY_BASE=%s\n' "$(openssl rand -base64 64 | tr -d '\n')"
+              printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)"
+              printf 'SECRET_KEY_BASE=%s\n' "$(openssl rand -hex 64)"
             } > /opt/plausible/runtime-secrets.env
             chmod 0640 /opt/plausible/runtime-secrets.env
           fi
@@ -224,6 +230,7 @@ jobs:
 
           ufw default deny incoming
           ufw default allow outgoing
+          ufw allow from 35.235.240.0/20 to any port 22 proto tcp
           ufw --force enable
 
           systemctl daemon-reload
