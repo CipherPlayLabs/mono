@@ -3,6 +3,8 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import { links } from './links';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const config: Config = {
   title: 'abpiv',
 
@@ -28,6 +30,27 @@ const config: Config = {
   },
 
   customFields: {},
+
+  headTags: isProduction
+    ? [
+        {
+          tagName: 'script',
+          attributes: {},
+          innerHTML:
+            'window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(options){plausible.o=options||{}};plausible.init({endpoint:"/_analytics/api/event"});',
+        },
+      ]
+    : [],
+
+  scripts: isProduction
+    ? [
+        {
+          src: '/_analytics/js/script.js',
+          defer: true,
+          'data-domain': 'allanbpediniv.com',
+        },
+      ]
+    : [],
 
   presets: [
     [

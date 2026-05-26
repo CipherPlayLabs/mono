@@ -1,0 +1,271 @@
+---
+- name: Provision Plausible CE analytics host
+  hosts: plausible
+  become: true
+  gather_facts: true
+
+  vars:
+    apt_keyrings_dir: /etc/apt/keyrings
+    docker_apt_key: "{{ apt_keyrings_dir }}/docker.asc"
+    google_cloud_apt_key: "{{ apt_keyrings_dir }}/google-cloud-cli.asc"
+    cloudflared_apt_key: "{{ apt_keyrings_dir }}/cloudflare-main.asc"
+
+  handlers:
+    - name: Restart docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Restart plausible stack
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: "{{ plausible_root }}"
+      changed_when: true
+
+    - name: Restart cloudflared
+      ansible.builtin.systemd:
+        name: cloudflared
+        state: restarted
+        enabled: true
+
+  tasks:
+    - name: Assert Debian family host
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == "Debian"
+        fail_msg: "This playbook is intended for Ubuntu/Debian analytics hosts."
+
+    - name: Install base packages for repositories, hardening, and backups
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - unattended-upgrades
+          - ufw
+          - age
+          - tar
+          - gzip
+        state: present
+        update_cache: true
+
+    - name: Ensure apt keyrings directory exists
+      ansible.builtin.file:
+        path: "{{ apt_keyrings_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Install Docker apt signing key
+      ansible.builtin.get_url:
+        url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+        dest: "{{ docker_apt_key }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add Docker apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ ansible_architecture | regex_replace('x86_64', 'amd64') | regex_replace('aarch64', 'arm64') }} signed-by={{ docker_apt_key }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+        filename: docker
+        state: present
+
+    - name: Install Google Cloud CLI apt signing key
+      ansible.builtin.get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: "{{ google_cloud_apt_key }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add Google Cloud CLI apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by={{ google_cloud_apt_key }}] https://packages.cloud.google.com/apt cloud-sdk main"
+        filename: google-cloud-cli
+        state: present
+
+    - name: Install cloudflared apt signing key
+      ansible.builtin.get_url:
+        url: https://pkg.cloudflare.com/cloudflare-main.gpg
+        dest: "{{ cloudflared_apt_key }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add cloudflared apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by={{ cloudflared_apt_key }}] https://pkg.cloudflare.com/cloudflared any main"
+        filename: cloudflared
+        state: present
+
+    - name: Install Docker, Compose plugin, cloudflared, and GCS tooling
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - cloudflared
+          - google-cloud-cli
+        state: present
+        update_cache: true
+      notify: Restart docker
+
+    - name: Ensure unattended security updates are enabled
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::AutocleanInterval "7";
+
+    - name: Restrict unattended upgrades to security updates
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Unattended-Upgrade::Allowed-Origins {
+              "${distro_id}:${distro_codename}-security";
+          };
+          Unattended-Upgrade::Automatic-Reboot "false";
+
+    - name: Apply available unattended security updates
+      ansible.builtin.command:
+        cmd: unattended-upgrade -d
+      changed_when: false
+
+    - name: Ensure Plausible runtime group exists
+      ansible.builtin.group:
+        name: "{{ plausible_runtime_group }}"
+        system: true
+
+    - name: Ensure Plausible runtime user exists
+      ansible.builtin.user:
+        name: "{{ plausible_runtime_user }}"
+        group: "{{ plausible_runtime_group }}"
+        groups: docker
+        append: true
+        system: true
+        create_home: false
+        shell: /usr/sbin/nologin
+
+    - name: Ensure Plausible directories exist
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner | default(plausible_runtime_user) }}"
+        group: "{{ item.group | default(plausible_runtime_group) }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ plausible_root }}", mode: "0750" }
+        - { path: "{{ plausible_data_root }}", mode: "0750" }
+        - { path: "{{ plausible_backup_root }}", mode: "0750" }
+        - { path: /etc/plausible-backup, owner: root, group: root, mode: "0700" }
+
+    - name: Set default incoming firewall policy
+      ansible.builtin.command:
+        cmd: ufw default deny incoming
+      changed_when: false
+
+    - name: Set default outgoing firewall policy
+      ansible.builtin.command:
+        cmd: ufw default allow outgoing
+      changed_when: false
+
+    - name: Allow explicit SSH CIDRs when the VM has public SSH
+      ansible.builtin.command:
+        cmd: "ufw allow from {{ item }} to any port 22 proto tcp"
+      changed_when: false
+      loop: "{{ operator_ssh_cidr_allowlist }}"
+
+    - name: Allow additional explicit TCP ports
+      ansible.builtin.command:
+        cmd: "ufw allow {{ item }}/tcp"
+      changed_when: false
+      loop: "{{ firewall_allowed_tcp_ports }}"
+
+    - name: Enable firewall
+      ansible.builtin.command:
+        cmd: ufw --force enable
+      changed_when: false
+
+    - name: Render Plausible environment
+      ansible.builtin.template:
+        src: templates/plausible.env.j2
+        dest: "{{ plausible_root }}/plausible.env"
+        owner: root
+        group: "{{ plausible_runtime_group }}"
+        mode: "0640"
+      notify: Restart plausible stack
+
+    - name: Render Docker Compose file
+      ansible.builtin.template:
+        src: templates/docker-compose.yml.j2
+        dest: "{{ plausible_root }}/docker-compose.yml"
+        owner: "{{ plausible_runtime_user }}"
+        group: "{{ plausible_runtime_group }}"
+        mode: "0640"
+      notify: Restart plausible stack
+
+    - name: Render cloudflared systemd service
+      ansible.builtin.template:
+        src: templates/cloudflared.service.j2
+        dest: /etc/systemd/system/cloudflared.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - Reload systemd
+        - Restart cloudflared
+
+    - name: Render Plausible backup script
+      ansible.builtin.template:
+        src: templates/backup-plausible.sh.j2
+        dest: /usr/local/sbin/backup-plausible
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Render Plausible backup systemd service
+      ansible.builtin.template:
+        src: templates/backup-plausible.service.j2
+        dest: /etc/systemd/system/backup-plausible.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Render Plausible backup systemd timer
+      ansible.builtin.template:
+        src: templates/backup-plausible.timer.j2
+        dest: /etc/systemd/system/backup-plausible.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Enable Plausible backup timer
+      ansible.builtin.systemd:
+        name: backup-plausible.timer
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Enable Plausible stack
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: "{{ plausible_root }}"
+      changed_when: true

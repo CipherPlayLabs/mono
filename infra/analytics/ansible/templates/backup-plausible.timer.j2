@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily Plausible encrypted backup timer
+
+[Timer]
+OnCalendar=*-*-* 03:17:00 UTC
+Persistent=true
+RandomizedDelaySec=20m
+Unit=backup-plausible.service
+
+[Install]
+WantedBy=timers.target
+

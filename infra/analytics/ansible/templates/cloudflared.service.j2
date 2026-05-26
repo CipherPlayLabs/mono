@@ -1,0 +1,22 @@
+[Unit]
+Description=Cloudflare Tunnel for Plausible analytics dashboard
+Documentation=https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Environment=TUNNEL_TOKEN={{ cloudflare_tunnel_token }}
+Environment=TUNNEL_ORIGIN_URL={{ cloudflared_origin_url }}
+# OpenTofu manages the remotely-managed Tunnel ingress for {{ plausible_hostname }} -> ${TUNNEL_ORIGIN_URL}.
+ExecStart=/usr/bin/cloudflared tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+Restart=always
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

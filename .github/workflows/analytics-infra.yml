@@ -1,6 +1,13 @@
 name: Analytics Infrastructure
 
 on:
+  push:
+    branches:
+      - 'codex/**'
+    paths:
+      - 'infra/analytics/**'
+      - '.github/workflows/analytics-infra.yml'
+      - 'content-site/**'
   pull_request:
     paths:
       - 'infra/analytics/**'

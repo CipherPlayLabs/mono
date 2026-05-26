@@ -1,0 +1,60 @@
+---
+services:
+  plausible:
+    image: "{{ plausible_app_image }}"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    env_file:
+      - ./plausible.env
+    ports:
+      - "{{ plausible_local_bind_address }}:{{ plausible_local_port }}:8000"
+    volumes:
+      - plausible_data:/var/lib/plausible
+
+  postgres:
+    image: "{{ plausible_postgres_image }}"
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "{{ plausible_postgres_db }}"
+      POSTGRES_USER: "{{ plausible_postgres_user }}"
+      POSTGRES_PASSWORD: "{{ plausible_postgres_password }}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ plausible_postgres_user }} -d {{ plausible_postgres_db }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  clickhouse:
+    image: "{{ plausible_clickhouse_image }}"
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+      - clickhouse_backups:/backups
+
+volumes:
+  plausible_data:
+    driver: local
+  postgres_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  clickhouse_logs:
+    driver: local
+  clickhouse_backups:
+    driver: local

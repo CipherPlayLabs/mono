@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+umask 077
+
+BACKUP_ROOT="{{ plausible_backup_root }}"
+STACK_DIR="{{ plausible_root }}"
+GCS_URI="{{ analytics_backup_gcs_uri }}"
+AGE_RECIPIENT="{{ analytics_backup_age_recipient }}"
+AGE_IDENTITY_FILE="{{ analytics_backup_age_identity_file }}"
+GCP_PROJECT="{{ analytics_backup_gcloud_project }}"
+SERVICE_ACCOUNT_JSON="{{ analytics_backup_service_account_json }}"
+RETENTION_DAYS="{{ analytics_backup_retention_days }}"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+WORK_DIR="${BACKUP_ROOT}/${STAMP}"
+ARCHIVE="${BACKUP_ROOT}/plausible-${STAMP}.tar.gz"
+ENCRYPTED_ARCHIVE="${ARCHIVE}.age"
+
+log() {
+  systemd-cat -t backup-plausible -p info printf '%s\n' "$*"
+}
+
+fail() {
+  systemd-cat -t backup-plausible -p err printf '%s\n' "$*"
+  exit 1
+}
+
+trap 'fail "backup failed at line ${LINENO}"' ERR
+
+mkdir -p "${WORK_DIR}"
+cd "${STACK_DIR}"
+
+if [[ -f "${SERVICE_ACCOUNT_JSON}" ]]; then
+  gcloud auth activate-service-account --key-file="${SERVICE_ACCOUNT_JSON}" --project="${GCP_PROJECT}" >/dev/null
+fi
+
+log "starting Plausible backup ${STAMP}"
+
+docker compose exec -T postgres pg_dump \
+  --username="{{ plausible_postgres_user }}" \
+  --dbname="{{ plausible_postgres_db }}" \
+  --format=custom \
+  --file=/tmp/plausible-postgres.dump
+docker compose cp postgres:/tmp/plausible-postgres.dump "${WORK_DIR}/postgres.dump"
+docker compose exec -T postgres rm -f /tmp/plausible-postgres.dump
+
+# ClickHouse documents native logical backups with clickhouse-client queries.
+# This exports the Plausible events database as a portable custom archive.
+docker compose exec -T clickhouse clickhouse-client \
+  --query="BACKUP DATABASE plausible_events_db TO File('/backups/plausible-events-${STAMP}.zip')"
+docker compose cp clickhouse:/backups/plausible-events-${STAMP}.zip "${WORK_DIR}/clickhouse-plausible-events.zip"
+docker compose exec -T clickhouse rm -f "/backups/plausible-events-${STAMP}.zip"
+
+tar -C "${WORK_DIR}" -czf "${ARCHIVE}" .
+age --recipient "${AGE_RECIPIENT}" --output "${ENCRYPTED_ARCHIVE}" "${ARCHIVE}"
+gcloud storage cp "${ENCRYPTED_ARCHIVE}" "${GCS_URI}/plausible-${STAMP}.tar.gz.age"
+
+find "${BACKUP_ROOT}" -mindepth 1 -maxdepth 1 -type d -mtime +"${RETENTION_DAYS}" -exec rm -rf {} +
+find "${BACKUP_ROOT}" -mindepth 1 -maxdepth 1 -type f -mtime +"${RETENTION_DAYS}" -delete
+
+log "completed Plausible backup ${STAMP}"

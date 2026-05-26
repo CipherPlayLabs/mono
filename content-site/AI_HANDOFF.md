@@ -107,6 +107,25 @@ pages deploy content-site/cloudflare-pages \
 
 Production deploys use the GitHub `production` environment. That environment has a required-reviewer gate for `BrewDogDev`, so pushes to `main` can pause until approved.
 
+The workflow `Analytics Infrastructure` validates shared analytics infrastructure. It authenticates to GCP through GitHub OIDC using `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`, then runs OpenTofu validation, Worker tests, content-site typecheck/build, and a blocked-domain scan. It is validation-only: it does not run `tofu apply`, production Ansible, Worker deploys, or Cloudflare Pages deploys.
+
+## Analytics Behavior
+
+Production builds inject the Plausible script as:
+
+```html
+<script>window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(options){plausible.o=options||{}};plausible.init({endpoint:"/_analytics/api/event"});</script>
+<script defer data-domain="allanbpediniv.com" src="/_analytics/js/script.js"></script>
+```
+
+The public site must keep analytics browser requests same-origin through `https://allanbpediniv.com/_analytics/*`. The dashboard/origin hostname is operator infrastructure only and must not appear in public HTML, JavaScript, or browser network requests.
+
+Expected browser DevTools behavior on production:
+
+- Script request: `https://allanbpediniv.com/_analytics/js/script.js`
+- Event request: `https://allanbpediniv.com/_analytics/api/event`
+- No analytics requests to non-site domains.
+
 ## Required GitHub Settings
 
 Repository variable:
@@ -146,6 +165,18 @@ npm ci
 npm run typecheck
 npm run build
 ```
+
+Analytics build-output checks:
+
+```bash
+rg -n "/_analytics/js/script\\.js" build
+rg -n "lobst3rs|analytics\\.lobst3rs\\.com" build
+```
+
+Expected:
+
+- The first command finds the same-origin analytics script.
+- The second command returns no matches.
 
 Expected known warnings from `npm run build`:
 
