@@ -4,7 +4,7 @@ This OpenTofu project provisions CipherPlay's self-hosted n8n Community Edition 
 
 ## Managed Resources
 
-- Cloud Run v2 service running `docker.n8n.io/n8nio/n8n:stable`.
+- Cloud Run v2 service running `docker.n8n.io/n8nio/n8n:stable` through an Artifact Registry remote Docker repository.
 - One always-warm Cloud Run instance with 1 vCPU, 2 GiB memory, always-allocated CPU, max concurrency 10, and max instances 1.
 - Private VPC, Serverless VPC Access connector, and private services access for private-IP Cloud SQL.
 - Cloud SQL PostgreSQL instance and database.

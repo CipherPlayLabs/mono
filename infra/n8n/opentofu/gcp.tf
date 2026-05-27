@@ -115,6 +115,28 @@ resource "google_storage_bucket" "binary_data" {
   ]
 }
 
+resource "google_artifact_registry_repository" "n8n_image_remote" {
+  project       = var.gcp_project_id
+  location      = var.gcp_region
+  repository_id = "${local.name_prefix}-images"
+  description   = "Remote Docker repository proxying ${local.n8n_image_registry_url} for Cloud Run."
+  format        = "DOCKER"
+  mode          = "REMOTE_REPOSITORY"
+  labels        = local.labels
+
+  remote_repository_config {
+    description = "n8n upstream Docker registry."
+
+    common_repository {
+      uri = local.n8n_image_registry_url
+    }
+  }
+
+  depends_on = [
+    google_project_service.required["artifactregistry.googleapis.com"],
+  ]
+}
+
 resource "google_secret_manager_secret" "runtime" {
   for_each = local.runtime_secrets
 
@@ -158,7 +180,7 @@ resource "google_cloud_run_v2_service" "n8n" {
 
     containers {
       name  = "n8n"
-      image = var.n8n_image
+      image = local.n8n_cloud_run_image
 
       ports {
         name           = "http1"
@@ -233,6 +255,7 @@ resource "google_cloud_run_v2_service" "n8n" {
   depends_on = [
     google_project_service.required["run.googleapis.com"],
     google_project_service.required["secretmanager.googleapis.com"],
+    google_artifact_registry_repository.n8n_image_remote,
     google_secret_manager_secret_iam_member.runtime_secret_accessor,
     google_storage_bucket_iam_member.runtime_binary_data_object_user,
   ]
@@ -246,6 +269,10 @@ resource "google_compute_region_network_endpoint_group" "n8n" {
   cloud_run {
     service = google_cloud_run_v2_service.n8n.name
   }
+
+  depends_on = [
+    google_project_service.required["compute.googleapis.com"],
+  ]
 }
 
 resource "google_compute_backend_service" "n8n" {
@@ -293,12 +320,20 @@ resource "google_certificate_manager_certificate" "n8n" {
     domains            = values(local.hostnames)
     dns_authorizations = [for authorization in google_certificate_manager_dns_authorization.n8n : authorization.id]
   }
+
+  depends_on = [
+    google_project_service.required["certificatemanager.googleapis.com"],
+  ]
 }
 
 resource "google_certificate_manager_certificate_map" "n8n" {
   name        = "${local.name_prefix}-cert-map"
   description = "Certificate map for n8n HTTPS load balancer."
   labels      = local.labels
+
+  depends_on = [
+    google_project_service.required["certificatemanager.googleapis.com"],
+  ]
 }
 
 resource "google_certificate_manager_certificate_map_entry" "n8n" {
