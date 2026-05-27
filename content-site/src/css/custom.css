@@ -40,9 +40,24 @@ body {
   border-bottom: 1px solid var(--cipher-border);
 }
 
+.navbar__inner,
+.navbar__items {
+  min-width: 0;
+}
+
+.navbar__brand {
+  flex-shrink: 0;
+  min-width: max-content;
+}
+
 .navbar__title,
 .navbar__link {
   color: #edf7f7;
+  white-space: nowrap;
+}
+
+.navbar__item {
+  flex-shrink: 0;
 }
 
 .navbar__link:hover,

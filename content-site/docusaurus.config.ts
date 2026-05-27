@@ -153,24 +153,27 @@ const config: Config = {
       },
       items: [
         {
-          to: '/investors',
-          label: 'Investors',
+          type: 'dropdown',
+          label: 'Audiences',
           position: 'left',
-        },
-        {
-          to: '/analysts',
-          label: 'Analysts',
-          position: 'left',
-        },
-        {
-          to: '/partners',
-          label: 'Partners',
-          position: 'left',
-        },
-        {
-          to: '/customers',
-          label: 'Customers',
-          position: 'left',
+          items: [
+            {
+              to: '/investors',
+              label: 'Investors',
+            },
+            {
+              to: '/analysts',
+              label: 'Analysts',
+            },
+            {
+              to: '/partners',
+              label: 'Partners',
+            },
+            {
+              to: '/customers',
+              label: 'Customers',
+            },
+          ],
         },
         {
           to: '/market-analysis',
