@@ -60,3 +60,11 @@ resource "google_service_account_iam_member" "github_oidc_workload_identity_user
   role               = "roles/iam.workloadIdentityUser"
   member             = var.github_oidc_principal_set
 }
+
+resource "google_service_account_iam_member" "github_oidc_service_account_token_creator" {
+  count = trimspace(var.github_oidc_principal_set) == "" ? 0 : 1
+
+  service_account_id = google_service_account.github_deployer.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = var.github_oidc_principal_set
+}

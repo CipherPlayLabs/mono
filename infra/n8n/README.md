@@ -34,7 +34,7 @@ The service is capped at one instance because Cloud Storage FUSE is not a fully 
 
 - `.github/workflows/n8n-validate.yml`: validates formatting and OpenTofu configuration for n8n changes.
 - `.github/workflows/n8n-apply.yml`: manual production-approved OpenTofu plan and apply.
-- `.github/workflows/n8n-redeploy.yml`: manual production-approved Cloud Run redeploy to the current stable n8n image.
+- `.github/workflows/n8n-redeploy.yml`: manual production-approved Cloud Run redeploy to the current Cloud Run-compatible stable n8n image.
 
 All GCP authentication uses GitHub OIDC. Do not add service account JSON keys.
 
