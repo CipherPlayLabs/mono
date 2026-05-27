@@ -48,6 +48,12 @@
   gap: 1rem;
 }
 
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
 .reportGrid,
 .pillarGrid {
   display: grid;
@@ -55,6 +61,7 @@
   gap: 1rem;
 }
 
+.sectionCard,
 .report,
 .pillar {
   min-height: 245px;
@@ -66,12 +73,18 @@
   text-decoration: none;
 }
 
+.sectionCard {
+  min-height: 220px;
+}
+
+.sectionCard:hover,
 .report:hover {
   color: var(--ifm-font-color-base);
   text-decoration: none;
   border-color: var(--ifm-color-primary);
 }
 
+.sectionCard span,
 .report span {
   display: block;
   min-height: 2.5rem;
@@ -81,11 +94,13 @@
   text-transform: uppercase;
 }
 
+.sectionCard h3,
 .report h3,
 .pillar h3 {
   margin: 0 0 0.8rem;
 }
 
+.sectionCard p,
 .report p,
 .pillar p {
   color: var(--cipher-muted);
@@ -98,6 +113,7 @@
 
 @media (max-width: 996px) {
   .twoColumn,
+  .sectionGrid,
   .reportGrid,
   .pillarGrid {
     grid-template-columns: 1fr;

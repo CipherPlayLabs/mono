@@ -1,7 +1,6 @@
 import type {ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
-import {AudienceCardGrid} from '@site/src/components/AudienceCardGrid';
 import {CipherHero} from '@site/src/components/CipherHero';
 import {CredibilityStrip} from '@site/src/components/CredibilityStrip';
 import {ProductCard} from '@site/src/components/ProductCard';
@@ -12,6 +11,39 @@ import {
   products,
 } from '@site/src/data/site';
 import styles from './index.module.css';
+
+const primarySections = [
+  {
+    label: 'Company context',
+    title: 'About',
+    summary: 'Company overview, leadership, backers, strategic connections, and diligence context.',
+    href: '/about',
+  },
+  {
+    label: 'Reports',
+    title: 'Market Research',
+    summary: 'Public Market Research reports with full-report email requests when forms are ready.',
+    href: '/market-analysis',
+  },
+  {
+    label: 'Software',
+    title: 'Products',
+    summary: 'Current and sunset product proof from CipherPlay emerging-technology work.',
+    href: '/products',
+  },
+  {
+    label: 'Ecosystem',
+    title: 'Partners',
+    summary: 'Partnership context, collaboration signals, and CipherPlay LinkedIn.',
+    href: '/partners',
+  },
+  {
+    label: 'Brand',
+    title: 'Media Kit',
+    summary: 'Approved logos, banners, downloads, and public brand assets.',
+    href: '/media-kit',
+  },
+];
 
 export default function Home(): ReactNode {
   return (
@@ -28,10 +60,23 @@ export default function Home(): ReactNode {
         <section className={styles.section}>
           <div className="container">
             <div className={styles.sectionHeader}>
-              <p>Choose your path</p>
-              <h2>Get to the right CipherPlay context quickly.</h2>
+              <p>Site sections</p>
+              <h2>Explore company, research, product, partner, and media context.</h2>
             </div>
-            <AudienceCardGrid />
+            <div className={styles.sectionGrid}>
+              {primarySections.map((section) => (
+                <TrackedLink
+                  key={section.href}
+                  to={section.href}
+                  eventName="route_home_section"
+                  eventProps={{destination: section.href}}
+                  className={styles.sectionCard}>
+                  <span>{section.label}</span>
+                  <h3>{section.title}</h3>
+                  <p>{section.summary}</p>
+                </TrackedLink>
+              ))}
+            </div>
           </div>
         </section>
 

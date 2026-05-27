@@ -1,0 +1,109 @@
+.section {
+  padding: 4rem 0;
+}
+
+.band {
+  padding: 4rem 0;
+  background: var(--cipher-band);
+}
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.panel {
+  padding: 1.25rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.panel h2,
+.sectionHeader h2 {
+  margin: 0;
+}
+
+.panel p {
+  color: var(--cipher-muted);
+  font-size: 1.03rem;
+  line-height: 1.7;
+}
+
+.sectionHeader {
+  max-width: 760px;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeader p,
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.proofList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.proofList li {
+  padding-left: 1rem;
+  border-left: 3px solid var(--ifm-color-primary);
+  color: var(--cipher-muted);
+}
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.linkCard {
+  min-height: 130px;
+  padding: 1.1rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.linkCard:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.linkCard span {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.linkCard strong {
+  font-size: 1.08rem;
+}
+
+.textLink {
+  display: inline-flex;
+  margin-top: 1.2rem;
+  font-weight: 800;
+}
+
+@media (max-width: 996px) {
+  .aboutGrid,
+  .linkGrid {
+    grid-template-columns: 1fr;
+  }
+}

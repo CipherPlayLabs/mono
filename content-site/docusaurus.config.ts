@@ -153,27 +153,9 @@ const config: Config = {
       },
       items: [
         {
-          type: 'dropdown',
-          label: 'Audiences',
+          to: '/about',
+          label: 'About',
           position: 'left',
-          items: [
-            {
-              to: '/investors',
-              label: 'Investors',
-            },
-            {
-              to: '/analysts',
-              label: 'Analysts',
-            },
-            {
-              to: '/partners',
-              label: 'Partners',
-            },
-            {
-              to: '/customers',
-              label: 'Customers',
-            },
-          ],
         },
         {
           to: '/market-analysis',
@@ -183,6 +165,11 @@ const config: Config = {
         {
           to: '/products',
           label: 'Products',
+          position: 'left',
+        },
+        {
+          to: '/partners',
+          label: 'Partners',
           position: 'left',
         },
         {
@@ -198,10 +185,11 @@ const config: Config = {
         {
           title: 'Navigation',
           items: [
-            { to: '/investors', label: 'Investors' },
-            { to: '/analysts', label: 'Analysts' },
+            { to: '/about', label: 'About' },
+            { to: '/market-analysis', label: 'Market Research' },
+            { to: '/products', label: 'Products' },
             { to: '/partners', label: 'Partners' },
-            { to: '/customers', label: 'Customers' },
+            { to: '/media-kit', label: 'Media Kit' },
           ],
         },
         {
@@ -210,6 +198,12 @@ const config: Config = {
             { to: '/team', label: 'Team' },
             { to: '/industries', label: 'Industries' },
             { to: '/newsroom', label: 'Newsroom' },
+          ],
+        },
+        {
+          title: 'Partners',
+          items: [
+            { to: '/partners', label: 'Partnerships' },
             { href: links.cipherplayLinkedIn, label: 'LinkedIn' },
           ],
         },
