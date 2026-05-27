@@ -33,7 +33,7 @@ export default function Analysts(): ReactNode {
               <article className={styles.linkPanel}>
                 <h2>Review next</h2>
                 <div className={styles.linkGrid}>
-                  <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'market-analysis'}}>Public report teasers</TrackedLink>
+                  <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'market-research'}}>Market Research reports</TrackedLink>
                   <TrackedLink to="/industries" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'industries'}}>Industry map</TrackedLink>
                   <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'randao'}}>Randao thesis</TrackedLink>
                   <TrackedLink to="/media-kit" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'media-kit'}}>Media kit</TrackedLink>

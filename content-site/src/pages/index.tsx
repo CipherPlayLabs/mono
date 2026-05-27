@@ -8,7 +8,7 @@ import {ProductCard} from '@site/src/components/ProductCard';
 import {TrackedLink} from '@site/src/components/TrackedLink';
 import {
   industryPillars,
-  marketAnalysisTeasers,
+  marketResearchReports,
   products,
 } from '@site/src/data/site';
 import styles from './index.module.css';
@@ -61,20 +61,20 @@ export default function Home(): ReactNode {
         <section className={styles.band}>
           <div className="container">
             <div className={styles.sectionHeader}>
-              <p>Market analysis</p>
-              <h2>Public teasers, private full reports when request links are ready.</h2>
+              <p>Market Research reports</p>
+              <h2>Useful public reports with full-report email requests when forms are ready.</h2>
             </div>
-            <div className={styles.teaserGrid}>
-              {marketAnalysisTeasers.map((teaser) => (
+            <div className={styles.reportGrid}>
+              {marketResearchReports.map((report) => (
                 <TrackedLink
-                  key={teaser.slug}
-                  to="/market-analysis"
+                  key={report.slug}
+                  to={report.href}
                   eventName="market_analysis_teaser_click"
-                  eventProps={{teaser: teaser.slug}}
-                  className={styles.teaser}>
-                  <span>{teaser.industries.join(' / ')}</span>
-                  <h3>{teaser.title}</h3>
-                  <p>{teaser.executiveSummary}</p>
+                  eventProps={{report: report.slug}}
+                  className={styles.report}>
+                  <span>{report.industries.join(' / ')}</span>
+                  <h3>{report.title}</h3>
+                  <p>{report.executiveSummary}</p>
                 </TrackedLink>
               ))}
             </div>

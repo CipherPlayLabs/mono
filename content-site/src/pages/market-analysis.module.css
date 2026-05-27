@@ -20,15 +20,15 @@
   margin: 0;
 }
 
-.teaserGrid {
+.reportGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.teaser {
+.report {
   display: grid;
-  min-height: 350px;
+  min-height: 430px;
   align-content: space-between;
   gap: 1.5rem;
   padding: 1.25rem;
@@ -53,13 +53,31 @@
   font-weight: 800;
 }
 
-.teaser h2 {
+.reportCode {
+  margin: 0 0 0.45rem;
+  color: var(--cipher-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.report h2 {
   margin: 0 0 0.75rem;
 }
 
-.teaser p {
+.report p {
   color: var(--cipher-muted);
   line-height: 1.65;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.actions a {
+  font-weight: 800;
 }
 
 .note {
@@ -68,7 +86,7 @@
 }
 
 @media (max-width: 996px) {
-  .teaserGrid {
+  .reportGrid {
     grid-template-columns: 1fr;
   }
 }

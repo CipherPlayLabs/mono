@@ -12,13 +12,13 @@ export default function Products(): ReactNode {
         <CipherHero
           eyebrow="Products"
           title="Emerging-tech software products with research behind them."
-          summary="CipherPlay uses public research, product thesis work, and software execution to move emerging-technology ideas toward usable products."
+          summary="CipherPlay uses public research, product thesis work, and software execution to move emerging-technology ideas toward usable products, including current and sunset product proof."
         />
         <section className={styles.section}>
           <div className="container">
             <div className={styles.header}>
-              <p>Current product</p>
-              <h2>Randao is the first public product page.</h2>
+              <p>Product portfolio</p>
+              <h2>Current and sunset products are shown with clear status labels.</h2>
             </div>
             <div className={styles.productGrid}>
               {products.map((product) => (

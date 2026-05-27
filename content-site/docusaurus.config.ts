@@ -174,7 +174,7 @@ const config: Config = {
         },
         {
           to: '/market-analysis',
-          label: 'Market Analysis',
+          label: 'Market Research',
           position: 'left',
         },
         {
@@ -213,7 +213,7 @@ const config: Config = {
         {
           title: 'Resources',
           items: [
-            { to: '/market-analysis', label: 'Market Analysis' },
+            { to: '/market-analysis', label: 'Market Research' },
             { to: '/products', label: 'Products' },
             { to: '/products/randao', label: 'Randao' },
             { href: links.randaoWhitepaper, label: 'Randao Whitepaper' },

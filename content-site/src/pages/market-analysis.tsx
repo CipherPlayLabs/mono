@@ -2,45 +2,56 @@ import type {ReactNode} from 'react';
 import Layout from '@theme/Layout';
 import {CipherHero} from '@site/src/components/CipherHero';
 import {ConversionButton} from '@site/src/components/ConversionButton';
-import {marketAnalysisTeasers} from '@site/src/data/site';
+import {TrackedLink} from '@site/src/components/TrackedLink';
+import {marketResearchReports} from '@site/src/data/site';
 import styles from './market-analysis.module.css';
 
 export default function MarketAnalysis(): ReactNode {
   return (
     <Layout
-      title="Market Analysis"
-      description="Public CipherPlay market analysis teasers for emerging technology.">
+      title="Market Research Reports"
+      description="CipherPlay Market Research reports for emerging technology.">
       <main>
         <CipherHero
-          eyebrow="Market analysis"
-          title="Public research previews for emerging-technology decisions."
-          summary="CipherPlay publishes public teasers that summarize market framing without exposing full private reports or go-to-market details."
+          eyebrow="Market Research reports"
+          title="Market Research reports for emerging-technology decisions."
+          summary="CipherPlay publishes useful public Market Research reports with industry framing, market dynamics, segment maps, and full-report email requests when the delivery flow is ready."
         />
         <section className={styles.section}>
           <div className="container">
             <div className={styles.header}>
-              <p>Report teasers</p>
-              <h2>Full reports will be request-gated when external form URLs are ready.</h2>
+              <p>Reports</p>
+              <h2>Read the public report pages, then request the full report by email.</h2>
             </div>
-            <div className={styles.teaserGrid}>
-              {marketAnalysisTeasers.map((teaser) => (
-                <article className={styles.teaser} key={teaser.slug}>
+            <div className={styles.reportGrid}>
+              {marketResearchReports.map((report) => (
+                <article className={styles.report} key={report.slug}>
                   <div>
                     <div className={styles.tags}>
-                      {teaser.industries.map((industry) => (
+                      {report.industries.map((industry) => (
                         <span key={industry}>{industry}</span>
                       ))}
                     </div>
-                    <h2>{teaser.title}</h2>
-                    <p>{teaser.executiveSummary}</p>
+                    <p className={styles.reportCode}>{report.reportCode}</p>
+                    <h2>{report.title}</h2>
+                    <p>{report.executiveSummary}</p>
                   </div>
-                  <ConversionButton cta={teaser.cta} />
+                  <div className={styles.actions}>
+                    <TrackedLink
+                      to={report.href}
+                      eventName="market_analysis_teaser_click"
+                      eventProps={{report: report.slug}}>
+                      View report
+                    </TrackedLink>
+                    <ConversionButton cta={report.cta} />
+                  </div>
                 </article>
               ))}
             </div>
             <p className={styles.note}>
-              These pages intentionally show public executive summaries only. Full private
-              reports are not committed to the public content site.
+              Public report pages include substantive market research. Full private report
+              files are not committed to the public content site and will be sent by email
+              only after the request flow is approved.
             </p>
           </div>
         </section>

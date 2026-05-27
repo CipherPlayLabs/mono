@@ -23,7 +23,7 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: minmax(0, 560px);
+  grid-template-columns: repeat(2, minmax(0, 560px));
   gap: 1rem;
 }
 
@@ -107,7 +107,8 @@
 
 @media (max-width: 996px) {
   .randaoLayout,
-  .mediaItem {
+  .mediaItem,
+  .productGrid {
     grid-template-columns: 1fr;
   }
 

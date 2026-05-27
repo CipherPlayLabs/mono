@@ -36,7 +36,7 @@ export default function Investors(): ReactNode {
                   <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'randao'}}>Randao product proof</TrackedLink>
                   <TrackedLink to="/team" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'team'}}>Leadership team</TrackedLink>
                   <TrackedLink to="/industries" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'industries'}}>Industry pillars</TrackedLink>
-                  <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'market-analysis'}}>Market analysis teasers</TrackedLink>
+                  <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'market-research'}}>Market Research reports</TrackedLink>
                 </div>
               </article>
             </div>
