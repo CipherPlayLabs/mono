@@ -1,6 +1,6 @@
 import {links} from '../../links';
 
-export type AudienceSlug = 'investors' | 'analysts' | 'partners' | 'customers';
+export type AudienceSlug = 'investors' | 'partners' | 'customers';
 
 export interface SiteCta {
   label: string;
@@ -113,25 +113,6 @@ export const audiencePages: AudiencePage[] = [
       label: 'Request investor materials',
       href: links.investorForm,
       eventName: 'cta_investor_materials',
-      disabled: false,
-    },
-  },
-  {
-    slug: 'analysts',
-    navLabel: 'Analysts',
-    eyebrow: 'Market research and signal tracking',
-    title: 'Read market research shaped by builders operating in emerging technology.',
-    summary:
-      'For analysts who want public market research reports, industry framing, and a path to request full reports by email.',
-    proofPoints: [
-      'Public Market Research reports',
-      'Venture and market intelligence focus',
-      'Research tied to product-building context',
-    ],
-    primaryCta: {
-      label: 'Request full research access',
-      href: links.analystForm,
-      eventName: 'cta_research_access',
       disabled: false,
     },
   },
@@ -256,7 +237,7 @@ export const industryPillars: IndustryPillar[] = [
     summary:
       'Protocol design and productization around trust, randomness, verification, and secure coordination.',
     audienceFit:
-      'Relevant to analysts and technical customers tracking applied cryptography and product-ready trust systems.',
+      'Relevant to technical customers and partners tracking applied cryptography and product-ready trust systems.',
     proofHref: '/products/randao',
   },
   {
@@ -264,7 +245,7 @@ export const industryPillars: IndustryPillar[] = [
     summary:
       'Research systems that turn emerging-technology signals into clearer market maps and venture theses.',
     audienceFit:
-      'Relevant to investors and analysts who need concise public framing before requesting deeper diligence.',
+      'Relevant to investors and partners who need concise public framing before requesting deeper diligence.',
     proofHref: '/market-analysis',
   },
   {
@@ -350,7 +331,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Who is this report for?',
         answer:
-          'It is written for investors, analysts, partners, and customers evaluating AI productivity software opportunities.',
+          'It is written for investors, partners, and customers evaluating AI productivity software opportunities.',
       },
     ],
     cta: {
@@ -454,7 +435,7 @@ export const marketResearchReports: MarketResearchReport[] = [
     keyFindings: [
       'Emerging-technology diligence benefits from combining market maps with builder-level product understanding.',
       'Signals from accelerators, protocol communities, technical media, and customer workflows can reveal opportunity before financial metrics mature.',
-      'Analyst workflows increasingly need AI support, but source traceability and judgment remain central to quality.',
+      'Research workflows increasingly need AI support, but source traceability and judgment remain central to quality.',
       'Studios with software execution capability can test market theses through prototypes and early products.',
     ],
     marketDynamics: [
@@ -471,7 +452,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         title: 'Research workflows are becoming software workflows',
         body:
-          'Analysts are adopting AI-assisted search, synthesis, and monitoring, but still need structured frameworks that keep conclusions explainable.',
+          'Research teams are adopting AI-assisted search, synthesis, and monitoring, but still need structured frameworks that keep conclusions explainable.',
       },
     ],
     segments: [
@@ -481,7 +462,7 @@ export const marketResearchReports: MarketResearchReport[] = [
           'Market maps, product context, and technical signal tracking for investors evaluating emerging-technology opportunities.',
       },
       {
-        title: 'Analyst research systems',
+        title: 'Market research systems',
         body:
           'Tools and processes for source collection, synthesis, report drafting, and ongoing market monitoring.',
       },
@@ -496,7 +477,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       'Market intelligence framework',
       'Signal categories and weighting',
       'Product proof in venture diligence',
-      'AI-assisted analyst workflows',
+      'AI-assisted research workflows',
       'Segment map',
       'Implications for investors and partners',
     ],

@@ -38,7 +38,7 @@ export default function Randao(): ReactNode {
                 </p>
                 <ul>
                   <li>Connects CipherPlay's cryptographic protocol focus to a concrete product.</li>
-                  <li>Gives analysts a public reference point for randomness and trust infrastructure.</li>
+                  <li>Gives investors and partners a public reference point for randomness and trust infrastructure.</li>
                   <li>Supports partner and customer conversations without publishing private materials.</li>
                 </ul>
                 <div className={styles.actions}>

@@ -15,7 +15,6 @@ export const links = {
   startupVirginia: 'https://startupvirginia.org',
   founderInstitute: 'https://fi.co/',
   investorForm: '/forms/investor-materials',
-  analystForm: '/forms/research-access',
   partnerForm: '/forms/partnership',
   customerForm: '/forms/consulting-discovery',
   reportRequestForm: '/forms/report-request',

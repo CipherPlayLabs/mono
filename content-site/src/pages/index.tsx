@@ -54,7 +54,7 @@ export default function Home(): ReactNode {
         <CipherHero
           eyebrow="Emerging-tech software and market intelligence"
           title="CipherPlay"
-          summary="A venture-backed emerging-tech software development studio and market research firm building products and public research for investors, analysts, partners, and customers."
+          summary="A venture-backed emerging-tech software development studio and market research firm building products and public research for investors, partners, and customers."
         />
 
         <section className={styles.section}>
