@@ -31,7 +31,7 @@ export default function About(): ReactNode {
                 <h2>Research-backed product building.</h2>
                 <p>
                   CipherPlay uses public market research and focused product proof to make
-                  emerging-technology opportunities easier to evaluate. Randao anchors the
+                  emerging-technology opportunities easier to evaluate. RANDAO anchors the
                   current product portfolio, while the research pages show the markets and
                   technical domains the studio is tracking.
                 </p>
@@ -64,7 +64,7 @@ export default function About(): ReactNode {
                 eventProps={{destination: 'randao'}}
                 className={styles.linkCard}>
                 <span>Product proof</span>
-                <strong>Randao</strong>
+                <strong>RANDAO</strong>
               </TrackedLink>
               <TrackedLink
                 to="/market-analysis"

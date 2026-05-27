@@ -12,10 +12,12 @@ export function ProductCard({product}: {product: Product}): React.JSX.Element {
         <h3>{product.name}</h3>
         <p>{product.summary}</p>
       </div>
-      <div className={styles.actions}>
-        <Link to={product.href}>View product</Link>
-        <ConversionButton cta={product.cta} />
-      </div>
+      {(product.href || product.cta) && (
+        <div className={styles.actions}>
+          {product.href && <Link to={product.href}>{product.linkLabel ?? 'View product'}</Link>}
+          {product.cta && <ConversionButton cta={product.cta} />}
+        </div>
+      )}
     </article>
   );
 }

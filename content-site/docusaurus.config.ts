@@ -164,7 +164,7 @@ const config: Config = {
         },
         {
           to: '/products',
-          label: 'Products',
+          label: 'Products & Services',
           position: 'left',
         },
         {
@@ -187,7 +187,7 @@ const config: Config = {
           items: [
             { to: '/about', label: 'About' },
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products' },
+            { to: '/products', label: 'Products & Services' },
             { to: '/partners', label: 'Partners' },
             { to: '/media-kit', label: 'Media Kit' },
           ],
@@ -211,9 +211,9 @@ const config: Config = {
           title: 'Resources',
           items: [
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products' },
-            { to: '/products/randao', label: 'Randao' },
-            { href: links.randaoWhitepaper, label: 'Randao Whitepaper' },
+            { to: '/products', label: 'Products & Services' },
+            { to: '/products/randao', label: 'RANDAO' },
+            { href: links.randaoWhitepaper, label: 'RANDAO Whitepaper' },
           ],
         },
         {

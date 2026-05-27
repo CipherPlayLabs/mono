@@ -35,7 +35,7 @@ export default function Analysts(): ReactNode {
                 <div className={styles.linkGrid}>
                   <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'market-research'}}>Market Research reports</TrackedLink>
                   <TrackedLink to="/industries" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'industries'}}>Industry map</TrackedLink>
-                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'randao'}}>Randao thesis</TrackedLink>
+                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'randao'}}>RANDAO thesis</TrackedLink>
                   <TrackedLink to="/media-kit" eventName="route_audience_segment" eventProps={{segment: 'analysts', destination: 'media-kit'}}>Media kit</TrackedLink>
                 </div>
               </article>

@@ -35,6 +35,13 @@
   margin: 0 0 0.75rem;
 }
 
+.member strong {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: var(--ifm-font-color-base);
+  line-height: 1.45;
+}
+
 .member span {
   display: block;
   color: var(--cipher-muted);

@@ -60,6 +60,19 @@
   object-fit: contain;
 }
 
+.orgMark {
+  display: inline-flex;
+  width: 88px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--cipher-border);
+  border-radius: 6px;
+  background: var(--cipher-band);
+  color: var(--ifm-color-primary);
+  font-weight: 900;
+}
+
 .org span {
   font-weight: 800;
 }

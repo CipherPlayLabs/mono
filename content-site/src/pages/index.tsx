@@ -16,19 +16,19 @@ const primarySections = [
   {
     label: 'Company context',
     title: 'About',
-    summary: 'Company overview, leadership, backers, strategic connections, and diligence context.',
+    summary: 'Company overview, leadership, backers, partner ecosystem, and diligence context.',
     href: '/about',
   },
   {
     label: 'Reports',
     title: 'Market Research',
-    summary: 'Public Market Research reports with full-report email requests when forms are ready.',
+    summary: 'Public Market Research reports with full-report email requests through forms.',
     href: '/market-analysis',
   },
   {
     label: 'Software',
-    title: 'Products',
-    summary: 'Current and sunset product proof from CipherPlay emerging-technology work.',
+    title: 'Products & Services',
+    summary: 'Current blockchain infrastructure product work, consulting services, and historic proof.',
     href: '/products',
   },
   {
@@ -61,7 +61,7 @@ export default function Home(): ReactNode {
           <div className="container">
             <div className={styles.sectionHeader}>
               <p>Site sections</p>
-              <h2>Explore company, research, product, partner, and media context.</h2>
+              <h2>Explore company, research, products and services, partner, and media context.</h2>
             </div>
             <div className={styles.sectionGrid}>
               {primarySections.map((section) => (
@@ -85,13 +85,13 @@ export default function Home(): ReactNode {
             <div className={styles.twoColumn}>
               <div>
                 <p className={styles.eyebrow}>Blockchain infrastructure</p>
-                <h2>Randao anchors CipherPlay's cryptographic software work.</h2>
+                <h2>RANDAO anchors CipherPlay's cryptographic software work.</h2>
                 <p>
-                  Randao gives the site a public infrastructure proof point while the broader
+                  RANDAO gives the site a public infrastructure proof point while the broader
                   studio and research surfaces stay focused on reviewable context.
                 </p>
                 <Link to="/products/randao" className={styles.textLink}>
-                  View Randao product page
+                  View RANDAO product page
                 </Link>
               </div>
               <div className={styles.productList}>
@@ -107,7 +107,7 @@ export default function Home(): ReactNode {
           <div className="container">
             <div className={styles.sectionHeader}>
               <p>Market Research reports</p>
-              <h2>Useful public reports with full-report email requests when forms are ready.</h2>
+              <h2>Useful public reports with full-report email requests through forms.</h2>
             </div>
             <div className={styles.reportGrid}>
               {marketResearchReports.map((report) => (

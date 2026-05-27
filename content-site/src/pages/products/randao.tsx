@@ -15,11 +15,11 @@ const randaoMedia = FeaturedItems.filter((item) =>
 
 export default function Randao(): ReactNode {
   return (
-    <Layout title="Randao" description={randao.summary}>
+    <Layout title="RANDAO" description={randao.summary}>
       <main>
         <CipherHero
           eyebrow={randao.status}
-          title="Randao"
+          title="RANDAO"
           summary={randao.summary}
           cta={randao.cta}
           imageSrc="/img/research/randao-logo.png"
@@ -31,7 +31,7 @@ export default function Randao(): ReactNode {
                 <p className={styles.eyebrow}>Product thesis</p>
                 <h2>Reliable randomness is infrastructure for trust-sensitive software.</h2>
                 <p>
-                  Randao is CipherPlay's public blockchain infrastructure proof for applied
+                  RANDAO is CipherPlay's public blockchain infrastructure proof for applied
                   cryptographic systems. The public page points to the live product and
                   whitepaper while keeping deeper customer and commercialization material
                   out of the public site until approved.
@@ -46,7 +46,7 @@ export default function Randao(): ReactNode {
                     to={links.randao}
                     eventName="product_randao_outbound"
                     eventProps={{destination: 'randao-site'}}>
-                    Visit Randao
+                    Visit RANDAO
                   </TrackedLink>
                   <TrackedLink
                     to={links.randaoWhitepaper}
@@ -54,7 +54,7 @@ export default function Randao(): ReactNode {
                     eventProps={{destination: 'whitepaper'}}>
                     Read whitepaper
                   </TrackedLink>
-                  <ConversionButton cta={randao.cta} />
+                  {randao.cta && <ConversionButton cta={randao.cta} />}
                 </div>
               </article>
               <aside className={styles.panel}>

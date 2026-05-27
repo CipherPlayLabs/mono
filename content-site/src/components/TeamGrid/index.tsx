@@ -14,6 +14,7 @@ export function TeamGrid(): React.JSX.Element {
           <div>
             <p>{member.role}</p>
             <h3>{member.name}</h3>
+            <strong>{member.credential}</strong>
             <span>{member.summary}</span>
             {member.profileHref && (
               <a href={member.profileHref} target="_blank" rel="noreferrer">

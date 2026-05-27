@@ -33,8 +33,8 @@ export default function Customers(): ReactNode {
               <article className={styles.linkPanel}>
                 <h2>Review next</h2>
                 <div className={styles.linkGrid}>
-                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'randao'}}>Randao</TrackedLink>
-                  <TrackedLink to="/products" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'products'}}>Products</TrackedLink>
+                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'randao'}}>RANDAO</TrackedLink>
+                  <TrackedLink to="/products" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'products'}}>Products & Services</TrackedLink>
                   <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'market-research'}}>Market Research reports</TrackedLink>
                   <TrackedLink to="/team" eventName="route_audience_segment" eventProps={{segment: 'customers', destination: 'team'}}>Team</TrackedLink>
                 </div>

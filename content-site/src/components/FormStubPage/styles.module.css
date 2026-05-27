@@ -1,0 +1,21 @@
+.section {
+  padding: 3.5rem 0;
+}
+
+.panel {
+  max-width: 720px;
+  padding: 1.25rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.panel p {
+  margin-top: 0;
+  color: var(--cipher-muted);
+  line-height: 1.7;
+}
+
+.panel a {
+  font-weight: 800;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
-import {backers, strategicConnections} from '@site/src/data/site';
+import {backers, partnerEcosystem} from '@site/src/data/site';
 import styles from './styles.module.css';
 
 function OrganizationGroup({
@@ -23,7 +23,11 @@ function OrganizationGroup({
             href={organization.href}
             target="_blank"
             rel="noreferrer">
-            <img src={withBaseUrl(organization.logoSrc)} alt="" />
+            {organization.logoSrc ? (
+              <img src={withBaseUrl(organization.logoSrc)} alt="" />
+            ) : (
+              <span className={styles.orgMark}>{organization.name.slice(0, 2)}</span>
+            )}
             <span>{organization.name}</span>
           </a>
         ))}
@@ -38,10 +42,10 @@ export function CredibilityStrip(): React.JSX.Element {
       <div className="container">
         <div className={styles.heading}>
           <p>Public proof</p>
-          <h2>Backers and strategic connections</h2>
+          <h2>Backers and partner ecosystem</h2>
         </div>
         <OrganizationGroup title="Backers" organizations={backers} />
-        <OrganizationGroup title="Strategic Connections" organizations={strategicConnections} />
+        <OrganizationGroup title="Partner Ecosystem" organizations={partnerEcosystem} />
       </div>
     </section>
   );

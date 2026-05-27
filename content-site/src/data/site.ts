@@ -24,7 +24,17 @@ export interface Product {
   name: string;
   status: string;
   summary: string;
-  href: string;
+  href?: string;
+  linkLabel?: string;
+  cta?: SiteCta;
+}
+
+export interface ServiceOffering {
+  slug: string;
+  name: string;
+  status: string;
+  summary: string;
+  capabilities: string[];
   cta: SiteCta;
 }
 
@@ -39,8 +49,8 @@ export interface MediaAsset {
 export interface OrganizationProof {
   name: string;
   href: string;
-  logoSrc: string;
-  relationship: 'backer' | 'strategic-connection';
+  logoSrc?: string;
+  relationship: 'backer' | 'partner-ecosystem';
 }
 
 export interface IndustryPillar {
@@ -79,6 +89,7 @@ export interface MarketResearchReport {
 export interface TeamMember {
   name: string;
   role: string;
+  credential: string;
   summary: string;
   imageSrc: string;
   profileHref?: string;
@@ -101,7 +112,7 @@ export const audiencePages: AudiencePage[] = [
       label: 'Request investor materials',
       href: links.investorForm,
       eventName: 'cta_investor_materials',
-      disabled: true,
+      disabled: false,
     },
   },
   {
@@ -120,7 +131,7 @@ export const audiencePages: AudiencePage[] = [
       label: 'Request full research access',
       href: links.analystForm,
       eventName: 'cta_research_access',
-      disabled: true,
+      disabled: false,
     },
   },
   {
@@ -131,7 +142,7 @@ export const audiencePages: AudiencePage[] = [
     summary:
       'For accelerators, ecosystems, labs, and companies exploring collaboration with CipherPlay.',
     proofPoints: [
-      'Strategic startup ecosystem connections',
+      'Partner ecosystem relationships',
       'Product and protocol experience',
       'Market research plus software execution',
     ],
@@ -139,7 +150,7 @@ export const audiencePages: AudiencePage[] = [
       label: 'Propose a partnership',
       href: links.partnerForm,
       eventName: 'cta_partner_inquiry',
-      disabled: true,
+      disabled: false,
     },
   },
   {
@@ -155,10 +166,10 @@ export const audiencePages: AudiencePage[] = [
       'Research-backed build decisions',
     ],
     primaryCta: {
-      label: 'Start a discovery request',
+      label: 'Request consulting discovery',
       href: links.customerForm,
       eventName: 'cta_customer_discovery',
-      disabled: true,
+      disabled: false,
     },
   },
 ];
@@ -166,31 +177,59 @@ export const audiencePages: AudiencePage[] = [
 export const products: Product[] = [
   {
     slug: 'randao',
-    name: 'Randao',
+    name: 'RANDAO',
     status: 'Blockchain infrastructure',
     summary:
       'A decentralized random number generation protocol and product proof for CipherPlay work in cryptographic infrastructure.',
     href: '/products/randao',
+    linkLabel: 'View product',
     cta: {
       label: 'Request a product briefing',
       href: links.customerForm,
       eventName: 'cta_customer_discovery',
-      disabled: true,
+      disabled: false,
     },
+  },
+];
+
+export const serviceOfferings: ServiceOffering[] = [
+  {
+    slug: 'infrastructure-software-consulting',
+    name: 'Infrastructure & software consulting',
+    status: 'Current service',
+    summary:
+      'CipherPlay provides blockchain, AI, and VR infrastructure/software consulting for teams that need technical architecture, prototypes, integrations, and research-backed product execution.',
+    capabilities: [
+      'Blockchain infrastructure',
+      'AI systems and workflows',
+      'VR software and interfaces',
+      'Technical architecture, prototypes, and integrations',
+    ],
+    cta: {
+      label: 'Request consulting discovery',
+      href: links.customerForm,
+      eventName: 'cta_customer_discovery',
+      disabled: false,
+    },
+  },
+];
+
+export const productHistory: Product[] = [
+  {
+    slug: 'satoshis-palace',
+    name: "Satoshi's Palace",
+    status: 'Historic / Sunset',
+    summary:
+      'An online Bitcoin prediction market built on Secret Network, retained as founder and product history. It is no longer a current product and has no active website.',
   },
   {
     slug: 'runerealm',
     name: 'RuneRealm',
-    status: 'Sunset',
+    status: 'Historic / Sunset',
     summary:
-      'An onchain MMORPG experiment preserved as historical product context for CipherPlay work in fully onchain software and game infrastructure.',
+      'An onchain MMORPG experiment preserved as historical product context for CipherPlay work in fully onchain software and game infrastructure. It is not a current product.',
     href: links.runeRealm,
-    cta: {
-      label: 'Product sunset',
-      href: '',
-      eventName: 'product_runerealm_outbound',
-      disabled: true,
-    },
+    linkLabel: 'View archived project',
   },
 ];
 
@@ -305,7 +344,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Does the public page include the full report?',
         answer:
-          'No. This page includes useful public analysis, while the full report is intended for email delivery once request forms are ready.',
+          'No. This page includes useful public analysis, while the full report is intended for delivery through the request form flow.',
       },
       {
         question: 'Who is this report for?',
@@ -317,7 +356,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       label: 'Request full report by email',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
-      disabled: true,
+      disabled: false,
     },
   },
   {
@@ -399,7 +438,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       label: 'Request full report by email',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
-      disabled: true,
+      disabled: false,
     },
   },
   {
@@ -474,14 +513,14 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Can readers request the complete report?',
         answer:
-          'Yes, the intended flow is email delivery of the full report once external request forms are approved.',
+          'Yes. The request CTA points readers into the form flow for full-report delivery.',
       },
     ],
     cta: {
       label: 'Request full report by email',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
-      disabled: true,
+      disabled: false,
     },
   },
 ];
@@ -542,6 +581,7 @@ export const teamMembers: TeamMember[] = [
   {
     name: 'Allan B. Pedin IV',
     role: 'CEO',
+    credential: 'M.S. CPSC; academic turned entrepreneur.',
     summary:
       'Leads CipherPlay across company strategy, venture framing, product thesis development, and market research direction.',
     imageSrc: '/img/headshot.png',
@@ -550,6 +590,7 @@ export const teamMembers: TeamMember[] = [
   {
     name: 'Tyler Warburton',
     role: 'CTO',
+    credential: 'B.S. CPSC & Cyber; cybersecurity professional and entrepreneur.',
     summary:
       'Leads technical architecture and software execution for CipherPlay products and emerging-technology systems.',
     imageSrc: '/img/team/tyler-warburton.svg',
@@ -558,6 +599,7 @@ export const teamMembers: TeamMember[] = [
   {
     name: 'Alex Posey',
     role: 'COO',
+    credential: 'Computer scientist; Web3 software consultant.',
     summary:
       'Leads operating cadence, coordination, and execution systems as CipherPlay moves research-backed work into shipped products.',
     imageSrc: '/img/team/alex-posey.svg',
@@ -584,16 +626,37 @@ export const organizationProof: OrganizationProof[] = [
     relationship: 'backer',
   },
   {
+    name: 'AR.IO',
+    href: links.ario,
+    relationship: 'partner-ecosystem',
+  },
+  {
+    name: 'Arweave',
+    href: links.arweave,
+    relationship: 'partner-ecosystem',
+  },
+  {
+    name: 'Virginia Blockchain Council',
+    href: links.virginiaBlockchainCouncil,
+    relationship: 'partner-ecosystem',
+  },
+  {
     name: 'Startup Virginia',
     href: links.startupVirginia,
     logoSrc: '/img/organizations/startup-virginia.svg',
-    relationship: 'strategic-connection',
+    relationship: 'partner-ecosystem',
   },
   {
     name: 'Founder Institute',
     href: links.founderInstitute,
     logoSrc: '/img/organizations/founder-institute.svg',
-    relationship: 'strategic-connection',
+    relationship: 'partner-ecosystem',
+  },
+  {
+    name: 'VIPC',
+    href: links.vipc,
+    logoSrc: '/img/organizations/vipc.svg',
+    relationship: 'partner-ecosystem',
   },
 ];
 
@@ -601,8 +664,8 @@ export const backers = organizationProof.filter(
   (organization) => organization.relationship === 'backer',
 );
 
-export const strategicConnections = organizationProof.filter(
-  (organization) => organization.relationship === 'strategic-connection',
+export const partnerEcosystem = organizationProof.filter(
+  (organization) => organization.relationship === 'partner-ecosystem',
 );
 
 export const brandColors = [

@@ -85,8 +85,8 @@ export function MarketResearchReportPage({
                   </div>
                   <ConversionButton cta={report.cta} />
                   <p className={styles.requestNote}>
-                    Email delivery is not active yet. The report request button will be
-                    enabled after external form URLs are approved.
+                    Full report delivery routes through the request form flow as it comes
+                    online.
                   </p>
                 </div>
 
