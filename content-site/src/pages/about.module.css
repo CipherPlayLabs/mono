@@ -7,6 +7,10 @@
   background: var(--cipher-band);
 }
 
+.band + .band {
+  padding-top: 0;
+}
+
 .aboutGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
@@ -37,6 +41,14 @@
   margin-bottom: 1.5rem;
 }
 
+.sectionIntro {
+  max-width: 780px;
+  margin: -0.5rem 0 1.5rem;
+  color: var(--cipher-muted);
+  font-size: 1.04rem;
+  line-height: 1.7;
+}
+
 .sectionHeader p,
 .eyebrow {
   margin: 0 0 0.45rem;
@@ -58,6 +70,32 @@
   padding-left: 1rem;
   border-left: 3px solid var(--ifm-color-primary);
   color: var(--cipher-muted);
+}
+
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.valueCard {
+  min-height: 220px;
+  padding: 1.15rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.valueCard h3 {
+  margin: 0 0 0.7rem;
+  color: var(--ifm-color-primary);
+  font-size: 1.08rem;
+}
+
+.valueCard p {
+  margin: 0;
+  color: var(--cipher-muted);
+  line-height: 1.65;
 }
 
 .linkGrid {
@@ -101,9 +139,80 @@
   font-weight: 800;
 }
 
+.articleShell {
+  padding: 4rem 0;
+}
+
+.articleLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.36fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.articleBody {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.articleBlock,
+.ctaPanel {
+  padding: 1.3rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.articleBlock h2,
+.articleBlock h3,
+.ctaPanel h2 {
+  margin-top: 0;
+}
+
+.articleBlock p,
+.articleBlock li,
+.ctaPanel p {
+  color: var(--cipher-muted);
+  line-height: 1.7;
+}
+
+.articleBlock ul,
+.articleBlock ol {
+  margin-bottom: 0;
+}
+
+.articleBlock strong {
+  color: var(--ifm-heading-color);
+}
+
+.ctaPanel {
+  position: sticky;
+  top: 5rem;
+}
+
+.ctaLinks {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.ctaLinks a {
+  font-weight: 800;
+}
+
 @media (max-width: 996px) {
   .aboutGrid,
-  .linkGrid {
+  .linkGrid,
+  .valuesGrid,
+  .articleLayout {
     grid-template-columns: 1fr;
+  }
+
+  .valueCard {
+    min-height: auto;
+  }
+
+  .ctaPanel {
+    position: static;
   }
 }

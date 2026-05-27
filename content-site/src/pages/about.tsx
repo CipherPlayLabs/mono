@@ -11,6 +11,24 @@ import styles from './about.module.css';
 
 const investorContext = audiencePages.find((page) => page.slug === 'investors')!;
 
+const tapValues = [
+  {
+    name: 'Transparency',
+    summary:
+      'We show the markets we research and the products we build so investors, partners, and customers can move closer to a perfect information game with us.',
+  },
+  {
+    name: 'Authenticity',
+    summary:
+      'We make sure our actions reinforce our words, our products do what we say they do, and our market claims match what we observe.',
+  },
+  {
+    name: 'Perspicacity',
+    summary:
+      'We turn abundant market information into clear, actionable insight, giving CipherPlay an edge as a long-term ally.',
+  },
+];
+
 export default function About(): ReactNode {
   return (
     <Layout
@@ -48,6 +66,34 @@ export default function About(): ReactNode {
                 <ConversionButton cta={investorContext.primaryCta} />
               </article>
             </div>
+          </div>
+        </section>
+
+        <section className={styles.band}>
+          <div className="container">
+            <div className={styles.sectionHeader}>
+              <p>Values</p>
+              <h2>Tap into success.</h2>
+            </div>
+            <p className={styles.sectionIntro}>
+              At CipherPlay, TAP means Transparency, Authenticity, and Perspicacity. Game theory is
+              the frame, these values are our strategy, and trust is the investor signal they build.
+            </p>
+            <div className={styles.valuesGrid}>
+              {tapValues.map((value) => (
+                <article className={styles.valueCard} key={value.name}>
+                  <h3>{value.name}</h3>
+                  <p>{value.summary}</p>
+                </article>
+              ))}
+            </div>
+            <TrackedLink
+              to="/about/tap-into-success"
+              eventName="route_about_context"
+              eventProps={{destination: 'tap-values'}}
+              className={styles.textLink}>
+              Read the TAP operating principle
+            </TrackedLink>
           </div>
         </section>
 
