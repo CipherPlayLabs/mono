@@ -1,0 +1,63 @@
+.hero {
+  margin: -2rem 0 0;
+  padding: 4.5rem 0 3.5rem;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(55, 255, 222, 0.16), transparent 34%),
+    linear-gradient(135deg, #061114 0%, #0b2935 48%, #0e6b99 100%);
+  color: #f4fbfc;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 470px);
+  gap: 3rem;
+  align-items: center;
+}
+
+.copy {
+  max-width: 760px;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #37ffde;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3rem, 7vw, 6.25rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.summary {
+  max-width: 660px;
+  margin: 1.3rem 0 1.8rem;
+  color: #d9eeee;
+  font-size: 1.3rem;
+  line-height: 1.6;
+}
+
+.brandImage {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+  border: 1px solid rgba(217, 217, 217, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 996px) {
+  .hero {
+    padding: 3.5rem 0 2.5rem;
+  }
+
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

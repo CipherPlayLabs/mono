@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 280" role="img" aria-label="VIPC">
+  <rect width="640" height="280" rx="28" fill="#061114"/>
+  <circle cx="130" cy="132" r="70" fill="#0E6B99"/>
+  <circle cx="130" cy="132" r="42" fill="#37FFDE"/>
+  <text x="230" y="160" fill="#D9D9D9" font-family="Arial, sans-serif" font-size="96" font-weight="800">VIPC</text>
+</svg>

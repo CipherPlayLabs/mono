@@ -1,23 +1,105 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
-
-.heroBanner {
+.section {
   padding: 4rem 0;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
+.band {
+  padding: 4rem 0;
+  background: var(--cipher-band);
+}
+
+.sectionHeader {
+  max-width: 780px;
+  margin-bottom: 1.6rem;
+}
+
+.sectionHeader p,
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sectionHeader h2,
+.twoColumn h2 {
+  margin: 0;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.twoColumn p {
+  color: var(--cipher-muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.textLink {
+  font-weight: 800;
+}
+
+.productList {
+  display: grid;
+  gap: 1rem;
+}
+
+.teaserGrid,
+.pillarGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.teaser,
+.pillar {
+  min-height: 245px;
+  padding: 1.25rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.teaser:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.teaser span {
+  display: block;
+  min-height: 2.5rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.teaser h3,
+.pillar h3 {
+  margin: 0 0 0.8rem;
+}
+
+.teaser p,
+.pillar p {
+  color: var(--cipher-muted);
+  line-height: 1.6;
+}
+
+.pillar a {
+  font-weight: 800;
+}
+
+@media (max-width: 996px) {
+  .twoColumn,
+  .teaserGrid,
+  .pillarGrid {
+    grid-template-columns: 1fr;
   }
-}
-
-.buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

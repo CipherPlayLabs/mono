@@ -12,3 +12,8 @@ announcement:
   label: Announcement
   permalink: /announcement
   description: Announcements and updates
+
+entrepreneurship:
+  label: Entrepreneurship
+  permalink: /entrepreneurship
+  description: Startup and venture-building context

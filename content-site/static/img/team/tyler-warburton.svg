@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-labelledby="title desc">
+  <title id="title">Tyler Warburton portrait placeholder</title>
+  <desc id="desc">CipherPlay template portrait used until an approved headshot is supplied.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#0E6B99"/>
+      <stop offset="0.55" stop-color="#1EA5B4"/>
+      <stop offset="1" stop-color="#37FFDE"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="720" rx="40" fill="#061114"/>
+  <circle cx="360" cy="250" r="128" fill="url(#bg)"/>
+  <path d="M152 642c22-116 105-192 208-192s186 76 208 192" fill="#0E6B99"/>
+  <circle cx="360" cy="250" r="94" fill="#D9D9D9"/>
+  <path d="M216 642h288c-28-66-80-106-144-106s-116 40-144 106Z" fill="#37FFDE"/>
+  <text x="360" y="682" fill="#D9D9D9" font-family="Arial, sans-serif" font-size="40" font-weight="700" text-anchor="middle">TW</text>
+</svg>

@@ -1,0 +1,36 @@
+.card {
+  display: grid;
+  min-height: 270px;
+  align-content: space-between;
+  gap: 1.5rem;
+  padding: 1.4rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.card span {
+  color: var(--ifm-color-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.card h3 {
+  margin: 0.35rem 0 0.8rem;
+}
+
+.card p {
+  color: var(--cipher-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.actions a:first-child {
+  font-weight: 800;
+}

@@ -6,15 +6,15 @@ import { links } from './links';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config: Config = {
-  title: 'abpiv',
+  title: 'CipherPlay',
 
-  favicon: 'img/headshot.png',
+  favicon: 'img/cipherplay/logo-gradient.svg',
 
   url: 'https://allanbpediniv.com',
   baseUrl: '/info/',
 
-  projectName: 'abpiv-personal-brand',
-  organizationName: 'abpiv',
+  projectName: 'mono',
+  organizationName: 'CipherPlayLabs',
 
   trailingSlash: false,
 
@@ -66,13 +66,13 @@ const config: Config = {
           id: 'default',
           routeBasePath: '/insights',
           path: './insights',
-          blogTitle: 'Insights',
-          blogDescription: 'Posts and ideas -- blog-style.',
+          blogTitle: 'Archived Insights',
+          blogDescription: 'Archived builder notes and supporting context.',
           showReadingTime: true,
           authorsMapPath: '../authors.yml',
           feedOptions: {
             type: ['rss', 'atom'],
-            title: 'Insights',
+            title: 'Archived Insights',
           },
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -92,15 +92,15 @@ const config: Config = {
         id: 'research',
         routeBasePath: '/research',
         path: './research',
-        blogTitle: 'Research',
-        blogDescription: 'Long-form studies and analyses.',
+        blogTitle: 'Archived Research',
+        blogDescription: 'Archived research material retained for product and market context.',
         showReadingTime: true,
         blogSidebarTitle: 'All research',
         blogSidebarCount: 'ALL',
         authorsMapPath: '../authors.yml',
         feedOptions: {
           type: ['rss', 'atom'],
-          title: 'Research',
+          title: 'Archived Research',
         },
         onInlineTags: 'warn',
         onInlineAuthors: 'warn',
@@ -113,12 +113,12 @@ const config: Config = {
         id: 'newsroom',
         routeBasePath: '/newsroom',
         path: './newsroom',
-        blogTitle: 'Newsroom',
-        blogDescription: 'Announcements and milestones.',
+        blogTitle: 'CipherPlay Newsroom',
+        blogDescription: 'CipherPlay announcements and milestones.',
         authorsMapPath: '../authors.yml',
         feedOptions: {
           type: ['rss', 'atom'],
-          title: 'Newsroom',
+          title: 'CipherPlay Newsroom',
         },
         onInlineTags: 'warn',
         onInlineAuthors: 'warn',
@@ -131,44 +131,60 @@ const config: Config = {
         hashed: true,
         indexBlog: true,
         indexPages: true,
+        blogDir: ['./research', './insights', './newsroom'],
         blogRouteBasePath: ['/research', '/insights', '/newsroom'],
       },
     ],
   ],
 
   themeConfig: {
-    image: 'img/social-card.png',
+    image: 'img/cipherplay/social-card.jpg',
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: true,
       respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'abpiv',
+      title: 'CipherPlay',
       logo: {
-        alt: 'Allan B. Pedin IV',
-        src: 'img/headshot.png',
-        srcDark: 'img/headshot.png',
+        alt: 'CipherPlay',
+        src: 'img/cipherplay/logo-gradient.svg',
+        srcDark: 'img/cipherplay/logo-gradient.svg',
       },
       items: [
         {
-          to: '/research',
-          label: 'Research',
+          to: '/investors',
+          label: 'Investors',
           position: 'left',
         },
         {
-          to: '/featured',
-          label: 'Featured on',
+          to: '/analysts',
+          label: 'Analysts',
           position: 'left',
         },
         {
-          to: '/insights',
-          label: 'Insights',
+          to: '/partners',
+          label: 'Partners',
           position: 'left',
         },
         {
-          to: '/newsroom',
-          label: 'Newsroom',
+          to: '/customers',
+          label: 'Customers',
+          position: 'left',
+        },
+        {
+          to: '/market-analysis',
+          label: 'Market Analysis',
+          position: 'left',
+        },
+        {
+          to: '/products',
+          label: 'Products',
+          position: 'left',
+        },
+        {
+          to: '/media-kit',
+          label: 'Media Kit',
           position: 'left',
         },
       ],
@@ -179,22 +195,56 @@ const config: Config = {
         {
           title: 'Navigation',
           items: [
-            { to: '/research', label: 'Research' },
-            { to: '/featured', label: 'Featured' },
-            { to: '/insights', label: 'Insights' },
+            { to: '/investors', label: 'Investors' },
+            { to: '/analysts', label: 'Analysts' },
+            { to: '/partners', label: 'Partners' },
+            { to: '/customers', label: 'Customers' },
+          ],
+        },
+        {
+          title: 'Company',
+          items: [
+            { to: '/team', label: 'Team' },
+            { to: '/industries', label: 'Industries' },
             { to: '/newsroom', label: 'Newsroom' },
+            { href: links.cipherplayLinkedIn, label: 'LinkedIn' },
+          ],
+        },
+        {
+          title: 'Resources',
+          items: [
+            { to: '/market-analysis', label: 'Market Analysis' },
+            { to: '/products', label: 'Products' },
+            { to: '/products/randao', label: 'Randao' },
+            { href: links.randaoWhitepaper, label: 'Randao Whitepaper' },
+          ],
+        },
+        {
+          title: 'Media Kit',
+          items: [
+            { to: '/media-kit', label: 'Brand Assets' },
+            {
+              href: 'https://allanbpediniv.com/info/media-kit/cipherplay-media-kit.zip',
+              label: 'Download ZIP',
+            },
           ],
         },
         {
           title: 'RSS Feeds',
           items: [
-            { to: '/research/rss.xml', label: 'Research' },
-            { to: '/insights/rss.xml', label: 'Insights' },
-            { to: '/newsroom/rss.xml', label: 'Newsroom' },
+            { href: 'https://allanbpediniv.com/info/newsroom/rss.xml', label: 'Newsroom' },
+            {
+              href: 'https://allanbpediniv.com/info/research/rss.xml',
+              label: 'Archived Research',
+            },
+            {
+              href: 'https://allanbpediniv.com/info/insights/rss.xml',
+              label: 'Archived Insights',
+            },
           ],
         },
       ],
-      copyright: 'Copyright (c) ' + new Date().getFullYear() + ' Allan B. Pedin IV.',
+      copyright: 'Copyright (c) ' + new Date().getFullYear() + ' CipherPlay.',
     },
     prism: {
       theme: prismThemes.github,

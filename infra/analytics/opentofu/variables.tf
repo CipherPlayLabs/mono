@@ -1,7 +1,6 @@
 variable "gcp_project_id" {
-  description = "Google Cloud project that hosts the Plausible analytics VM and backup bucket."
+  description = "Google Cloud project that hosts the private CipherPlay Plausible analytics VM and backup bucket."
   type        = string
-  default     = "abpiv-personal-brand"
 }
 
 variable "gcp_region" {
@@ -17,34 +16,32 @@ variable "gcp_zone" {
 }
 
 variable "cloudflare_account_id" {
-  description = "Cloudflare account ID that owns the Tunnel, Access application, and Worker."
+  description = "Cloudflare account ID that owns the CipherPlay analytics Tunnel, Access application, and Worker."
   type        = string
 }
 
 variable "lobst3rs_zone_id" {
-  description = "Cloudflare zone ID for lobst3rs.com."
+  description = "Cloudflare zone ID for the private Plausible dashboard hostname."
   type        = string
 }
 
 variable "allanbpediniv_zone_id" {
-  description = "Cloudflare zone ID for allanbpediniv.com."
+  description = "Cloudflare zone ID for the current public content-site domain."
   type        = string
 }
 
 variable "access_allowed_email" {
-  description = "Email address allowed through Cloudflare Access for the Plausible dashboard."
+  description = "Operator email address allowed through Cloudflare Access for the private Plausible dashboard."
   type        = string
-  default     = "allanblankpedin@gmail.com"
 }
 
 variable "plausible_hostname" {
-  description = "Hostname for the private Plausible dashboard."
+  description = "Hostname for the private Plausible dashboard. Keep this operational hostname out of public site HTML and browser-visible JavaScript."
   type        = string
-  default     = "analytics.lobst3rs.com"
 }
 
 variable "analytics_sites" {
-  description = "Public websites and same-origin analytics routes proxied to Plausible."
+  description = "Public websites and same-origin /_analytics/* routes proxied to private Plausible."
   type = list(object({
     domain        = string
     route_pattern = string

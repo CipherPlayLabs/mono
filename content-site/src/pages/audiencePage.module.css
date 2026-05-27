@@ -1,0 +1,71 @@
+.page {
+  padding-bottom: 4rem;
+}
+
+.content {
+  padding: 3.5rem 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.panel,
+.linkPanel {
+  padding: 1.25rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.panel h2,
+.linkPanel h2 {
+  margin-top: 0;
+}
+
+.proofList {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.proofList li {
+  padding-left: 1rem;
+  border-left: 3px solid var(--ifm-color-primary);
+  color: var(--cipher-muted);
+}
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.linkGrid a {
+  min-height: 76px;
+  padding: 0.9rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-band);
+  color: var(--ifm-font-color-base);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.linkGrid a:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+@media (max-width: 996px) {
+  .grid,
+  .linkGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 280" role="img" aria-label="Forward Research">
+  <rect width="640" height="280" rx="28" fill="#061114"/>
+  <path d="M80 138h282" stroke="#37FFDE" stroke-width="24" stroke-linecap="round"/>
+  <path d="M300 72l92 66-92 66" fill="none" stroke="#37FFDE" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="230" fill="#D9D9D9" font-family="Arial, sans-serif" font-size="42" font-weight="700">Forward Research</text>
+</svg>

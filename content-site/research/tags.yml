@@ -17,3 +17,8 @@ publication:
   label: Publication
   permalink: /publication
   description: Published academic papers
+
+randao:
+  label: Randao
+  permalink: /randao
+  description: Randao product and protocol context

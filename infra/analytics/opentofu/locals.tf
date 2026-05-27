@@ -1,9 +1,10 @@
 locals {
-  name_prefix = "plausible-analytics"
+  name_prefix = "cipherplay-analytics"
 
   labels = {
     app         = "plausible"
     component   = "analytics"
+    company     = "cipherplay"
     environment = "production"
     managed_by  = "opentofu"
   }

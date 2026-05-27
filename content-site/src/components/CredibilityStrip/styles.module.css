@@ -1,0 +1,77 @@
+.strip {
+  padding: 3rem 0;
+  background: var(--cipher-band);
+}
+
+.heading {
+  max-width: 720px;
+  margin-bottom: 1.5rem;
+}
+
+.heading p {
+  margin: 0 0 0.4rem;
+  color: var(--ifm-color-primary);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.heading h2 {
+  margin: 0;
+}
+
+.group + .group {
+  margin-top: 2rem;
+}
+
+.group h3 {
+  margin: 0 0 0.9rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.orgGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.org {
+  display: flex;
+  min-height: 112px;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.org:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.org img {
+  width: 88px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.org span {
+  font-weight: 800;
+}
+
+@media (max-width: 996px) {
+  .orgGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .orgGrid {
+    grid-template-columns: 1fr;
+  }
+}

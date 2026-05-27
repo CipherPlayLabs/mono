@@ -20,31 +20,19 @@ export default function FeaturedPage(): React.JSX.Element {
   const sorted = useMemo(() => sortItems(FeaturedItems), []);
 
   return (
-    <Layout title="Featured" description="Appearances on other people's platforms.">
+    <Layout title="Featured Media" description="Public media and talks relevant to CipherPlay product proof.">
       <Head>
-        <meta property="og:title" content="Featured" />
-        <meta property="og:description" content="Appearances on other people's platforms." />
+        <meta property="og:title" content="Featured Media" />
+        <meta property="og:description" content="Public media and talks relevant to CipherPlay product proof." />
       </Head>
 
       <div className="container padding--lg">
         <div className={styles.page}>
           <header className={styles.header}>
-            <h1 className={styles.title}>Featured On</h1>
+            <h1 className={styles.title}>Featured Media</h1>
             <p className={styles.subtitle}>
-              Appearances on podcasts, conferences, interviews, guest posts, and other people's platforms.
+              Public interviews, talks, and discussions retained as product and research context for CipherPlay.
             </p>
-            <a href="mailto:todo@example.com" className={styles.cta}>
-              Suggest an appearance
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </a>
           </header>
 
           <div className={styles.grid}>
