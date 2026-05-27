@@ -84,11 +84,11 @@ export default function Home(): ReactNode {
           <div className="container">
             <div className={styles.twoColumn}>
               <div>
-                <p className={styles.eyebrow}>First product proof</p>
+                <p className={styles.eyebrow}>Blockchain infrastructure</p>
                 <h2>Randao anchors CipherPlay's cryptographic software work.</h2>
                 <p>
-                  Randao gives the site an immediate product proof point while the broader
-                  studio and research surfaces stay focused on public, reviewable context.
+                  Randao gives the site a public infrastructure proof point while the broader
+                  studio and research surfaces stay focused on reviewable context.
                 </p>
                 <Link to="/products/randao" className={styles.textLink}>
                   View Randao product page

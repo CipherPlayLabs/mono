@@ -94,7 +94,7 @@ export const audiencePages: AudiencePage[] = [
       'For investors evaluating the team, products, backers, industries, and venture-building focus behind CipherPlay.',
     proofPoints: [
       'Venture-backed studio model',
-      'Randao as first product proof',
+      'Randao as blockchain infrastructure proof',
       'Focused emerging-tech industry map',
     ],
     primaryCta: {
@@ -167,7 +167,7 @@ export const products: Product[] = [
   {
     slug: 'randao',
     name: 'Randao',
-    status: 'First product',
+    status: 'Blockchain infrastructure',
     summary:
       'A decentralized random number generation protocol and product proof for CipherPlay work in cryptographic infrastructure.',
     href: '/products/randao',
