@@ -39,14 +39,6 @@ resource "google_secret_manager_secret_iam_member" "runtime_secret_accessor" {
   member    = "serviceAccount:${google_service_account.n8n_runtime.email}"
 }
 
-resource "google_cloud_run_v2_service_iam_member" "public_load_balancer_invoker" {
-  project  = google_cloud_run_v2_service.n8n.project
-  location = google_cloud_run_v2_service.n8n.location
-  name     = google_cloud_run_v2_service.n8n.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
-
 resource "google_project_iam_member" "github_deployer_project_roles" {
   for_each = local.github_deployer_project_roles
 

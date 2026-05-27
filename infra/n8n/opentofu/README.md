@@ -103,3 +103,8 @@ repository.
 Cloudflare allows only one zone entry-point ruleset per phase. If `cipherplay.net` already has Terraform-managed or manually-created `http_request_firewall_custom` or `http_ratelimit` rulesets, import and merge them instead of applying duplicate zone rulesets.
 
 n8n basic auth is not configured. n8n 1.x uses built-in user management for application login, and the optional editor hostname adds Cloudflare Access in front of that login. Public forms on `forms.cipherplay.net` stay available without Cloudflare Access.
+
+Cloud Run ingress remains limited to the internal/external load balancer path. The
+service disables the Invoker IAM check instead of granting `allUsers` the Invoker role,
+which avoids customer-domain restricted sharing policies while keeping traffic routed
+through the HTTPS load balancer.
