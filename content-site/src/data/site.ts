@@ -628,16 +628,19 @@ export const organizationProof: OrganizationProof[] = [
   {
     name: 'AR.IO',
     href: links.ario,
+    logoSrc: '/img/organizations/ario.svg',
     relationship: 'partner-ecosystem',
   },
   {
     name: 'Arweave',
     href: links.arweave,
+    logoSrc: '/img/organizations/arweave.svg',
     relationship: 'partner-ecosystem',
   },
   {
     name: 'Virginia Blockchain Council',
     href: links.virginiaBlockchainCouncil,
+    logoSrc: '/img/organizations/virginia-blockchain-council.jpg',
     relationship: 'partner-ecosystem',
   },
   {
