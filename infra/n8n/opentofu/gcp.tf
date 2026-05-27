@@ -115,28 +115,6 @@ resource "google_storage_bucket" "binary_data" {
   ]
 }
 
-resource "google_artifact_registry_repository" "n8n_image_remote" {
-  project       = var.gcp_project_id
-  location      = var.gcp_region
-  repository_id = "${local.name_prefix}-images"
-  description   = "Remote Docker repository proxying ${local.n8n_image_registry_url} for Cloud Run."
-  format        = "DOCKER"
-  mode          = "REMOTE_REPOSITORY"
-  labels        = local.labels
-
-  remote_repository_config {
-    description = "n8n upstream Docker registry."
-
-    common_repository {
-      uri = local.n8n_image_registry_url
-    }
-  }
-
-  depends_on = [
-    google_project_service.required["artifactregistry.googleapis.com"],
-  ]
-}
-
 resource "google_secret_manager_secret" "runtime" {
   for_each = local.runtime_secrets
 
@@ -180,7 +158,7 @@ resource "google_cloud_run_v2_service" "n8n" {
 
     containers {
       name  = "n8n"
-      image = local.n8n_cloud_run_image
+      image = var.n8n_image
 
       ports {
         name           = "http1"
@@ -255,7 +233,6 @@ resource "google_cloud_run_v2_service" "n8n" {
   depends_on = [
     google_project_service.required["run.googleapis.com"],
     google_project_service.required["secretmanager.googleapis.com"],
-    google_artifact_registry_repository.n8n_image_remote,
     google_secret_manager_secret_iam_member.runtime_secret_accessor,
     google_storage_bucket_iam_member.runtime_binary_data_object_user,
   ]

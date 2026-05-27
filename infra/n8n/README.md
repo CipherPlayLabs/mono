@@ -18,7 +18,7 @@ The future editor/admin hostname is optional. When configured through OpenTofu v
 
 ## Runtime Contract
 
-- Image: `docker.n8n.io/n8nio/n8n:stable`
+- Image: `docker.io/n8nio/n8n:stable`
 - Cloud Run CPU: 1 vCPU
 - Cloud Run memory: 2 GiB
 - CPU allocation: always allocated
