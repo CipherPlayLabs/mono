@@ -4,7 +4,7 @@ This OpenTofu project provisions CipherPlay's self-hosted n8n Community Edition 
 
 ## Managed Resources
 
-- Cloud Run v2 service running `docker.n8n.io/n8nio/n8n:stable` through an Artifact Registry remote Docker repository.
+- Cloud Run v2 service running `docker.io/n8nio/n8n:stable`.
 - One always-warm Cloud Run instance with 1 vCPU, 2 GiB memory, always-allocated CPU, max concurrency 10, and max instances 1.
 - Private VPC, Serverless VPC Access connector, and private services access for private-IP Cloud SQL.
 - Cloud SQL PostgreSQL instance and database.
@@ -35,7 +35,7 @@ Defaults are provided for:
 - `gcp_project_id = "cipherplay-production"`
 - `gcp_region = "us-east1"`
 - `forms_hostname = "forms.cipherplay.net"`
-- `n8n_image = "docker.n8n.io/n8nio/n8n:stable"`
+- `n8n_image = "docker.io/n8nio/n8n:stable"`
 - `enable_cloudflare_edge = false`
 
 Optional editor variables:
@@ -93,6 +93,12 @@ Keep a separate personal recovery copy of the n8n encryption key and bootstrap c
 ## Notes
 
 Cloudflare resources are disabled by default while `cipherplay.net` is still migrating. Set `enable_cloudflare_edge = true`, `cloudflare_account_id`, `cipherplay_zone_id`, and `CLOUDFLARE_API_TOKEN` when the zone is ready.
+
+`docker.io/n8nio/n8n:stable` is used for Cloud Run compatibility. On May 27, 2026,
+`docker.n8n.io/n8nio/n8n:stable` and `docker.io/n8nio/n8n:stable` resolved to the
+same image manifests, while Cloud Run rejected `docker.n8n.io` directly and returned
+an internal error when deploying the same image through an Artifact Registry remote
+repository.
 
 Cloudflare allows only one zone entry-point ruleset per phase. If `cipherplay.net` already has Terraform-managed or manually-created `http_request_firewall_custom` or `http_ratelimit` rulesets, import and merge them instead of applying duplicate zone rulesets.
 
