@@ -12,7 +12,7 @@ Public user
   -> Cloud SQL PostgreSQL private IP
 ```
 
-The public forms hostname is `forms.cipherplay.net`. It is Cloudflare-proxied, public to anyone with a form link, and protected by hostname-specific Cloudflare WAF and rate-limit rules.
+The public forms hostname is `forms.cipherplay.net`. During the GCP-first bootstrap, Cloudflare resources can remain disabled while the domain migrates. When `N8N_ENABLE_CLOUDFLARE_EDGE=true`, OpenTofu manages Cloudflare DNS plus hostname-specific WAF and rate-limit rules.
 
 The future editor/admin hostname is optional. When configured through OpenTofu variables, it points to the same backend but is protected by Cloudflare Access before n8n's own login.
 
@@ -56,6 +56,7 @@ Optional repository variables:
 - `N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS` as a JSON list
 - `N8N_GITHUB_OIDC_PRINCIPAL_SET`
 - `N8N_CLOUD_RUN_SERVICE`
+- `N8N_ENABLE_CLOUDFLARE_EDGE`, set to `true` when `cipherplay.net` is ready in Cloudflare
 
 Repository secrets:
 

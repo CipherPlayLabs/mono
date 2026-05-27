@@ -13,11 +13,29 @@ variable "gcp_region" {
 variable "cloudflare_account_id" {
   description = "Cloudflare account ID that owns Zero Trust Access resources."
   type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.enable_cloudflare_edge || var.cloudflare_account_id != ""
+    error_message = "cloudflare_account_id is required when enable_cloudflare_edge is true."
+  }
 }
 
 variable "cipherplay_zone_id" {
   description = "Cloudflare zone ID for cipherplay.net."
   type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.enable_cloudflare_edge || var.cipherplay_zone_id != ""
+    error_message = "cipherplay_zone_id is required when enable_cloudflare_edge is true."
+  }
+}
+
+variable "enable_cloudflare_edge" {
+  description = "Whether to manage Cloudflare DNS, public forms protection, and optional editor Access resources. Leave false until cipherplay.net is ready in Cloudflare."
+  type        = bool
+  default     = false
 }
 
 variable "forms_hostname" {

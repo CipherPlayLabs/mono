@@ -20,6 +20,7 @@ env:
   TOFU_DIR: infra/n8n/opentofu
   TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
   TF_VAR_cipherplay_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
+  TF_VAR_enable_cloudflare_edge: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
   TF_VAR_gcp_project_id: ${{ vars.N8N_GCP_PROJECT_ID }}
   TF_VAR_gcp_region: ${{ vars.N8N_GCP_REGION }}
   TF_VAR_editor_hostname: ${{ vars.N8N_EDITOR_HOSTNAME }}
@@ -42,6 +43,7 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_ZONE_ID_CIPHERPLAY: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
+          N8N_ENABLE_CLOUDFLARE_EDGE: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
           N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
           N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
           N8N_GCP_SERVICE_ACCOUNT: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
@@ -51,19 +53,29 @@ jobs:
           missing=0
 
           for name in \
-            CLOUDFLARE_ACCOUNT_ID \
-            CLOUDFLARE_ZONE_ID_CIPHERPLAY \
             N8N_GCP_PROJECT_ID \
             N8N_GCP_REGION \
             N8N_GCP_SERVICE_ACCOUNT \
-            N8N_GCP_WORKLOAD_IDENTITY_PROVIDER \
-            CLOUDFLARE_API_TOKEN
+            N8N_GCP_WORKLOAD_IDENTITY_PROVIDER
           do
             if [ -z "${!name}" ]; then
               echo "::error title=Missing required configuration::$name is not configured"
               missing=1
             fi
           done
+
+          if [ "$N8N_ENABLE_CLOUDFLARE_EDGE" = "true" ]; then
+            for name in \
+              CLOUDFLARE_ACCOUNT_ID \
+              CLOUDFLARE_ZONE_ID_CIPHERPLAY \
+              CLOUDFLARE_API_TOKEN
+            do
+              if [ -z "${!name}" ]; then
+                echo "::error title=Missing required Cloudflare configuration::$name is required when N8N_ENABLE_CLOUDFLARE_EDGE is true"
+                missing=1
+              fi
+            done
+          fi
 
           exit "$missing"
 

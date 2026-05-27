@@ -1,5 +1,5 @@
 resource "cloudflare_dns_record" "certificate_authorization" {
-  for_each = google_certificate_manager_dns_authorization.n8n
+  for_each = var.enable_cloudflare_edge ? google_certificate_manager_dns_authorization.n8n : {}
 
   zone_id = var.cipherplay_zone_id
   name    = trimsuffix(each.value.dns_resource_record[0].name, ".")
@@ -10,6 +10,8 @@ resource "cloudflare_dns_record" "certificate_authorization" {
 }
 
 resource "cloudflare_dns_record" "forms" {
+  count = var.enable_cloudflare_edge ? 1 : 0
+
   zone_id = var.cipherplay_zone_id
   name    = var.forms_hostname
   content = google_compute_global_address.n8n_lb.address
@@ -19,7 +21,7 @@ resource "cloudflare_dns_record" "forms" {
 }
 
 resource "cloudflare_dns_record" "editor" {
-  count = local.editor_enabled ? 1 : 0
+  count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
 
   zone_id = var.cipherplay_zone_id
   name    = var.editor_hostname
@@ -30,6 +32,8 @@ resource "cloudflare_dns_record" "editor" {
 }
 
 resource "cloudflare_ruleset" "forms_firewall_custom" {
+  count = var.enable_cloudflare_edge ? 1 : 0
+
   zone_id     = var.cipherplay_zone_id
   name        = "n8n public forms bot protection"
   description = "Managed challenge suspicious traffic to the public n8n forms hostname."
@@ -45,6 +49,8 @@ resource "cloudflare_ruleset" "forms_firewall_custom" {
 }
 
 resource "cloudflare_ruleset" "forms_rate_limit" {
+  count = var.enable_cloudflare_edge ? 1 : 0
+
   zone_id     = var.cipherplay_zone_id
   name        = "n8n public forms rate limiting"
   description = "Rate limits public n8n forms traffic by client IP and Cloudflare colo."
@@ -67,7 +73,7 @@ resource "cloudflare_ruleset" "forms_rate_limit" {
 }
 
 resource "cloudflare_zero_trust_access_application" "editor" {
-  count = local.editor_enabled ? 1 : 0
+  count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
 
   account_id                = var.cloudflare_account_id
   name                      = "n8n editor"

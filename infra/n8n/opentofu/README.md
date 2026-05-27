@@ -12,7 +12,7 @@ This OpenTofu project provisions CipherPlay's self-hosted n8n Community Edition 
 - Private GCS bucket mounted into Cloud Run for filesystem binary data.
 - Global external HTTPS load balancer with a serverless NEG pointing at Cloud Run.
 - Certificate Manager DNS-authorized Google-managed certificate.
-- Cloudflare DNS, forms WAF/rate-limit rules, and optional Cloudflare Access protection for the editor hostname.
+- Optional Cloudflare DNS, forms WAF/rate-limit rules, and optional Cloudflare Access protection for the editor hostname.
 - Dedicated runtime and GitHub deployer service accounts plus IAM bindings.
 
 ## Authentication
@@ -25,7 +25,7 @@ OpenTofu state is stored in the private GCS bucket `cipherplay-production-opento
 
 ## Required Variables
 
-Set these values from repository variables, a local uncommitted `.tfvars` file, or CI environment variables:
+Set these values from repository variables, a local uncommitted `.tfvars` file, or CI environment variables when `enable_cloudflare_edge = true`:
 
 - `cloudflare_account_id`
 - `cipherplay_zone_id`
@@ -36,6 +36,7 @@ Defaults are provided for:
 - `gcp_region = "us-east1"`
 - `forms_hostname = "forms.cipherplay.net"`
 - `n8n_image = "docker.n8n.io/n8nio/n8n:stable"`
+- `enable_cloudflare_edge = false`
 
 Optional editor variables:
 
@@ -90,6 +91,8 @@ openssl rand -hex 32 | \
 Keep a separate personal recovery copy of the n8n encryption key and bootstrap credentials in private storage outside this repo and outside GitHub. Losing the n8n encryption key can make stored credentials unrecoverable.
 
 ## Notes
+
+Cloudflare resources are disabled by default while `cipherplay.net` is still migrating. Set `enable_cloudflare_edge = true`, `cloudflare_account_id`, `cipherplay_zone_id`, and `CLOUDFLARE_API_TOKEN` when the zone is ready.
 
 Cloudflare allows only one zone entry-point ruleset per phase. If `cipherplay.net` already has Terraform-managed or manually-created `http_request_firewall_custom` or `http_ratelimit` rulesets, import and merge them instead of applying duplicate zone rulesets.
 
