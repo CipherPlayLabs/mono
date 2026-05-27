@@ -14,6 +14,11 @@ locals {
   cloud_run_service_name   = local.name_prefix
   cloud_run_container_port = 5678
   cloud_run_concurrency    = 10
+  n8n_image_parts          = split("/", var.n8n_image)
+  n8n_image_registry_host  = local.n8n_image_parts[0]
+  n8n_image_repository     = join("/", slice(local.n8n_image_parts, 1, length(local.n8n_image_parts)))
+  n8n_image_registry_url   = "https://${local.n8n_image_registry_host}"
+  n8n_cloud_run_image      = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/${google_artifact_registry_repository.n8n_image_remote.repository_id}/${local.n8n_image_repository}"
 
   sql_instance_name = "${local.name_prefix}-postgres"
 
@@ -49,6 +54,7 @@ locals {
   )
 
   required_services = toset([
+    "artifactregistry.googleapis.com",
     "certificatemanager.googleapis.com",
     "compute.googleapis.com",
     "iam.googleapis.com",
@@ -102,6 +108,7 @@ locals {
   }
 
   github_deployer_project_roles = toset([
+    "roles/artifactregistry.admin",
     "roles/certificatemanager.editor",
     "roles/cloudsql.admin",
     "roles/compute.loadBalancerAdmin",

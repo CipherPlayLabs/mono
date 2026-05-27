@@ -90,9 +90,14 @@ variable "github_oidc_principal_set" {
 }
 
 variable "n8n_image" {
-  description = "Container image used by the Cloud Run service."
+  description = "Upstream n8n container image. Cloud Run uses this through the managed Artifact Registry remote repository."
   type        = string
   default     = "docker.n8n.io/n8nio/n8n:stable"
+
+  validation {
+    condition     = length(split("/", var.n8n_image)) >= 3
+    error_message = "n8n_image must include a registry host and repository path, for example docker.n8n.io/n8nio/n8n:stable."
+  }
 }
 
 variable "postgres_version" {
