@@ -64,6 +64,10 @@
   object-fit: contain;
 }
 
+.org img.logoDark {
+  background: #061114;
+}
+
 .orgMark {
   display: inline-flex;
   width: 88px;

@@ -50,6 +50,7 @@ export interface OrganizationProof {
   name: string;
   href: string;
   logoSrc?: string;
+  logoFrame?: 'light' | 'dark';
   relationship: 'backer' | 'partner-ecosystem';
 }
 
@@ -610,20 +611,27 @@ export const organizationProof: OrganizationProof[] = [
   {
     name: 'Forward Research',
     href: links.forwardResearch,
-    logoSrc: '/img/organizations/forward-research.svg',
+    logoSrc: '/img/organizations/forward-research.jpg',
     relationship: 'backer',
   },
   {
     name: 'VIPC',
     href: links.vipc,
-    logoSrc: '/img/organizations/vipc.svg',
+    logoSrc: '/img/organizations/vipc.png',
     relationship: 'backer',
   },
   {
     name: 'RAMP',
     href: links.ramp,
     logoSrc: '/img/organizations/ramp.svg',
+    logoFrame: 'dark',
     relationship: 'backer',
+  },
+  {
+    name: 'RBTC / RBIA',
+    href: links.rbtcRbia,
+    logoSrc: '/img/organizations/rbtc-rbia.png',
+    relationship: 'partner-ecosystem',
   },
   {
     name: 'AR.IO',
@@ -646,19 +654,19 @@ export const organizationProof: OrganizationProof[] = [
   {
     name: 'Startup Virginia',
     href: links.startupVirginia,
-    logoSrc: '/img/organizations/startup-virginia.svg',
+    logoSrc: '/img/organizations/startup-virginia.jpg',
     relationship: 'partner-ecosystem',
   },
   {
     name: 'Founder Institute',
     href: links.founderInstitute,
-    logoSrc: '/img/organizations/founder-institute.svg',
+    logoSrc: '/img/organizations/founder-institute.png',
     relationship: 'partner-ecosystem',
   },
   {
     name: 'VIPC',
     href: links.vipc,
-    logoSrc: '/img/organizations/vipc.svg',
+    logoSrc: '/img/organizations/vipc.png',
     relationship: 'partner-ecosystem',
   },
 ];

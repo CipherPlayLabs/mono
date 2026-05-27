@@ -24,7 +24,11 @@ function OrganizationGroup({
             target="_blank"
             rel="noreferrer">
             {organization.logoSrc ? (
-              <img src={withBaseUrl(organization.logoSrc)} alt="" />
+              <img
+                className={organization.logoFrame === 'dark' ? styles.logoDark : undefined}
+                src={withBaseUrl(organization.logoSrc)}
+                alt=""
+              />
             ) : (
               <span className={styles.orgMark}>{organization.name.slice(0, 2)}</span>
             )}
