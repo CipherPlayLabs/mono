@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  N8N_IMAGE: docker.n8n.io/n8nio/n8n:stable
+  N8N_IMAGE: docker.io/n8nio/n8n:stable
   N8N_CLOUD_RUN_SERVICE: ${{ vars.N8N_CLOUD_RUN_SERVICE || 'cipherplay-n8n' }}
   N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
   N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
