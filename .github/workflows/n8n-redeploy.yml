@@ -1,0 +1,76 @@
+name: Redeploy n8n
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_redeploy:
+        description: Type redeploy to update Cloud Run to the current stable n8n image.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: n8n-redeploy
+  cancel-in-progress: false
+
+env:
+  N8N_IMAGE: docker.n8n.io/n8nio/n8n:stable
+  N8N_CLOUD_RUN_SERVICE: ${{ vars.N8N_CLOUD_RUN_SERVICE || 'cipherplay-n8n' }}
+  N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
+  N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
+
+jobs:
+  redeploy:
+    if: inputs.confirm_redeploy == 'redeploy'
+    name: Redeploy n8n Cloud Run service
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check required configuration
+        env:
+          N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
+          N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
+          N8N_GCP_SERVICE_ACCOUNT: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
+          N8N_GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        run: |
+          missing=0
+
+          for name in \
+            N8N_GCP_PROJECT_ID \
+            N8N_GCP_REGION \
+            N8N_GCP_SERVICE_ACCOUNT \
+            N8N_GCP_WORKLOAD_IDENTITY_PROVIDER
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing required configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          exit "$missing"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Redeploy stable n8n image
+        run: |
+          gcloud run services update "${N8N_CLOUD_RUN_SERVICE}" \
+            --project="${N8N_GCP_PROJECT_ID}" \
+            --region="${N8N_GCP_REGION}" \
+            --image="${N8N_IMAGE}" \
+            --quiet
+
+      - name: Show deployed image
+        run: |
+          gcloud run services describe "${N8N_CLOUD_RUN_SERVICE}" \
+            --project="${N8N_GCP_PROJECT_ID}" \
+            --region="${N8N_GCP_REGION}" \
+            --format='value(spec.template.spec.containers[0].image)'
