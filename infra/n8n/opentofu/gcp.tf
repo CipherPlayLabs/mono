@@ -133,12 +133,13 @@ resource "google_secret_manager_secret" "runtime" {
 resource "google_cloud_run_v2_service" "n8n" {
   provider = google-beta
 
-  name                = local.cloud_run_service_name
-  location            = var.gcp_region
-  description         = "n8n Community Edition for CipherPlay public forms and automation workflows."
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
-  deletion_protection = false
-  labels              = local.labels
+  name                 = local.cloud_run_service_name
+  location             = var.gcp_region
+  description          = "n8n Community Edition for CipherPlay public forms and automation workflows."
+  ingress              = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  invoker_iam_disabled = true
+  deletion_protection  = false
+  labels               = local.labels
 
   template {
     labels                           = local.labels
@@ -257,7 +258,6 @@ resource "google_compute_backend_service" "n8n" {
   description           = "External HTTPS load balancer backend for n8n Cloud Run."
   protocol              = "HTTP"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  timeout_sec           = 300
 
   backend {
     group = google_compute_region_network_endpoint_group.n8n.id
