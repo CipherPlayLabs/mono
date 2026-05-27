@@ -1,0 +1,103 @@
+name: Apply n8n Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_apply:
+        description: Type apply to create or update n8n infrastructure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: n8n-infra-apply
+  cancel-in-progress: false
+
+env:
+  TOFU_DIR: infra/n8n/opentofu
+  TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_cipherplay_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
+  TF_VAR_enable_cloudflare_edge: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
+  TF_VAR_gcp_project_id: ${{ vars.N8N_GCP_PROJECT_ID }}
+  TF_VAR_gcp_region: ${{ vars.N8N_GCP_REGION }}
+  TF_VAR_editor_hostname: ${{ vars.N8N_EDITOR_HOSTNAME }}
+  TF_VAR_editor_access_allowed_emails: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_EMAILS || '[]' }}
+  TF_VAR_editor_access_allowed_group_ids: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS || '[]' }}
+  TF_VAR_github_oidc_principal_set: ${{ vars.N8N_GITHUB_OIDC_PRINCIPAL_SET }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  apply:
+    if: inputs.confirm_apply == 'apply'
+    name: Apply n8n infrastructure
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ZONE_ID_CIPHERPLAY: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
+          N8N_ENABLE_CLOUDFLARE_EDGE: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
+          N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
+          N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
+          N8N_GCP_SERVICE_ACCOUNT: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
+          N8N_GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          missing=0
+
+          for name in \
+            N8N_GCP_PROJECT_ID \
+            N8N_GCP_REGION \
+            N8N_GCP_SERVICE_ACCOUNT \
+            N8N_GCP_WORKLOAD_IDENTITY_PROVIDER
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing required configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          if [ "$N8N_ENABLE_CLOUDFLARE_EDGE" = "true" ]; then
+            for name in \
+              CLOUDFLARE_ACCOUNT_ID \
+              CLOUDFLARE_ZONE_ID_CIPHERPLAY \
+              CLOUDFLARE_API_TOKEN
+            do
+              if [ -z "${!name}" ]; then
+                echo "::error title=Missing required Cloudflare configuration::$name is required when N8N_ENABLE_CLOUDFLARE_EDGE is true"
+                missing=1
+              fi
+            done
+          fi
+
+          exit "$missing"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Initialize OpenTofu
+        run: tofu -chdir=${{ env.TOFU_DIR }} init -input=false
+
+      - name: Plan n8n infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} plan -input=false -out=tfplan
+
+      - name: Apply n8n infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} apply -input=false -auto-approve tfplan
+
+      - name: Show n8n outputs
+        run: tofu -chdir=${{ env.TOFU_DIR }} output
