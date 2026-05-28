@@ -1,0 +1,293 @@
+name: Setup Content Site Hosting
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_setup:
+        description: Type setup to create or update Cloudflare Pages hosting.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: content-site-hosting-setup
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    if: inputs.confirm_setup == 'setup'
+    name: Create Pages project and domains
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+      PRODUCTION_DOMAIN: ${{ vars.PRODUCTION_DOMAIN }}
+      PRODUCTION_ZONE_NAME: ${{ vars.PRODUCTION_ZONE_NAME }}
+      PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN }}
+      PREVIEW_ZONE_NAME: ${{ vars.PREVIEW_ZONE_NAME }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      PRODUCTION_BRANCH: main
+      PREVIEW_BRANCH: preview
+    steps:
+      - name: Check setup configuration
+        run: |
+          missing=0
+
+          for name in \
+            CLOUDFLARE_ACCOUNT_ID \
+            CLOUDFLARE_PAGES_PROJECT \
+            PRODUCTION_DOMAIN \
+            PREVIEW_DOMAIN \
+            CLOUDFLARE_API_TOKEN
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing hosting setup configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          exit "$missing"
+
+      - name: Create or update Cloudflare Pages project
+        run: |
+          set -euo pipefail
+
+          api_root="https://api.cloudflare.com/client/v4"
+          auth_header="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          project_url="${api_root}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PAGES_PROJECT}"
+
+          status="$(
+            curl -fsS -o /tmp/pages-project.json -w "%{http_code}" \
+              "${project_url}" \
+              --header "${auth_header}" \
+              --header "Content-Type: application/json" || true
+          )"
+
+          if [ "$status" = "404" ]; then
+            jq -n \
+              --arg name "$CLOUDFLARE_PAGES_PROJECT" \
+              --arg production_branch "$PRODUCTION_BRANCH" \
+              '{name: $name, production_branch: $production_branch}' \
+              > /tmp/pages-project-create.json
+
+            curl -fsS \
+              "${api_root}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects" \
+              --request POST \
+              --header "${auth_header}" \
+              --header "Content-Type: application/json" \
+              --data @/tmp/pages-project-create.json \
+              > /tmp/pages-project.json
+          else
+            jq -n \
+              --arg production_branch "$PRODUCTION_BRANCH" \
+              '{production_branch: $production_branch}' \
+              > /tmp/pages-project-update.json
+
+            curl -fsS \
+              "${project_url}" \
+              --request PATCH \
+              --header "${auth_header}" \
+              --header "Content-Type: application/json" \
+              --data @/tmp/pages-project-update.json \
+              > /tmp/pages-project.json
+          fi
+
+          jq -e '.success == true' /tmp/pages-project.json
+
+      - name: Attach Cloudflare Pages custom domains
+        run: |
+          set -euo pipefail
+
+          api_root="https://api.cloudflare.com/client/v4"
+          auth_header="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          domains_url="${api_root}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PAGES_PROJECT}/domains"
+
+          add_domain() {
+            domain="$1"
+            encoded_domain="$(jq -nr --arg v "$domain" '$v|@uri')"
+
+            status="$(
+              curl -fsS -o "/tmp/pages-domain-${domain}.json" -w "%{http_code}" \
+                "${domains_url}/${encoded_domain}" \
+                --header "${auth_header}" \
+                --header "Content-Type: application/json" || true
+            )"
+
+            if [ "$status" = "404" ]; then
+              jq -n --arg name "$domain" '{name: $name}' > "/tmp/pages-domain-${domain}-create.json"
+              curl -fsS \
+                "${domains_url}" \
+                --request POST \
+                --header "${auth_header}" \
+                --header "Content-Type: application/json" \
+                --data "@/tmp/pages-domain-${domain}-create.json" \
+                > "/tmp/pages-domain-${domain}.json"
+            fi
+
+            jq -e '.success == true' "/tmp/pages-domain-${domain}.json"
+          }
+
+          add_domain "$PRODUCTION_DOMAIN"
+          add_domain "$PREVIEW_DOMAIN"
+
+      - name: Point Cloudflare DNS at Pages aliases
+        run: |
+          set -euo pipefail
+
+          api_root="https://api.cloudflare.com/client/v4"
+          auth_header="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+
+          cloudflare_request() {
+            method="$1"
+            url="$2"
+            response_file="$3"
+            status_file="$4"
+            body_file="${5:-}"
+
+            if [ -n "$body_file" ]; then
+              curl -sS \
+                --output "$response_file" \
+                --write-out "%{http_code}" \
+                --request "$method" \
+                --header "${auth_header}" \
+                --header "Content-Type: application/json" \
+                --data "@${body_file}" \
+                "$url" > "$status_file" || printf '000' > "$status_file"
+            else
+              curl -sS \
+                --output "$response_file" \
+                --write-out "%{http_code}" \
+                --request "$method" \
+                --header "${auth_header}" \
+                --header "Content-Type: application/json" \
+                "$url" > "$status_file" || printf '000' > "$status_file"
+            fi
+
+            return 0
+          }
+
+          check_cloudflare_success() {
+            response_file="$1"
+            context="$2"
+            status_code="$3"
+
+            echo "${context}: HTTP ${status_code}" >&2
+
+            if ! [[ "$status_code" == 2* ]]; then
+              echo "::error title=Cloudflare API HTTP failure::$context returned HTTP $status_code" >&2
+              jq -r '.errors[]? | "- \(.code): \(.message)"' "$response_file" >&2 || cat "$response_file" >&2
+              exit 1
+            fi
+
+            if ! jq -e '.success == true' "$response_file" >/dev/null; then
+              echo "::error title=Cloudflare API failed::$context" >&2
+              jq -r '.errors[]? | "- \(.code): \(.message)"' "$response_file" >&2 || cat "$response_file" >&2
+              exit 1
+            fi
+          }
+
+          get_zone_id() {
+            zone_name="$1"
+            encoded_zone="$(jq -nr --arg v "$zone_name" '$v|@uri')"
+            cloudflare_request \
+              GET \
+              "${api_root}/zones?name=${encoded_zone}" \
+              "/tmp/zone-${zone_name}.json" \
+              "/tmp/zone-${zone_name}.status"
+            status_code="$(cat "/tmp/zone-${zone_name}.status")"
+            check_cloudflare_success "/tmp/zone-${zone_name}.json" "Read zone ${zone_name}" "$status_code"
+
+            zone_id="$(jq -r '.result[0].id // empty' "/tmp/zone-${zone_name}.json")"
+            if [ -z "$zone_id" ]; then
+              echo "::error title=Cloudflare zone not found::${zone_name} was not returned by the Cloudflare API" >&2
+              exit 1
+            fi
+
+            printf '%s\n' "$zone_id"
+          }
+
+          zone_name_from_domain() {
+            domain="$1"
+            IFS='.' read -ra labels <<< "$domain"
+            label_count="${#labels[@]}"
+
+            if [ "$label_count" -lt 2 ]; then
+              echo "::error title=Invalid domain::${domain} does not include a zone suffix" >&2
+              exit 1
+            fi
+
+            printf '%s.%s\n' "${labels[$((label_count - 2))]}" "${labels[$((label_count - 1))]}"
+          }
+
+          upsert_cname() {
+            zone_name="$1"
+            record_name="$2"
+            target="$3"
+            echo "Upserting ${record_name} -> ${target}"
+            zone_id="$(get_zone_id "$zone_name")"
+            encoded_record="$(jq -nr --arg v "$record_name" '$v|@uri')"
+            echo "Listing DNS records for ${record_name} in ${zone_name} (${zone_id})"
+
+            cloudflare_request \
+              GET \
+              "${api_root}/zones/${zone_id}/dns_records?name=${encoded_record}&per_page=100" \
+              "/tmp/dns-${record_name}.json" \
+              "/tmp/dns-${record_name}.status"
+            status_code="$(cat "/tmp/dns-${record_name}.status")"
+            check_cloudflare_success "/tmp/dns-${record_name}.json" "List DNS records for ${record_name}" "$status_code"
+
+            record_id="$(jq -r '[.result[] | select(.type == "CNAME") | .id][0] // empty' "/tmp/dns-${record_name}.json")"
+            jq -n \
+              --arg type CNAME \
+              --arg name "$record_name" \
+              --arg content "$target" \
+              '{type: $type, name: $name, content: $content, ttl: 1, proxied: true}' \
+              > "/tmp/dns-${record_name}-body.json"
+
+            jq -r --arg keep "$record_id" \
+              '.result[] | select((.type == "A" or .type == "AAAA" or .type == "CNAME") and .id != $keep) | .id' \
+              "/tmp/dns-${record_name}.json" |
+              while read -r conflicting_record_id; do
+                if [ -n "$conflicting_record_id" ]; then
+                  cloudflare_request \
+                    DELETE \
+                    "${api_root}/zones/${zone_id}/dns_records/${conflicting_record_id}" \
+                    "/tmp/dns-${record_name}-${conflicting_record_id}-delete.json" \
+                    "/tmp/dns-${record_name}-${conflicting_record_id}-delete.status"
+                  status_code="$(cat "/tmp/dns-${record_name}-${conflicting_record_id}-delete.status")"
+                  check_cloudflare_success \
+                    "/tmp/dns-${record_name}-${conflicting_record_id}-delete.json" \
+                    "Delete conflicting DNS record ${conflicting_record_id} for ${record_name}" \
+                    "$status_code"
+                fi
+              done
+
+            if [ -n "$record_id" ]; then
+              cloudflare_request \
+                PATCH \
+                "${api_root}/zones/${zone_id}/dns_records/${record_id}" \
+                "/tmp/dns-${record_name}-upsert.json" \
+                "/tmp/dns-${record_name}-upsert.status" \
+                "/tmp/dns-${record_name}-body.json"
+            else
+              cloudflare_request \
+                POST \
+                "${api_root}/zones/${zone_id}/dns_records" \
+                "/tmp/dns-${record_name}-upsert.json" \
+                "/tmp/dns-${record_name}-upsert.status" \
+                "/tmp/dns-${record_name}-body.json"
+            fi
+            status_code="$(cat "/tmp/dns-${record_name}-upsert.status")"
+
+            check_cloudflare_success "/tmp/dns-${record_name}-upsert.json" "Upsert CNAME for ${record_name}" "$status_code"
+          }
+
+          production_zone_name="${PRODUCTION_ZONE_NAME:-$(zone_name_from_domain "$PRODUCTION_DOMAIN")}"
+          preview_zone_name="${PREVIEW_ZONE_NAME:-$(zone_name_from_domain "$PREVIEW_DOMAIN")}"
+
+          upsert_cname "$production_zone_name" "$PRODUCTION_DOMAIN" "${CLOUDFLARE_PAGES_PROJECT}.pages.dev"
+          upsert_cname "$preview_zone_name" "$PREVIEW_DOMAIN" "${PREVIEW_BRANCH}.${CLOUDFLARE_PAGES_PROJECT}.pages.dev"

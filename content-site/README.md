@@ -24,8 +24,8 @@ The old research, insights, featured, investors, and customers routes are intent
 
 - `baseUrl`: `/info/`
 - `url`: `SITE_URL` environment variable, falling back to `https://cipherplay.local` for local builds.
-- Preview URL: `https://content-site.cipherinternal.com/info/`.
-- Production URL: `https://cipherplay.com/info/`.
+- Preview URL: `https://content-site.cipherplay.net/info/`.
+- Production URL: `https://cipherplay.net/info/`.
 - Analytics script: same-origin `/_analytics/js/script.js`.
 - Analytics event endpoint: same-origin `/_analytics/api/event`.
 - Analytics domain: `PLAUSIBLE_SITE_DOMAIN` environment variable, falling back to the hostname in `SITE_URL`.
@@ -40,4 +40,4 @@ npm run build
 npm run start
 ```
 
-GitHub Actions deploys pushes to `preview` through the `preview` environment and pushes to `main` through the reviewer-gated `production` environment.
+GitHub Actions deploys pushes to `preview` through the `preview` environment. Production deploys run through the `production` environment by manually dispatching the workflow from `main`.

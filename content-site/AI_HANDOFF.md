@@ -5,8 +5,8 @@
 - Docusaurus app: `content-site/`
 - Base URL: `/info/`
 - Site title: `CipherPlay`
-- Preview URL: `https://content-site.cipherinternal.com/info/`
-- Production URL: `https://cipherplay.com/info/`
+- Preview URL: `https://content-site.cipherplay.net/info/`
+- Production URL: `https://cipherplay.net/info/`
 - Analytics domain: supplied by `PLAUSIBLE_SITE_DOMAIN`
 - Forms: local stub routes only
 
@@ -49,4 +49,4 @@ test ! -e build/customers.html
 
 Public analytics requests must stay same-origin through `/_analytics/*`. The private Plausible dashboard/origin hostname must not appear in public HTML or browser-visible JavaScript.
 
-Deployment uses GitHub Environments: `preview` for the live preview branch and `production` for reviewer-approved production deploys from `main`.
+Deployment uses GitHub Environments: `preview` for the live preview branch and `production` for manual production deploys dispatched from `main`.

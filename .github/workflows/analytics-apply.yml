@@ -20,14 +20,6 @@ env:
   NODE_VERSION: '20'
   TOFU_DIR: infra/analytics/opentofu
   WORKER_DIR: infra/analytics/worker
-  TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-  TF_VAR_lobst3rs_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_LOBST3RS }}
-  TF_VAR_allanbpediniv_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_ALLANBPEDINIV }}
-  TF_VAR_gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
-  TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
-  TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME }}
-  TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
 jobs:
   apply:
@@ -35,6 +27,15 @@ jobs:
     name: Apply analytics infrastructure
     runs-on: ubuntu-latest
     environment: production
+    env:
+      TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      TF_VAR_lobst3rs_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_LOBST3RS }}
+      TF_VAR_public_site_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_PUBLIC_SITE }}
+      TF_VAR_gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
+      TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
+      TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME }}
+      TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -17,12 +17,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   GCP_ZONE: us-east1-b
-  PLAUSIBLE_HOSTNAME: ${{ vars.PLAUSIBLE_HOSTNAME }}
-  CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
   CLOUDFLARE_TUNNEL_ID: 4af10406-0f31-46ae-8d00-15ec71d2029f
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
 jobs:
   provision:
@@ -30,6 +26,11 @@ jobs:
     name: Provision Plausible and cloudflared
     runs-on: ubuntu-latest
     environment: production
+    env:
+      GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      PLAUSIBLE_HOSTNAME: ${{ vars.PLAUSIBLE_HOSTNAME }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

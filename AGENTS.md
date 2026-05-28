@@ -7,9 +7,9 @@ This repo hosts the local CipherPlay `/info/` content site and private analytics
 - Repository: `CipherPlayLabs/mono`
 - Primary site app: `content-site/`
 - Base URL: `/info/`
-- Production URL: `https://cipherplay.com/info/`
-- Live preview URL: `https://content-site.cipherinternal.com/info/`
-- Branch flow: push to `preview` for live preview, then merge `preview` to `main` for production
+- Production URL: `https://cipherplay.net/info/`
+- Live preview URL: `https://content-site.cipherplay.net/info/`
+- Branch flow: push to `preview` for live preview, then merge reviewed changes from `preview` to `main` for production
 - Local default site URL: `https://cipherplay.local`
 - Public analytics route: same-origin `/_analytics/*`
 

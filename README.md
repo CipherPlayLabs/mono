@@ -17,6 +17,6 @@ npm run build
 npm run start
 ```
 
-The Docusaurus `baseUrl` stays `/info/`. The live preview branch is `preview` at `https://content-site.cipherinternal.com/info/`; production is `main` at `https://cipherplay.com/info/`.
+The Docusaurus `baseUrl` stays `/info/`. The live preview branch is `preview` at `https://content-site.cipherplay.net/info/`; production is `main` at `https://cipherplay.net/info/`.
 
-Deployment configuration lives in GitHub Environments. `preview` deploys without a reviewer gate, while `production` requires environment approval before Cloudflare Pages receives a production deploy.
+Deployment configuration lives in GitHub Environments. `preview` deploys automatically from the preview branch, while production deploys use the `production` environment through an explicit manual dispatch from `main`.
