@@ -89,27 +89,6 @@ const config: Config = {
     [
       '@docusaurus/plugin-content-blog',
       {
-        id: 'research',
-        routeBasePath: '/research',
-        path: './research',
-        blogTitle: 'Archived Research',
-        blogDescription: 'Archived research material retained for product and market context.',
-        showReadingTime: true,
-        blogSidebarTitle: 'All research',
-        blogSidebarCount: 'ALL',
-        authorsMapPath: '../authors.yml',
-        feedOptions: {
-          type: ['rss', 'atom'],
-          title: 'Archived Research',
-        },
-        onInlineTags: 'warn',
-        onInlineAuthors: 'warn',
-        onUntruncatedBlogPosts: 'ignore',
-      },
-    ],
-    [
-      '@docusaurus/plugin-content-blog',
-      {
         id: 'newsroom',
         routeBasePath: '/newsroom',
         path: './newsroom',
@@ -131,8 +110,8 @@ const config: Config = {
         hashed: true,
         indexBlog: true,
         indexPages: true,
-        blogDir: ['./research', './insights', './newsroom'],
-        blogRouteBasePath: ['/research', '/insights', '/newsroom'],
+        blogDir: ['./insights', './newsroom'],
+        blogRouteBasePath: ['/insights', '/newsroom'],
       },
     ],
   ],
@@ -230,10 +209,6 @@ const config: Config = {
           title: 'RSS Feeds',
           items: [
             { href: 'https://allanbpediniv.com/info/newsroom/rss.xml', label: 'Newsroom' },
-            {
-              href: 'https://allanbpediniv.com/info/research/rss.xml',
-              label: 'Archived Research',
-            },
             {
               href: 'https://allanbpediniv.com/info/insights/rss.xml',
               label: 'Archived Insights',
