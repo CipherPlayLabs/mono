@@ -15,13 +15,13 @@ export default function MarketAnalysis(): ReactNode {
         <CipherHero
           eyebrow="Market Research reports"
           title="Market Research reports for emerging-technology decisions."
-          summary="CipherPlay publishes useful public Market Research reports with industry framing, market dynamics, segment maps, and full-report email requests routed through the forms flow."
+          summary="CipherPlay publishes useful public Market Research reports with industry framing, market dynamics, and segment maps. Explore the reports below."
         />
         <section className={styles.section}>
           <div className="container">
             <div className={styles.header}>
               <p>Reports</p>
-              <h2>Read the public report pages, then request the full report by email.</h2>
+              <h2>Read the public report pages below.</h2>
             </div>
             <div className={styles.reportGrid}>
               {marketResearchReports.map((report) => (
@@ -50,8 +50,7 @@ export default function MarketAnalysis(): ReactNode {
             </div>
             <p className={styles.note}>
               Public report pages include substantive market research. Full private report
-              files are not committed to the public content site and will be sent through
-              the request flow.
+              files are not committed to the public content site.
             </p>
           </div>
         </section>

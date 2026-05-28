@@ -326,7 +326,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Does the public page include the full report?',
         answer:
-          'No. This page includes useful public analysis, while the full report is intended for delivery through the request form flow.',
+          'No. This page includes useful public analysis, while the full report is available by request.',
       },
       {
         question: 'Who is this report for?',
@@ -335,7 +335,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       },
     ],
     cta: {
-      label: 'Request full report by email',
+      label: 'Request full report',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
       disabled: false,
@@ -413,11 +413,11 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Does the report publish private product plans?',
         answer:
-          'No. Public content avoids go-to-market details and keeps deeper materials gated for approved email delivery.',
+          'No. Public content avoids go-to-market details and keeps deeper materials available only by request.',
       },
     ],
     cta: {
-      label: 'Request full report by email',
+      label: 'Request full report',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
       disabled: false,
@@ -495,11 +495,11 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'Can readers request the complete report?',
         answer:
-          'Yes. The request CTA points readers into the form flow for full-report delivery.',
+          'Yes. Use the request CTA on the page for complete report access.',
       },
     ],
     cta: {
-      label: 'Request full report by email',
+      label: 'Request full report',
       href: links.reportRequestForm,
       eventName: 'cta_research_access',
       disabled: false,

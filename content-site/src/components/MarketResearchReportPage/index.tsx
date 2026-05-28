@@ -85,8 +85,7 @@ export function MarketResearchReportPage({
                   </div>
                   <ConversionButton cta={report.cta} />
                   <p className={styles.requestNote}>
-                    Full report delivery routes through the request form flow as it comes
-                    online.
+                    Complete report access is available by request.
                   </p>
                 </div>
 

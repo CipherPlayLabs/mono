@@ -22,7 +22,7 @@ const primarySections = [
   {
     label: 'Reports',
     title: 'Market Research',
-    summary: 'Public Market Research reports with full-report email requests through forms.',
+    summary: 'Public Market Research reports with industry framing, market dynamics, and segment maps.',
     href: '/market-analysis',
   },
   {
@@ -107,7 +107,7 @@ export default function Home(): ReactNode {
           <div className="container">
             <div className={styles.sectionHeader}>
               <p>Market Research reports</p>
-              <h2>Useful public reports with full-report email requests through forms.</h2>
+              <h2>Explore useful public Market Research reports below.</h2>
             </div>
             <div className={styles.reportGrid}>
               {marketResearchReports.map((report) => (
