@@ -24,7 +24,7 @@ locals {
   editor_cloudflare_zone_id = (
     var.editor_zone_id != "" ?
     var.editor_zone_id :
-    try(data.cloudflare_zones.editor[0].result[0].id, var.cipherplay_zone_id)
+    data.cloudflare_zones.editor[0].result[0].id
   )
 
   hostnames = merge(
