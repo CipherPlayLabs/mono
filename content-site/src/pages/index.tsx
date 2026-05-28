@@ -28,7 +28,7 @@ const primarySections = [
   {
     label: 'Software',
     title: 'Products & Services',
-    summary: 'Current blockchain infrastructure product work, consulting services, and historic proof.',
+    summary: 'Current blockchain infrastructure product work, consulting services, and historic context.',
     href: '/products',
   },
   {
@@ -87,7 +87,7 @@ export default function Home(): ReactNode {
                 <p className={styles.eyebrow}>Blockchain infrastructure</p>
                 <h2>RANDAO anchors CipherPlay's cryptographic software work.</h2>
                 <p>
-                  RANDAO gives the site a public infrastructure proof point while the broader
+                  RANDAO gives the site a public blockchain infrastructure anchor while the broader
                   studio and research surfaces stay focused on reviewable context.
                 </p>
                 <Link to="/products/randao" className={styles.textLink}>
@@ -137,7 +137,7 @@ export default function Home(): ReactNode {
                 <article className={styles.pillar} key={pillar.name}>
                   <h3>{pillar.name}</h3>
                   <p>{pillar.summary}</p>
-                  <Link to={pillar.proofHref}>See proof</Link>
+                  <Link to={pillar.contextHref}>Explore context</Link>
                 </article>
               ))}
             </div>

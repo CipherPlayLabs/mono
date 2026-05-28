@@ -10,7 +10,7 @@ export default function Products(): ReactNode {
   return (
     <Layout
       title="Products & Services"
-      description="CipherPlay products, current services, and historic product proof.">
+      description="CipherPlay products, current services, and historic product context.">
       <main>
         <CipherHero
           eyebrow="Products & Services"
@@ -59,7 +59,7 @@ export default function Products(): ReactNode {
           <div className="container">
             <div className={styles.header}>
               <p>Product history</p>
-              <h2>Historic sunset projects retained as founder and technical proof.</h2>
+              <h2>Historic sunset projects retained as founder and technical history.</h2>
             </div>
             <div className={styles.productGrid}>
               {productHistory.map((product) => (

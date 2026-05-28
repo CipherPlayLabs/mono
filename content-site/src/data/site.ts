@@ -15,7 +15,7 @@ export interface AudiencePage {
   eyebrow: string;
   title: string;
   summary: string;
-  proofPoints: string[];
+  signals: string[];
   primaryCta: SiteCta;
 }
 
@@ -46,7 +46,7 @@ export interface MediaAsset {
   format: string;
 }
 
-export interface OrganizationProof {
+export interface OrganizationEntry {
   name: string;
   href: string;
   logoSrc?: string;
@@ -58,7 +58,7 @@ export interface IndustryPillar {
   name: string;
   summary: string;
   audienceFit: string;
-  proofHref: string;
+  contextHref: string;
 }
 
 export interface ReportSection {
@@ -104,9 +104,9 @@ export const audiencePages: AudiencePage[] = [
     title: 'See how CipherPlay turns emerging-tech theses into software ventures.',
     summary:
       'For investors evaluating the team, products, backers, industries, and venture-building focus behind CipherPlay.',
-    proofPoints: [
+    signals: [
       'Venture-backed studio model',
-      'Randao as blockchain infrastructure proof',
+      'RANDAO anchors blockchain infrastructure work',
       'Focused emerging-tech industry map',
     ],
     primaryCta: {
@@ -123,7 +123,7 @@ export const audiencePages: AudiencePage[] = [
     title: 'Partner with a studio that can research, prototype, and ship.',
     summary:
       'For accelerators, ecosystems, labs, and companies exploring collaboration with CipherPlay.',
-    proofPoints: [
+    signals: [
       'Partner ecosystem relationships',
       'Product and protocol experience',
       'Market research plus software execution',
@@ -142,8 +142,8 @@ export const audiencePages: AudiencePage[] = [
     title: 'Explore emerging-tech software and market intelligence built for real decisions.',
     summary:
       'For customers evaluating CipherPlay products, research, or studio-built emerging-tech software.',
-    proofPoints: [
-      'Randao product proof',
+    signals: [
+      'RANDAO infrastructure product',
       'AI and cryptographic software focus',
       'Research-backed build decisions',
     ],
@@ -162,7 +162,7 @@ export const products: Product[] = [
     name: 'RANDAO',
     status: 'Blockchain infrastructure',
     summary:
-      'A decentralized random number generation protocol and product proof for CipherPlay work in cryptographic infrastructure.',
+      'A decentralized random number generation protocol connected to CipherPlay work in cryptographic infrastructure.',
     href: '/products/randao',
     linkLabel: 'View product',
     cta: {
@@ -222,7 +222,7 @@ export const industryPillars: IndustryPillar[] = [
       'Software that helps teams use AI systems for practical research, automation, and decision support.',
     audienceFit:
       'Useful to customers and partners evaluating where AI can reduce coordination cost without losing operational control.',
-    proofHref: '/market-analysis',
+    contextHref: '/market-analysis',
   },
   {
     name: 'Web3 Node Infrastructure',
@@ -230,7 +230,7 @@ export const industryPillars: IndustryPillar[] = [
       'Infrastructure for decentralized networks where reliability, incentive alignment, and operator experience matter.',
     audienceFit:
       'Relevant to investors and partners assessing durable Web3 infrastructure needs beyond speculative cycles.',
-    proofHref: '/products/randao',
+    contextHref: '/products/randao',
   },
   {
     name: 'Cryptographic Protocols',
@@ -238,7 +238,7 @@ export const industryPillars: IndustryPillar[] = [
       'Protocol design and productization around trust, randomness, verification, and secure coordination.',
     audienceFit:
       'Relevant to technical customers and partners tracking applied cryptography and product-ready trust systems.',
-    proofHref: '/products/randao',
+    contextHref: '/products/randao',
   },
   {
     name: 'Venture/Market Intelligence',
@@ -246,7 +246,7 @@ export const industryPillars: IndustryPillar[] = [
       'Research systems that turn emerging-technology signals into clearer market maps and venture theses.',
     audienceFit:
       'Relevant to investors and partners who need concise public framing before requesting deeper diligence.',
-    proofHref: '/market-analysis',
+    contextHref: '/market-analysis',
   },
   {
     name: 'AI Research Software',
@@ -254,7 +254,7 @@ export const industryPillars: IndustryPillar[] = [
       'Tools for researchers and builders who need AI-assisted workflows around literature, experiments, and technical synthesis.',
     audienceFit:
       'Relevant to customers and partners looking for software that supports higher-quality technical research loops.',
-    proofHref: '/market-analysis',
+    contextHref: '/market-analysis',
   },
 ];
 
@@ -347,12 +347,12 @@ export const marketResearchReports: MarketResearchReport[] = [
     eyebrow: 'Market Research Report',
     reportCode: 'CP-MR-CRYPTO-001',
     executiveSummary:
-      'CipherPlay tracks cryptographic infrastructure through the lens of trust-sensitive software: randomness, verification, node operations, and protocol reliability. The public report connects market demand to product proof from Randao and to broader infrastructure needs across decentralized systems.',
+      'CipherPlay tracks cryptographic infrastructure through the lens of trust-sensitive software: randomness, verification, node operations, and protocol reliability. The public report connects market demand to RANDAO and to broader infrastructure needs across decentralized systems.',
     industries: ['Web3 Node Infrastructure', 'Cryptographic Protocols'],
     href: '/market-analysis/cryptographic-infrastructure',
     keyFindings: [
       'Infrastructure buyers care less about abstract decentralization claims and more about reliability, verifiability, uptime, and integration cost.',
-      'Randomness, identity, proofs, and node operations remain foundational primitives for trust-sensitive applications.',
+      'Randomness, identity, verification systems, and node operations remain foundational primitives for trust-sensitive applications.',
       'Products that make cryptographic systems easier to operate can expand the market beyond specialist protocol teams.',
       'Clear technical education is part of the product surface because buyers need to understand where trust assumptions live.',
     ],
@@ -394,7 +394,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       'Executive summary',
       'Infrastructure market definition',
       'Trust primitive landscape',
-      'Randao product proof',
+      'RANDAO infrastructure context',
       'Buyer needs and integration barriers',
       'Segment map',
       'Signals CipherPlay is tracking',
@@ -403,7 +403,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         question: 'How does this relate to Randao?',
         answer:
-          'Randao is used as a public product proof for applied randomness and cryptographic infrastructure.',
+          'RANDAO gives readers a public view into applied randomness and cryptographic infrastructure.',
       },
       {
         question: 'Is this a public dashboard or analytics product?',
@@ -429,7 +429,7 @@ export const marketResearchReports: MarketResearchReport[] = [
     eyebrow: 'Market Research Report',
     reportCode: 'CP-MR-VENTURE-001',
     executiveSummary:
-      'CipherPlay frames venture and market intelligence as a practical system for understanding emerging-technology opportunities before they become obvious. The public report explains how product proof, ecosystem signals, technical research, and buyer pain can inform stronger diligence.',
+      'CipherPlay frames venture and market intelligence as a practical system for understanding emerging-technology opportunities before they become obvious. The public report explains how product execution, ecosystem signals, technical research, and buyer pain can inform stronger diligence.',
     industries: ['Venture/Market Intelligence', 'AI Research Software'],
     href: '/market-analysis/venture-market-intelligence',
     keyFindings: [
@@ -445,7 +445,7 @@ export const marketResearchReports: MarketResearchReport[] = [
           'Emerging markets produce noisy public information. Useful intelligence depends on filtering signals by buyer urgency, technical feasibility, and ecosystem momentum.',
       },
       {
-        title: 'Product proof improves diligence',
+        title: 'Working products sharpen diligence',
         body:
           'A working product or credible prototype can validate a thesis more effectively than narrative alone, especially in technical markets.',
       },
@@ -476,7 +476,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       'Executive summary',
       'Market intelligence framework',
       'Signal categories and weighting',
-      'Product proof in venture diligence',
+      'Product execution in venture diligence',
       'AI-assisted research workflows',
       'Segment map',
       'Implications for investors and partners',
@@ -588,7 +588,7 @@ export const teamMembers: TeamMember[] = [
   },
 ];
 
-export const organizationProof: OrganizationProof[] = [
+export const organizationEntries: OrganizationEntry[] = [
   {
     name: 'Forward Research',
     href: links.forwardResearch,
@@ -652,11 +652,11 @@ export const organizationProof: OrganizationProof[] = [
   },
 ];
 
-export const backers = organizationProof.filter(
+export const backers = organizationEntries.filter(
   (organization) => organization.relationship === 'backer',
 );
 
-export const partnerEcosystem = organizationProof.filter(
+export const partnerEcosystem = organizationEntries.filter(
   (organization) => organization.relationship === 'partner-ecosystem',
 );
 

@@ -45,7 +45,7 @@ export function CredibilityStrip(): React.JSX.Element {
     <section className={styles.strip}>
       <div className="container">
         <div className={styles.heading}>
-          <p>Public proof</p>
+          <p>Company network</p>
           <h2>Backers and partner ecosystem</h2>
         </div>
         <OrganizationGroup title="Backers" organizations={backers} />

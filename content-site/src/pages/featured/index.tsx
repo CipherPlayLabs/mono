@@ -20,10 +20,10 @@ export default function FeaturedPage(): React.JSX.Element {
   const sorted = useMemo(() => sortItems(FeaturedItems), []);
 
   return (
-    <Layout title="Featured Media" description="Public media and talks relevant to CipherPlay product proof.">
+    <Layout title="Featured Media" description="Public media and talks relevant to CipherPlay product work.">
       <Head>
         <meta property="og:title" content="Featured Media" />
-        <meta property="og:description" content="Public media and talks relevant to CipherPlay product proof." />
+        <meta property="og:description" content="Public media and talks relevant to CipherPlay product work." />
       </Head>
 
       <div className="container padding--lg">

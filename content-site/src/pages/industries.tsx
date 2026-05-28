@@ -24,7 +24,7 @@ export default function Industries(): ReactNode {
                   <h2>{pillar.name}</h2>
                   <p>{pillar.summary}</p>
                   <p className={styles.audienceFit}>{pillar.audienceFit}</p>
-                  <Link to={pillar.proofHref}>See related proof</Link>
+                  <Link to={pillar.contextHref}>Explore related context</Link>
                 </article>
               ))}
             </div>

@@ -33,7 +33,7 @@ export default function About(): ReactNode {
   return (
     <Layout
       title="About"
-      description="Company context, leadership, product proof, backers, and diligence information for CipherPlay.">
+      description="Company context, leadership, RANDAO, backers, and diligence information for CipherPlay.">
       <main>
         <CipherHero
           eyebrow="About CipherPlay"
@@ -48,7 +48,7 @@ export default function About(): ReactNode {
                 <p className={styles.eyebrow}>Company context</p>
                 <h2>Research-backed product building.</h2>
                 <p>
-                  CipherPlay uses public market research and focused product proof to make
+                  CipherPlay uses public market research and focused product work to make
                   emerging-technology opportunities easier to evaluate. RANDAO anchors the
                   current product portfolio, while the research pages show the markets and
                   technical domains the studio is tracking.
@@ -58,8 +58,8 @@ export default function About(): ReactNode {
               <article className={styles.panel}>
                 <p className={styles.eyebrow}>Investor diligence</p>
                 <h2>Signals for company review.</h2>
-                <ul className={styles.proofList}>
-                  {investorContext.proofPoints.map((point) => (
+                <ul className={styles.signalList}>
+                  {investorContext.signals.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
@@ -109,7 +109,7 @@ export default function About(): ReactNode {
                 eventName="route_about_context"
                 eventProps={{destination: 'randao'}}
                 className={styles.linkCard}>
-                <span>Product proof</span>
+                <span>Blockchain infrastructure</span>
                 <strong>RANDAO</strong>
               </TrackedLink>
               <TrackedLink

@@ -23,8 +23,8 @@ export default function Investors(): ReactNode {
             <div className={styles.grid}>
               <article className={styles.panel}>
                 <h2>Diligence signals</h2>
-                <ul className={styles.proofList}>
-                  {audience.proofPoints.map((point) => (
+                <ul className={styles.signalList}>
+                  {audience.signals.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
@@ -33,7 +33,7 @@ export default function Investors(): ReactNode {
               <article className={styles.linkPanel}>
                 <h2>Review next</h2>
                 <div className={styles.linkGrid}>
-                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'randao'}}>RANDAO product proof</TrackedLink>
+                  <TrackedLink to="/products/randao" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'randao'}}>RANDAO</TrackedLink>
                   <TrackedLink to="/team" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'team'}}>Leadership team</TrackedLink>
                   <TrackedLink to="/industries" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'industries'}}>Industry pillars</TrackedLink>
                   <TrackedLink to="/market-analysis" eventName="route_audience_segment" eventProps={{segment: 'investors', destination: 'market-research'}}>Market Research reports</TrackedLink>

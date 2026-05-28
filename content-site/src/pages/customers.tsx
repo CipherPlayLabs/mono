@@ -23,8 +23,8 @@ export default function Customers(): ReactNode {
             <div className={styles.grid}>
               <article className={styles.panel}>
                 <h2>Buying context</h2>
-                <ul className={styles.proofList}>
-                  {audience.proofPoints.map((point) => (
+                <ul className={styles.signalList}>
+                  {audience.signals.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
