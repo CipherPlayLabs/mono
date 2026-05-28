@@ -59,9 +59,9 @@ resource "cloudflare_ruleset" "forms_rate_limit" {
 
   rules = [{
     ref         = "n8n_forms_ip_rate_limit"
-    description = "Managed challenge clients that exceed public forms request thresholds."
+    description = "Block clients that exceed public forms request thresholds."
     expression  = "(http.host eq \"${var.forms_hostname}\")"
-    action      = "managed_challenge"
+    action      = "block"
 
     ratelimit = {
       characteristics     = ["cf.colo.id", "ip.src"]
