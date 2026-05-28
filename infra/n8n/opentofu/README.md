@@ -102,7 +102,7 @@ repository.
 
 Cloudflare allows only one zone entry-point ruleset per phase. If `cipherplay.net` already has Terraform-managed or manually-created `http_request_firewall_custom` or `http_ratelimit` rulesets, import and merge them instead of applying duplicate zone rulesets.
 
-The default public forms rate limit is 20 requests per client IP and Cloudflare colo per 10 seconds because Cloudflare may restrict zone rate-limit periods by account plan.
+The default public forms rate limit is 20 requests per client IP and Cloudflare colo per 10 seconds, with a 10-second managed challenge timeout, because Cloudflare may restrict zone rate-limit periods and mitigation windows by account plan.
 
 n8n basic auth is not configured. n8n 1.x uses built-in user management for application login, and the optional editor hostname adds Cloudflare Access in front of that login. Public forms on `forms.cipherplay.net` stay available without Cloudflare Access.
 

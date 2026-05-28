@@ -162,7 +162,7 @@ variable "forms_rate_limit_requests_per_period" {
 variable "forms_rate_limit_mitigation_seconds" {
   description = "How long Cloudflare keeps rate-limit mitigation active."
   type        = number
-  default     = 600
+  default     = 10
 }
 
 variable "forms_threat_score_challenge_threshold" {
