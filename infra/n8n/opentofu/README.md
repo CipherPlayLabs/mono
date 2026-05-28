@@ -47,6 +47,7 @@ Optional editor variables:
 - `editor_access_allowed_group_ids`
 - `cloudflare_access_organization_name`
 - `cloudflare_access_auth_domain`
+- `manage_cloudflare_access_organization`
 
 When `editor_hostname` is set, provide either `editor_zone_id` or `editor_zone_name`, plus at least one allowed email or Cloudflare Access group ID.
 
@@ -110,7 +111,7 @@ The default public forms rate limit blocks clients after 20 requests per client 
 
 n8n basic auth is not configured. n8n 1.x uses built-in user management for application login, and the optional editor hostname adds Cloudflare Access in front of that login. Public forms on `forms.cipherplay.net` stay available without Cloudflare Access, and `WEBHOOK_URL` stays pinned to the forms hostname even when `N8N_EDITOR_BASE_URL` points to the editor hostname.
 
-When the editor hostname is enabled, OpenTofu also creates the account-level Cloudflare Zero Trust organization if Access has not already been enabled. The default auth domain is `cipherplay.cloudflareaccess.com`; override `cloudflare_access_auth_domain` if that subdomain is unavailable.
+When the editor hostname is enabled, Cloudflare Zero Trust Access must already be enabled for the account. OpenTofu can optionally manage the account-level Zero Trust organization by setting `manage_cloudflare_access_organization = true`, but that requires a Cloudflare token with organization-level Zero Trust permissions. The default auth domain is `cipherplay.cloudflareaccess.com`; override `cloudflare_access_auth_domain` if that subdomain is unavailable.
 
 Cloud Run ingress remains limited to the internal/external load balancer path. The
 service disables the Invoker IAM check instead of granting `allUsers` the Invoker role,

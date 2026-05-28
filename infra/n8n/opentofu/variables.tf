@@ -55,6 +55,12 @@ variable "cloudflare_access_auth_domain" {
   }
 }
 
+variable "manage_cloudflare_access_organization" {
+  description = "Whether OpenTofu should manage the account-level Cloudflare Zero Trust organization. Leave false when Access is enabled manually in the dashboard."
+  type        = bool
+  default     = false
+}
+
 variable "forms_hostname" {
   description = "Public hostname used by n8n-generated forms and production webhooks."
   type        = string

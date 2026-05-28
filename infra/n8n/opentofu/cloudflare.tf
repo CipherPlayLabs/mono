@@ -83,7 +83,7 @@ resource "cloudflare_ruleset" "forms_rate_limit" {
 }
 
 resource "cloudflare_zero_trust_organization" "n8n" {
-  count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
+  count = var.enable_cloudflare_edge && local.editor_enabled && var.manage_cloudflare_access_organization ? 1 : 0
 
   account_id              = var.cloudflare_account_id
   name                    = var.cloudflare_access_organization_name
