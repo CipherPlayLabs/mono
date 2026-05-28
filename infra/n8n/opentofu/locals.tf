@@ -21,6 +21,11 @@ locals {
   binary_data_mount_path  = "/mnt/n8n-binary-data"
 
   editor_enabled = trimspace(var.editor_hostname) != ""
+  editor_cloudflare_zone_id = (
+    var.editor_zone_id != "" ?
+    var.editor_zone_id :
+    try(data.cloudflare_zones.editor[0].result[0].id, var.cipherplay_zone_id)
+  )
 
   hostnames = merge(
     {
@@ -28,6 +33,15 @@ locals {
     },
     local.editor_enabled ? {
       editor = var.editor_hostname
+    } : {}
+  )
+
+  hostname_zone_ids = merge(
+    {
+      forms = var.cipherplay_zone_id
+    },
+    local.editor_enabled ? {
+      editor = local.editor_cloudflare_zone_id
     } : {}
   )
 
@@ -72,7 +86,7 @@ locals {
     }
   }
 
-  n8n_static_env = {
+  n8n_static_env = merge({
     DB_POSTGRESDB_CONNECTION_TIMEOUT      = "20000"
     DB_POSTGRESDB_DATABASE                = var.postgres_database
     DB_POSTGRESDB_HOST                    = google_sql_database_instance.n8n.private_ip_address
@@ -99,7 +113,11 @@ locals {
     N8N_PUBLIC_API_DISABLED               = "true"
     N8N_SECURE_COOKIE                     = "true"
     WEBHOOK_URL                           = "https://${var.forms_hostname}/"
-  }
+    },
+    local.editor_enabled ? {
+      N8N_EDITOR_BASE_URL = "https://${var.editor_hostname}/"
+    } : {}
+  )
 
   github_deployer_project_roles = toset([
     "roles/certificatemanager.editor",

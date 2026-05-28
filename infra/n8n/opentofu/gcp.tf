@@ -290,12 +290,29 @@ resource "google_certificate_manager_dns_authorization" "n8n" {
 
 resource "google_certificate_manager_certificate" "n8n" {
   name        = "${local.name_prefix}-certificate"
-  description = "Google-managed certificate for n8n public hostnames."
+  description = "Google-managed certificate for the n8n public forms hostname."
   labels      = local.labels
 
   managed {
-    domains            = values(local.hostnames)
-    dns_authorizations = [for authorization in google_certificate_manager_dns_authorization.n8n : authorization.id]
+    domains            = [var.forms_hostname]
+    dns_authorizations = [google_certificate_manager_dns_authorization.n8n["forms"].id]
+  }
+
+  depends_on = [
+    google_project_service.required["certificatemanager.googleapis.com"],
+  ]
+}
+
+resource "google_certificate_manager_certificate" "editor" {
+  count = local.editor_enabled ? 1 : 0
+
+  name        = "${local.name_prefix}-editor-certificate"
+  description = "Google-managed certificate for the n8n editor hostname."
+  labels      = local.labels
+
+  managed {
+    domains            = [var.editor_hostname]
+    dns_authorizations = [google_certificate_manager_dns_authorization.n8n["editor"].id]
   }
 
   depends_on = [
@@ -320,7 +337,7 @@ resource "google_certificate_manager_certificate_map_entry" "n8n" {
   description  = "Certificate map entry for ${each.value}."
   map          = google_certificate_manager_certificate_map.n8n.name
   labels       = local.labels
-  certificates = [google_certificate_manager_certificate.n8n.id]
+  certificates = [each.key == "forms" ? google_certificate_manager_certificate.n8n.id : google_certificate_manager_certificate.editor[0].id]
   hostname     = each.value
 }
 

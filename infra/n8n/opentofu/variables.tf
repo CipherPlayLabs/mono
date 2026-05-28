@@ -63,6 +63,26 @@ variable "editor_hostname" {
   }
 }
 
+variable "editor_zone_id" {
+  description = "Optional Cloudflare zone ID for the editor/admin hostname. When empty, editor_zone_name is used to look up the zone."
+  type        = string
+  default     = ""
+}
+
+variable "editor_zone_name" {
+  description = "Optional Cloudflare zone name for the editor/admin hostname, used when editor_zone_id is empty."
+  type        = string
+  default     = ""
+
+  validation {
+    condition = (
+      var.editor_zone_name == "" ||
+      can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$", var.editor_zone_name))
+    )
+    error_message = "editor_zone_name must be empty or a lowercase DNS zone name."
+  }
+}
+
 variable "editor_access_allowed_emails" {
   description = "Email addresses allowed through Cloudflare Access for the optional editor hostname."
   type        = list(string)

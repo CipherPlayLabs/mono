@@ -1,7 +1,17 @@
+data "cloudflare_zones" "editor" {
+  count = var.enable_cloudflare_edge && local.editor_enabled && var.editor_zone_id == "" ? 1 : 0
+
+  account = {
+    id = var.cloudflare_account_id
+  }
+  name      = var.editor_zone_name
+  max_items = 1
+}
+
 resource "cloudflare_dns_record" "certificate_authorization" {
   for_each = var.enable_cloudflare_edge ? google_certificate_manager_dns_authorization.n8n : {}
 
-  zone_id = var.cipherplay_zone_id
+  zone_id = local.hostname_zone_ids[each.key]
   name    = trimsuffix(each.value.dns_resource_record[0].name, ".")
   content = trimsuffix(each.value.dns_resource_record[0].data, ".")
   type    = each.value.dns_resource_record[0].type
@@ -23,7 +33,7 @@ resource "cloudflare_dns_record" "forms" {
 resource "cloudflare_dns_record" "editor" {
   count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
 
-  zone_id = var.cipherplay_zone_id
+  zone_id = local.editor_cloudflare_zone_id
   name    = var.editor_hostname
   content = google_compute_global_address.n8n_lb.address
   type    = "A"

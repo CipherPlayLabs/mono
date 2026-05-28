@@ -24,6 +24,8 @@ env:
   TF_VAR_gcp_project_id: ${{ vars.N8N_GCP_PROJECT_ID }}
   TF_VAR_gcp_region: ${{ vars.N8N_GCP_REGION }}
   TF_VAR_editor_hostname: ${{ vars.N8N_EDITOR_HOSTNAME }}
+  TF_VAR_editor_zone_id: ${{ vars.N8N_EDITOR_ZONE_ID }}
+  TF_VAR_editor_zone_name: ${{ vars.N8N_EDITOR_ZONE_NAME }}
   TF_VAR_editor_access_allowed_emails: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_EMAILS || '[]' }}
   TF_VAR_editor_access_allowed_group_ids: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS || '[]' }}
   TF_VAR_github_oidc_principal_set: ${{ vars.N8N_GITHUB_OIDC_PRINCIPAL_SET }}
@@ -44,6 +46,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_ZONE_ID_CIPHERPLAY: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
           N8N_ENABLE_CLOUDFLARE_EDGE: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
+          N8N_EDITOR_ACCESS_ALLOWED_EMAILS: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_EMAILS || '[]' }}
+          N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS: ${{ vars.N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS || '[]' }}
+          N8N_EDITOR_HOSTNAME: ${{ vars.N8N_EDITOR_HOSTNAME }}
+          N8N_EDITOR_ZONE_ID: ${{ vars.N8N_EDITOR_ZONE_ID }}
+          N8N_EDITOR_ZONE_NAME: ${{ vars.N8N_EDITOR_ZONE_NAME }}
           N8N_GCP_PROJECT_ID: ${{ vars.N8N_GCP_PROJECT_ID }}
           N8N_GCP_REGION: ${{ vars.N8N_GCP_REGION }}
           N8N_GCP_SERVICE_ACCOUNT: ${{ vars.N8N_GCP_SERVICE_ACCOUNT }}
@@ -75,6 +82,18 @@ jobs:
                 missing=1
               fi
             done
+
+            if [ -n "$N8N_EDITOR_HOSTNAME" ]; then
+              if [ -z "$N8N_EDITOR_ZONE_ID" ] && [ -z "$N8N_EDITOR_ZONE_NAME" ]; then
+                echo "::error title=Missing required editor Cloudflare configuration::Set N8N_EDITOR_ZONE_ID or N8N_EDITOR_ZONE_NAME when N8N_EDITOR_HOSTNAME is configured"
+                missing=1
+              fi
+
+              if [ "$N8N_EDITOR_ACCESS_ALLOWED_EMAILS" = "[]" ] && [ "$N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS" = "[]" ]; then
+                echo "::error title=Missing required editor Access configuration::Set N8N_EDITOR_ACCESS_ALLOWED_EMAILS or N8N_EDITOR_ACCESS_ALLOWED_GROUP_IDS when N8N_EDITOR_HOSTNAME is configured"
+                missing=1
+              fi
+            fi
           fi
 
           exit "$missing"

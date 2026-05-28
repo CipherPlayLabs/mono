@@ -41,10 +41,12 @@ Defaults are provided for:
 Optional editor variables:
 
 - `editor_hostname`
+- `editor_zone_id`
+- `editor_zone_name`
 - `editor_access_allowed_emails`
 - `editor_access_allowed_group_ids`
 
-When `editor_hostname` is set, at least one allowed email or Cloudflare Access group ID must also be set.
+When `editor_hostname` is set, provide either `editor_zone_id` or `editor_zone_name`, plus at least one allowed email or Cloudflare Access group ID.
 
 ## Commands
 
@@ -92,7 +94,7 @@ Keep a separate personal recovery copy of the n8n encryption key and bootstrap c
 
 ## Notes
 
-Cloudflare resources are disabled by default while `cipherplay.net` is still migrating. Set `enable_cloudflare_edge = true`, `cloudflare_account_id`, `cipherplay_zone_id`, and `CLOUDFLARE_API_TOKEN` when the zone is ready.
+Cloudflare resources are disabled by default while `cipherplay.net` is still migrating. Set `enable_cloudflare_edge = true`, `cloudflare_account_id`, `cipherplay_zone_id`, and `CLOUDFLARE_API_TOKEN` when the zone is ready. The public forms hostname remains on `cipherplay_zone_id`; the optional editor hostname can live in another Cloudflare zone through `editor_zone_id` or `editor_zone_name`.
 
 `docker.io/n8nio/n8n:stable` is used for Cloud Run compatibility. On May 27, 2026,
 `docker.n8n.io/n8nio/n8n:stable` and `docker.io/n8nio/n8n:stable` resolved to the
@@ -104,7 +106,7 @@ Cloudflare allows only one zone entry-point ruleset per phase. If `cipherplay.ne
 
 The default public forms rate limit blocks clients after 20 requests per client IP and Cloudflare colo per 10 seconds, with a 10-second mitigation timeout, because Cloudflare may restrict zone rate-limit periods, mitigation windows, and challenge actions by account plan. Suspicious non-rate-limited traffic still receives the separate managed challenge rule.
 
-n8n basic auth is not configured. n8n 1.x uses built-in user management for application login, and the optional editor hostname adds Cloudflare Access in front of that login. Public forms on `forms.cipherplay.net` stay available without Cloudflare Access.
+n8n basic auth is not configured. n8n 1.x uses built-in user management for application login, and the optional editor hostname adds Cloudflare Access in front of that login. Public forms on `forms.cipherplay.net` stay available without Cloudflare Access, and `WEBHOOK_URL` stays pinned to the forms hostname even when `N8N_EDITOR_BASE_URL` points to the editor hostname.
 
 Cloud Run ingress remains limited to the internal/external load balancer path. The
 service disables the Invoker IAM check instead of granting `allUsers` the Invoker role,
