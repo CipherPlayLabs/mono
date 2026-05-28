@@ -58,7 +58,7 @@ export interface IndustryPillar {
   name: string;
   summary: string;
   audienceFit: string;
-  contextHref: string;
+  relatedHref: string;
 }
 
 export interface ReportSection {
@@ -209,7 +209,7 @@ export const productHistory: Product[] = [
     name: 'RuneRealm',
     status: 'Historic / Sunset',
     summary:
-      'An onchain MMORPG experiment preserved as historical product context for CipherPlay work in fully onchain software and game infrastructure. It is not a current product.',
+      'An onchain MMORPG experiment preserved as historical product work for CipherPlay in fully onchain software and game infrastructure. It is not a current product.',
     href: links.runeRealm,
     linkLabel: 'View archived project',
   },
@@ -222,7 +222,7 @@ export const industryPillars: IndustryPillar[] = [
       'Software that helps teams use AI systems for practical research, automation, and decision support.',
     audienceFit:
       'Useful to customers and partners evaluating where AI can reduce coordination cost without losing operational control.',
-    contextHref: '/market-analysis',
+    relatedHref: '/market-analysis',
   },
   {
     name: 'Web3 Node Infrastructure',
@@ -230,7 +230,7 @@ export const industryPillars: IndustryPillar[] = [
       'Infrastructure for decentralized networks where reliability, incentive alignment, and operator experience matter.',
     audienceFit:
       'Relevant to investors and partners assessing durable Web3 infrastructure needs beyond speculative cycles.',
-    contextHref: '/products/randao',
+    relatedHref: '/products/randao',
   },
   {
     name: 'Cryptographic Protocols',
@@ -238,7 +238,7 @@ export const industryPillars: IndustryPillar[] = [
       'Protocol design and productization around trust, randomness, verification, and secure coordination.',
     audienceFit:
       'Relevant to technical customers and partners tracking applied cryptography and product-ready trust systems.',
-    contextHref: '/products/randao',
+    relatedHref: '/products/randao',
   },
   {
     name: 'Venture/Market Intelligence',
@@ -246,7 +246,7 @@ export const industryPillars: IndustryPillar[] = [
       'Research systems that turn emerging-technology signals into clearer market maps and venture theses.',
     audienceFit:
       'Relevant to investors and partners who need concise public framing before requesting deeper diligence.',
-    contextHref: '/market-analysis',
+    relatedHref: '/market-analysis',
   },
   {
     name: 'AI Research Software',
@@ -254,7 +254,7 @@ export const industryPillars: IndustryPillar[] = [
       'Tools for researchers and builders who need AI-assisted workflows around literature, experiments, and technical synthesis.',
     audienceFit:
       'Relevant to customers and partners looking for software that supports higher-quality technical research loops.',
-    contextHref: '/market-analysis',
+    relatedHref: '/market-analysis',
   },
 ];
 
@@ -278,7 +278,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         title: 'Workflow depth over model novelty',
         body:
-          'Model capability matters, but buyers increasingly evaluate whether the software can fit the work, preserve context, and make outputs reviewable. Products with clear workflow ownership are easier to justify than broad assistants with unclear ROI.',
+          'Model capability matters, but buyers increasingly evaluate whether the software can fit the work, retain relevant inputs, and make outputs reviewable. Products with clear workflow ownership are easier to justify than broad assistants with unclear ROI.',
       },
       {
         title: 'Governance as a purchase driver',
@@ -394,7 +394,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       'Executive summary',
       'Infrastructure market definition',
       'Trust primitive landscape',
-      'RANDAO infrastructure context',
+      'RANDAO infrastructure',
       'Buyer needs and integration barriers',
       'Segment map',
       'Signals CipherPlay is tracking',
@@ -459,7 +459,7 @@ export const marketResearchReports: MarketResearchReport[] = [
       {
         title: 'Investor diligence support',
         body:
-          'Market maps, product context, and technical signal tracking for investors evaluating emerging-technology opportunities.',
+          'Market maps, product work, and technical signal tracking for investors evaluating emerging-technology opportunities.',
       },
       {
         title: 'Market research systems',

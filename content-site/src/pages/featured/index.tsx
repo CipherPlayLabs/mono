@@ -31,7 +31,7 @@ export default function FeaturedPage(): React.JSX.Element {
           <header className={styles.header}>
             <h1 className={styles.title}>Featured Media</h1>
             <p className={styles.subtitle}>
-              Public interviews, talks, and discussions retained as product and research context for CipherPlay.
+              Public interviews, talks, and discussions retained as product and research history for CipherPlay.
             </p>
           </header>
 

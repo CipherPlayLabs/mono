@@ -33,7 +33,7 @@ export default function About(): ReactNode {
   return (
     <Layout
       title="About"
-      description="Company context, leadership, RANDAO, backers, and diligence information for CipherPlay.">
+      description="Company overview, leadership, RANDAO, backers, and diligence information for CipherPlay.">
       <main>
         <CipherHero
           eyebrow="About CipherPlay"
@@ -45,7 +45,7 @@ export default function About(): ReactNode {
           <div className="container">
             <div className={styles.aboutGrid}>
               <article className={styles.panel}>
-                <p className={styles.eyebrow}>Company context</p>
+                <p className={styles.eyebrow}>Company</p>
                 <h2>Research-backed product building.</h2>
                 <p>
                   CipherPlay uses public market research and focused product work to make
@@ -101,7 +101,7 @@ export default function About(): ReactNode {
           <div className="container">
             <div className={styles.sectionHeader}>
               <p>Review next</p>
-              <h2>Company, product, and research context in one place.</h2>
+              <h2>Company, product, and research in one place.</h2>
             </div>
             <div className={styles.linkGrid}>
               <TrackedLink

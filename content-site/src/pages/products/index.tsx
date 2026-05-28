@@ -10,7 +10,7 @@ export default function Products(): ReactNode {
   return (
     <Layout
       title="Products & Services"
-      description="CipherPlay products, current services, and historic product context.">
+      description="CipherPlay products, current services, and historic product history.">
       <main>
         <CipherHero
           eyebrow="Products & Services"

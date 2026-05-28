@@ -59,7 +59,7 @@ export default function TapIntoSuccess(): ReactNode {
                   <p>
                     You can count on CipherPlay to be transparent about the markets we research and
                     the products we build. We want investors, partners, and customers to move
-                    closer to a perfect information game with us, with enough context to understand
+                    closer to a perfect information game with us, with enough information to understand
                     what we see, what we are building, and why it matters.
                   </p>
 

@@ -14,9 +14,9 @@ import styles from './index.module.css';
 
 const primarySections = [
   {
-    label: 'Company context',
+    label: 'Company',
     title: 'About',
-    summary: 'Company overview, leadership, backers, partner ecosystem, and diligence context.',
+    summary: 'Company overview, leadership, backers, partner ecosystem, and diligence signals.',
     href: '/about',
   },
   {
@@ -28,13 +28,13 @@ const primarySections = [
   {
     label: 'Software',
     title: 'Products & Services',
-    summary: 'Current blockchain infrastructure product work, consulting services, and historic context.',
+    summary: 'Current blockchain infrastructure product work, consulting services, and historic product history.',
     href: '/products',
   },
   {
     label: 'Ecosystem',
     title: 'Partners',
-    summary: 'Partnership context, collaboration signals, and CipherPlay LinkedIn.',
+    summary: 'Partnerships, collaboration signals, and CipherPlay LinkedIn.',
     href: '/partners',
   },
   {
@@ -61,7 +61,7 @@ export default function Home(): ReactNode {
           <div className="container">
             <div className={styles.sectionHeader}>
               <p>Site sections</p>
-              <h2>Explore company, research, products and services, partner, and media context.</h2>
+              <h2>Explore CipherPlay company, research, products and services, partners, and media.</h2>
             </div>
             <div className={styles.sectionGrid}>
               {primarySections.map((section) => (
@@ -88,7 +88,7 @@ export default function Home(): ReactNode {
                 <h2>RANDAO anchors CipherPlay's cryptographic software work.</h2>
                 <p>
                   RANDAO gives the site a public blockchain infrastructure anchor while the broader
-                  studio and research surfaces stay focused on reviewable context.
+                  studio and research surfaces stay focused on reviewable material.
                 </p>
                 <Link to="/products/randao" className={styles.textLink}>
                   View RANDAO product page
@@ -137,7 +137,7 @@ export default function Home(): ReactNode {
                 <article className={styles.pillar} key={pillar.name}>
                   <h3>{pillar.name}</h3>
                   <p>{pillar.summary}</p>
-                  <Link to={pillar.contextHref}>Explore context</Link>
+                  <Link to={pillar.relatedHref}>Explore</Link>
                 </article>
               ))}
             </div>
