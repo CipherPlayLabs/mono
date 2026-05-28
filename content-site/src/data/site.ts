@@ -1,7 +1,5 @@
 import {links} from '../../links';
 
-export type AudienceSlug = 'investors' | 'partners' | 'customers';
-
 export interface SiteCta {
   label: string;
   href: string;
@@ -9,9 +7,7 @@ export interface SiteCta {
   disabled: boolean;
 }
 
-export interface AudiencePage {
-  slug: AudienceSlug;
-  navLabel: string;
+export interface PageBrief {
   eyebrow: string;
   title: string;
   summary: string;
@@ -57,7 +53,7 @@ export interface OrganizationEntry {
 export interface IndustryPillar {
   name: string;
   summary: string;
-  audienceFit: string;
+  relevance: string;
   relatedHref: string;
 }
 
@@ -96,65 +92,37 @@ export interface TeamMember {
   profileHref?: string;
 }
 
-export const audiencePages: AudiencePage[] = [
-  {
-    slug: 'investors',
-    navLabel: 'Investors',
-    eyebrow: 'Capital and company diligence',
-    title: 'See how CipherPlay turns emerging-tech theses into software ventures.',
-    summary:
-      'For investors evaluating the team, products, backers, industries, and venture-building focus behind CipherPlay.',
-    signals: [
-      'Venture-backed studio model',
-      'RANDAO anchors blockchain infrastructure work',
-      'Focused emerging-tech industry map',
-    ],
-    primaryCta: {
-      label: 'Request investor materials',
-      href: links.investorForm,
-      eventName: 'cta_investor_materials',
-      disabled: false,
-    },
+export const investorDiligence: Pick<PageBrief, 'signals' | 'primaryCta'> = {
+  signals: [
+    'Venture-backed studio model',
+    'RANDAO anchors blockchain infrastructure work',
+    'Focused emerging-tech industry map',
+  ],
+  primaryCta: {
+    label: 'Request investor materials',
+    href: links.investorForm,
+    eventName: 'cta_investor_materials',
+    disabled: false,
   },
-  {
-    slug: 'partners',
-    navLabel: 'Partners',
-    eyebrow: 'Ecosystem and venture collaboration',
-    title: 'Partner with a studio that can research, prototype, and ship.',
-    summary:
-      'For accelerators, ecosystems, labs, and companies exploring collaboration with CipherPlay.',
-    signals: [
-      'Partner ecosystem relationships',
-      'Product and protocol experience',
-      'Market research plus software execution',
-    ],
-    primaryCta: {
-      label: 'Propose a partnership',
-      href: links.partnerForm,
-      eventName: 'cta_partner_inquiry',
-      disabled: false,
-    },
+};
+
+export const partnerPage: PageBrief = {
+  eyebrow: 'Ecosystem and venture collaboration',
+  title: 'Partner with a studio that can research, prototype, and ship.',
+  summary:
+    'For accelerators, ecosystems, labs, and companies exploring collaboration with CipherPlay.',
+  signals: [
+    'Partner ecosystem relationships',
+    'Product and protocol experience',
+    'Market research plus software execution',
+  ],
+  primaryCta: {
+    label: 'Propose a partnership',
+    href: links.partnerForm,
+    eventName: 'cta_partner_inquiry',
+    disabled: false,
   },
-  {
-    slug: 'customers',
-    navLabel: 'Customers',
-    eyebrow: 'Software and intelligence buyers',
-    title: 'Explore emerging-tech software and market intelligence built for real decisions.',
-    summary:
-      'For customers evaluating CipherPlay products, research, or studio-built emerging-tech software.',
-    signals: [
-      'RANDAO infrastructure product',
-      'AI and cryptographic software focus',
-      'Research-backed build decisions',
-    ],
-    primaryCta: {
-      label: 'Request consulting discovery',
-      href: links.customerForm,
-      eventName: 'cta_customer_discovery',
-      disabled: false,
-    },
-  },
-];
+};
 
 export const products: Product[] = [
   {
@@ -220,7 +188,7 @@ export const industryPillars: IndustryPillar[] = [
     name: 'AI Productivity Software',
     summary:
       'Software that helps teams use AI systems for practical research, automation, and decision support.',
-    audienceFit:
+    relevance:
       'Useful to customers and partners evaluating where AI can reduce coordination cost without losing operational control.',
     relatedHref: '/market-analysis',
   },
@@ -228,7 +196,7 @@ export const industryPillars: IndustryPillar[] = [
     name: 'Web3 Node Infrastructure',
     summary:
       'Infrastructure for decentralized networks where reliability, incentive alignment, and operator experience matter.',
-    audienceFit:
+    relevance:
       'Relevant to investors and partners assessing durable Web3 infrastructure needs beyond speculative cycles.',
     relatedHref: '/products/randao',
   },
@@ -236,7 +204,7 @@ export const industryPillars: IndustryPillar[] = [
     name: 'Cryptographic Protocols',
     summary:
       'Protocol design and productization around trust, randomness, verification, and secure coordination.',
-    audienceFit:
+    relevance:
       'Relevant to technical customers and partners tracking applied cryptography and product-ready trust systems.',
     relatedHref: '/products/randao',
   },
@@ -244,7 +212,7 @@ export const industryPillars: IndustryPillar[] = [
     name: 'Venture/Market Intelligence',
     summary:
       'Research systems that turn emerging-technology signals into clearer market maps and venture theses.',
-    audienceFit:
+    relevance:
       'Relevant to investors and partners who need concise public framing before requesting deeper diligence.',
     relatedHref: '/market-analysis',
   },
@@ -252,7 +220,7 @@ export const industryPillars: IndustryPillar[] = [
     name: 'AI Research Software',
     summary:
       'Tools for researchers and builders who need AI-assisted workflows around literature, experiments, and technical synthesis.',
-    audienceFit:
+    relevance:
       'Relevant to customers and partners looking for software that supports higher-quality technical research loops.',
     relatedHref: '/market-analysis',
   },

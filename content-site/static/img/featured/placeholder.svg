@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225" viewBox="0 0 400 225">
-  <rect width="400" height="225" fill="#f0f0f0"/>
-  <text x="200" y="100" font-family="system-ui, sans-serif" font-size="14" fill="#999" text-anchor="middle">Featured Preview</text>
-  <text x="200" y="120" font-family="system-ui, sans-serif" font-size="12" fill="#ccc" text-anchor="middle">Add image to static/img/featured/</text>
-</svg>

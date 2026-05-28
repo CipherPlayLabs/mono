@@ -6,10 +6,8 @@ import {ConversionButton} from '@site/src/components/ConversionButton';
 import {CredibilityStrip} from '@site/src/components/CredibilityStrip';
 import {TeamGrid} from '@site/src/components/TeamGrid';
 import {TrackedLink} from '@site/src/components/TrackedLink';
-import {audiencePages} from '@site/src/data/site';
+import {investorDiligence} from '@site/src/data/site';
 import styles from './about.module.css';
-
-const investorContext = audiencePages.find((page) => page.slug === 'investors')!;
 
 const tapValues = [
   {
@@ -59,11 +57,11 @@ export default function About(): ReactNode {
                 <p className={styles.eyebrow}>Investor diligence</p>
                 <h2>Signals for company review.</h2>
                 <ul className={styles.signalList}>
-                  {investorContext.signals.map((point) => (
+                  {investorDiligence.signals.map((point) => (
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
-                <ConversionButton cta={investorContext.primaryCta} />
+                <ConversionButton cta={investorDiligence.primaryCta} />
               </article>
             </div>
           </div>

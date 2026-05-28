@@ -17,13 +17,9 @@ locals {
 
   plausible_origin_service = "http://localhost:8000"
 
-  analytics_zone_ids_by_domain = {
-    "allanbpediniv.com" = var.allanbpediniv_zone_id
-  }
-
   analytics_routes = {
     for site in var.analytics_sites : site.route_pattern => merge(site, {
-      zone_id = lookup(local.analytics_zone_ids_by_domain, site.domain, var.allanbpediniv_zone_id)
+      zone_id = var.public_site_zone_id
     })
   }
 }

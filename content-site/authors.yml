@@ -1,6 +1,6 @@
-allan:
-  name: "Allan B. Pedin IV"
-  title: "CEO, CipherPlay"
-  image_url: "/img/headshot.png"
+cipherplay:
+  name: "CipherPlay"
+  title: "Emerging-tech software and market intelligence"
+  image_url: "/img/cipherplay/logo-gradient.svg"
   socials:
-    linkedin: "https://www.linkedin.com/in/allan-b-pedin-iv/"
+    linkedin: "https://www.linkedin.com/company/cipherplay/"

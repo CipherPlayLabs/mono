@@ -8,7 +8,7 @@ const env = {
 };
 
 function makeRequest(path: string, init?: RequestInit) {
-  return new Request(`https://allanbpediniv.com${path}`, init);
+  return new Request(`https://cipherplay.local${path}`, init);
 }
 
 describe("analytics proxy worker", () => {
@@ -43,7 +43,7 @@ describe("analytics proxy worker", () => {
     const response = await worker.fetch(
       makeRequest("/_analytics/api/event", {
         method: "POST",
-        body: JSON.stringify({ name: "pageview", url: "https://allanbpediniv.com/" }),
+        body: JSON.stringify({ name: "pageview", url: "https://cipherplay.local/" }),
         headers: {
           "content-type": "application/json",
         },
@@ -57,7 +57,7 @@ describe("analytics proxy worker", () => {
     expect(upstreamRequest.url).toBe("https://analytics.lobst3rs.com/api/event");
     expect(upstreamRequest.method).toBe("POST");
     expect(await upstreamRequest.text()).toBe(
-      JSON.stringify({ name: "pageview", url: "https://allanbpediniv.com/" }),
+      JSON.stringify({ name: "pageview", url: "https://cipherplay.local/" }),
     );
   });
 
@@ -70,7 +70,7 @@ describe("analytics proxy worker", () => {
           "user-agent": "Test Browser",
           "x-forwarded-for": "203.0.113.9",
           "accept-language": "en-US,en;q=0.9",
-          "referer": "https://allanbpediniv.com/research",
+          "referer": "https://cipherplay.local/market-analysis",
         },
       }),
       env,
@@ -80,7 +80,7 @@ describe("analytics proxy worker", () => {
     expect(upstreamRequest.headers.get("user-agent")).toBe("Test Browser");
     expect(upstreamRequest.headers.get("x-forwarded-for")).toBe("203.0.113.9");
     expect(upstreamRequest.headers.get("accept-language")).toBe("en-US,en;q=0.9");
-    expect(upstreamRequest.headers.get("referer")).toBe("https://allanbpediniv.com/research");
+    expect(upstreamRequest.headers.get("referer")).toBe("https://cipherplay.local/market-analysis");
   });
 
   it("authenticates to the Access-protected Plausible origin with a service token", async () => {

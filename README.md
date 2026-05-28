@@ -1,13 +1,22 @@
-# abpiv-personal-brand
+# CipherPlay Mono
 
-Docusaurus content site deployed to Cloudflare Pages at `https://allanbpediniv.com/info/`.
+This repository contains the local CipherPlay `/info/` content site and private analytics infrastructure.
 
-For future coding agents, start with [`AGENTS.md`](AGENTS.md). It captures the current production state, analytics deployment map, workflow approval flow, and verification commands.
+## Project Layout
 
-The site lives in `content-site/`. GitHub Actions builds, typechecks, and deploys it through the `Site and Analytics` workflow.
+- `content-site/` - Docusaurus v3 site for CipherPlay company, Market Research, Products & Services, Partners, Media Kit, and form stubs.
+- `infra/analytics/` - private Plausible Community Edition infrastructure and same-origin `/_analytics/*` proxy.
+- `docs/superpowers/` - implementation notes and historical local plans.
 
-Shared Plausible Analytics infrastructure lives in [`infra/analytics/`](infra/analytics/). It is repo-level infrastructure, not content-site-specific, so future sites should reuse the same OpenTofu, Ansible, and Worker patterns.
+## Local Review
 
-The `Site and Analytics` workflow in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) validates GCP authentication through GitHub OIDC, checks the analytics IaC, tests the Worker, builds the content site, and deploys Cloudflare Pages. Manual infrastructure workflows live in [`.github/workflows/analytics-apply.yml`](.github/workflows/analytics-apply.yml) and [`.github/workflows/analytics-provision.yml`](.github/workflows/analytics-provision.yml).
+```bash
+cd content-site
+npm run typecheck
+npm run build
+npm run start
+```
 
-For the next AI or maintainer, start with the content-site handoff: [`content-site/AI_HANDOFF.md`](content-site/AI_HANDOFF.md).
+The Docusaurus `baseUrl` stays `/info/`. The live preview branch is `preview` at `https://content-site.cipherinternal.com/info/`; production is `main` at `https://cipherplay.com/info/`.
+
+Deployment configuration lives in GitHub Environments. `preview` deploys without a reviewer gate, while `production` requires environment approval before Cloudflare Pages receives a production deploy.

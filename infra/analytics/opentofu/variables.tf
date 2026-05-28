@@ -25,8 +25,8 @@ variable "lobst3rs_zone_id" {
   type        = string
 }
 
-variable "allanbpediniv_zone_id" {
-  description = "Cloudflare zone ID for the current public content-site domain."
+variable "public_site_zone_id" {
+  description = "Cloudflare zone ID for the current public CipherPlay content-site domain."
   type        = string
 }
 
@@ -46,12 +46,7 @@ variable "analytics_sites" {
     domain        = string
     route_pattern = string
   }))
-  default = [
-    {
-      domain        = "allanbpediniv.com"
-      route_pattern = "allanbpediniv.com/_analytics/*"
-    }
-  ]
+  default = []
 
   validation {
     condition = alltrue([

@@ -28,7 +28,7 @@ The `data-api` attribute is required. Without it, the Plausible script posts to 
 Repository variables:
 
 - `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_ZONE_ID_ALLANBPEDINIV`
+- `CLOUDFLARE_ZONE_ID_PUBLIC_SITE`
 - `CLOUDFLARE_ZONE_ID_LOBST3RS` or the future private dashboard zone variable once the dashboard hostname is finalized
 - `GCP_PROJECT_ID`
 - `GCP_REGION`

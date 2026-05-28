@@ -24,7 +24,7 @@ Set these values from repository variables, a local uncommitted `.tfvars` file, 
 
 - `cloudflare_account_id`
 - `lobst3rs_zone_id` or the future private dashboard zone variable after the hostname is finalized
-- `allanbpediniv_zone_id` for the current public content-site domain
+- `public_site_zone_id` for the current public CipherPlay content-site domain
 - `gcp_project_id`
 - `plausible_hostname`
 - `access_allowed_email`
@@ -33,7 +33,9 @@ Defaults are provided for:
 
 - `gcp_region = "us-east1"`
 - `gcp_zone = "us-east1-b"`
-- `analytics_sites = [{ domain = "allanbpediniv.com", route_pattern = "allanbpediniv.com/_analytics/*" }]`
+- `analytics_sites = []`
+
+Set `analytics_sites` explicitly when a public CipherPlay domain is ready.
 
 ## Commands
 

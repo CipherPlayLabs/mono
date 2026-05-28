@@ -4,13 +4,15 @@ import type * as Preset from '@docusaurus/preset-classic';
 import { links } from './links';
 
 const isProduction = process.env.NODE_ENV === 'production';
+const siteUrl = process.env.SITE_URL || 'https://cipherplay.local';
+const plausibleSiteDomain = process.env.PLAUSIBLE_SITE_DOMAIN || new URL(siteUrl).hostname;
 
 const config: Config = {
   title: 'CipherPlay',
 
   favicon: 'img/cipherplay/logo-gradient.svg',
 
-  url: 'https://allanbpediniv.com',
+  url: siteUrl,
   baseUrl: '/info/',
 
   projectName: 'mono',
@@ -47,7 +49,7 @@ const config: Config = {
         {
           src: '/_analytics/js/script.js',
           defer: true,
-          'data-domain': 'allanbpediniv.com',
+          'data-domain': plausibleSiteDomain,
           'data-api': '/_analytics/api/event',
         },
       ]
@@ -57,27 +59,8 @@ const config: Config = {
     [
       'classic',
       {
-        docs: {
-          routeBasePath: 'none',
-          path: 'docs',
-          sidebarPath: 'docs/sidebars.js',
-        },
-        blog: {
-          id: 'default',
-          routeBasePath: '/insights',
-          path: './insights',
-          blogTitle: 'Archived Insights',
-          blogDescription: 'Archived builder notes and supporting context.',
-          showReadingTime: true,
-          authorsMapPath: '../authors.yml',
-          feedOptions: {
-            type: ['rss', 'atom'],
-            title: 'Archived Insights',
-          },
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'ignore',
-        },
+        docs: false,
+        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -96,22 +79,11 @@ const config: Config = {
         blogDescription: 'CipherPlay announcements and milestones.',
         authorsMapPath: '../authors.yml',
         feedOptions: {
-          type: ['rss', 'atom'],
-          title: 'CipherPlay Newsroom',
+          type: [],
         },
         onInlineTags: 'warn',
         onInlineAuthors: 'warn',
         onUntruncatedBlogPosts: 'ignore',
-      },
-    ],
-    [
-      '@easyops-cn/docusaurus-search-local',
-      {
-        hashed: true,
-        indexBlog: true,
-        indexPages: true,
-        blogDir: ['./insights', './newsroom'],
-        blogRouteBasePath: ['/insights', '/newsroom'],
       },
     ],
   ],
@@ -199,20 +171,6 @@ const config: Config = {
           title: 'Media Kit',
           items: [
             { to: '/media-kit', label: 'Brand Assets' },
-            {
-              href: 'https://allanbpediniv.com/info/media-kit/cipherplay-media-kit.zip',
-              label: 'Download ZIP',
-            },
-          ],
-        },
-        {
-          title: 'RSS Feeds',
-          items: [
-            { href: 'https://allanbpediniv.com/info/newsroom/rss.xml', label: 'Newsroom' },
-            {
-              href: 'https://allanbpediniv.com/info/insights/rss.xml',
-              label: 'Archived Insights',
-            },
           ],
         },
       ],

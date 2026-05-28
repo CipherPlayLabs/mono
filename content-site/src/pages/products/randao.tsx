@@ -3,13 +3,13 @@ import Layout from '@theme/Layout';
 import {CipherHero} from '@site/src/components/CipherHero';
 import {ConversionButton} from '@site/src/components/ConversionButton';
 import {TrackedLink} from '@site/src/components/TrackedLink';
-import {FeaturedItems} from '@site/src/data/featured';
+import {mediaItems} from '@site/src/data/media';
 import {products} from '@site/src/data/site';
 import {links} from '../../../links';
 import styles from './products.module.css';
 
 const randao = products.find((product) => product.slug === 'randao')!;
-const randaoMedia = FeaturedItems.filter((item) =>
+const randaoMedia = mediaItems.filter((item) =>
   `${item.title} ${item.description}`.toLowerCase().includes('randao'),
 ).slice(0, 3);
 

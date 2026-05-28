@@ -23,7 +23,7 @@ export default function Industries(): ReactNode {
                 <article className={styles.pillar} key={pillar.name}>
                   <h2>{pillar.name}</h2>
                   <p>{pillar.summary}</p>
-                  <p className={styles.audienceFit}>{pillar.audienceFit}</p>
+                  <p className={styles.relevance}>{pillar.relevance}</p>
                   <Link to={pillar.relatedHref}>Explore related work</Link>
                 </article>
               ))}

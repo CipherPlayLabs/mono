@@ -28,13 +28,13 @@ plausible_smtp_from: ""
 cloudflared_origin_url: "http://{{ plausible_local_bind_address }}:{{ plausible_local_port }}"
 cloudflare_tunnel_token: "{{ vault_cloudflare_tunnel_token }}"
 
-analytics_backup_bucket: abpiv-personal-brand-plausible-backups
+analytics_backup_bucket: cipherplay-plausible-backups
 analytics_backup_gcs_uri: "gs://{{ analytics_backup_bucket }}"
 analytics_backup_retention_days: 30
 analytics_backup_age_recipient: age1replacewithproductionrecipient0000000000000000000000000
 analytics_backup_age_identity_file: /etc/plausible-backup/age.key
 analytics_backup_service_account_json: /etc/plausible-backup/gcs-service-account.json
-analytics_backup_gcloud_project: abpiv-personal-brand
+analytics_backup_gcloud_project: cipherplay
 
 operator_ssh_cidr_allowlist: []
 firewall_allowed_tcp_ports: []
