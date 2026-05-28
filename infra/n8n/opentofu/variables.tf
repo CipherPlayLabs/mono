@@ -150,13 +150,13 @@ variable "binary_data_bucket_name" {
 variable "forms_rate_limit_period_seconds" {
   description = "Cloudflare public forms rate-limit counting period."
   type        = number
-  default     = 60
+  default     = 10
 }
 
 variable "forms_rate_limit_requests_per_period" {
   description = "Requests per IP and Cloudflare colo allowed during the forms rate-limit period before managed challenge."
   type        = number
-  default     = 120
+  default     = 20
 }
 
 variable "forms_rate_limit_mitigation_seconds" {
