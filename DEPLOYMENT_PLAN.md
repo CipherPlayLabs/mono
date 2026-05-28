@@ -2,6 +2,9 @@
 
 The content site deploys through GitHub Actions and Cloudflare Pages.
 
+The repository default branch is `main`. Work lands in `preview` first, and
+`preview` is the only branch allowed to open pull requests into `main`.
+
 | Target | Branch | URL | GitHub Environment |
 | --- | --- | --- | --- |
 | Preview | `preview` | `https://content-site.cipherplay.net/info/` | `preview` |
@@ -35,6 +38,7 @@ content-site/cloudflare-pages/
 - Pushes to `main` run CI only.
 - Manual dispatch from `main` deploys production from the `production` environment.
 - Manual dispatch from `preview` or pushes to `preview` deploy the live preview site.
+- `.github/workflows/main-source-guard.yml` fails pull requests into `main` unless the source branch is `preview`.
 
 `.github/workflows/content-site-setup.yml` is a manual bootstrap workflow that uses the `production` environment token to create or update the Cloudflare Pages project, attach the production and preview custom domains, and point Cloudflare DNS at the Pages aliases.
 
