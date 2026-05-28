@@ -38,6 +38,23 @@ variable "enable_cloudflare_edge" {
   default     = false
 }
 
+variable "cloudflare_access_organization_name" {
+  description = "Cloudflare Zero Trust organization display name used when the optional editor hostname is enabled."
+  type        = string
+  default     = "CipherPlay Internal"
+}
+
+variable "cloudflare_access_auth_domain" {
+  description = "Unique Cloudflare Access auth domain used when the optional editor hostname is enabled."
+  type        = string
+  default     = "cipherplay.cloudflareaccess.com"
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.cloudflareaccess\\.com$", var.cloudflare_access_auth_domain))
+    error_message = "cloudflare_access_auth_domain must be a lowercase cloudflareaccess.com hostname."
+  }
+}
+
 variable "forms_hostname" {
   description = "Public hostname used by n8n-generated forms and production webhooks."
   type        = string

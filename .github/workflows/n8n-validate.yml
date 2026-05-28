@@ -23,6 +23,8 @@ concurrency:
 env:
   TOFU_DIR: infra/n8n/opentofu
   TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_cloudflare_access_auth_domain: ${{ vars.N8N_CLOUDFLARE_ACCESS_AUTH_DOMAIN || 'cipherplay.cloudflareaccess.com' }}
+  TF_VAR_cloudflare_access_organization_name: ${{ vars.N8N_CLOUDFLARE_ACCESS_ORGANIZATION_NAME || 'CipherPlay Internal' }}
   TF_VAR_cipherplay_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
   TF_VAR_enable_cloudflare_edge: ${{ vars.N8N_ENABLE_CLOUDFLARE_EDGE || 'false' }}
   TF_VAR_gcp_project_id: ${{ vars.N8N_GCP_PROJECT_ID }}

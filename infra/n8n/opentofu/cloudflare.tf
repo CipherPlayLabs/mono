@@ -82,6 +82,16 @@ resource "cloudflare_ruleset" "forms_rate_limit" {
   }]
 }
 
+resource "cloudflare_zero_trust_organization" "n8n" {
+  count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
+
+  account_id              = var.cloudflare_account_id
+  name                    = var.cloudflare_access_organization_name
+  auth_domain             = var.cloudflare_access_auth_domain
+  session_duration        = "24h"
+  deny_unmatched_requests = false
+}
+
 resource "cloudflare_zero_trust_access_application" "editor" {
   count = var.enable_cloudflare_edge && local.editor_enabled ? 1 : 0
 
@@ -109,4 +119,8 @@ resource "cloudflare_zero_trust_access_application" "editor" {
       error_message = "Set editor_access_allowed_emails or editor_access_allowed_group_ids when editor_hostname is set."
     }
   }
+
+  depends_on = [
+    cloudflare_zero_trust_organization.n8n,
+  ]
 }
