@@ -144,6 +144,12 @@ const config: Config = {
           position: 'left',
         },
         {
+          href: links.investorForm,
+          label: 'Investor Materials',
+          position: 'right',
+          className: 'navbar-investor-cta',
+        },
+        {
           type: 'search',
           position: 'right',
         },
@@ -167,6 +173,7 @@ const config: Config = {
           items: [
             { to: '/team', label: 'Team' },
             { to: '/newsroom', label: 'Newsroom' },
+            { href: links.investorForm, label: 'Investor Materials' },
           ],
         },
         {

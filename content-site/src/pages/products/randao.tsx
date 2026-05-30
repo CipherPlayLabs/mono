@@ -19,10 +19,15 @@ export default function Randao(): ReactNode {
       <main>
         <CipherHero
           eyebrow={randao.status}
-          title="RANDAO"
-          summary={randao.summary}
+          title="RANDAO is CipherPlay's current product for cryptographic infrastructure execution."
+          summary="RANDAO is a CipherPlay-owned and operated product brand for decentralized and verifiable randomness. It gives investors, partners, and customers a concrete product anchor without turning CipherPlay into a single-product company."
           cta={randao.cta}
-          imageSrc="/img/research/randao-logo.png"
+          proofLabel="RANDAO"
+          proofItems={[
+            'CipherPlay-owned and operated product brand',
+            'Public whitepaper and live product site',
+            'Cryptographic infrastructure in practice',
+          ]}
         />
         <section className={styles.section}>
           <div className="container">
@@ -58,6 +63,7 @@ export default function Randao(): ReactNode {
                 </div>
               </article>
               <aside className={styles.panel}>
+                <p className={styles.eyebrow}>Featured coverage</p>
                 <h2>Featured media</h2>
                 <div className={styles.mediaList}>
                   {randaoMedia.map((item) => (

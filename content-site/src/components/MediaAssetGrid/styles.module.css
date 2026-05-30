@@ -18,7 +18,9 @@
   min-height: 190px;
   place-items: center;
   padding: 1rem;
-  background: #061114;
+  background:
+    linear-gradient(135deg, rgba(55, 255, 222, 0.08), transparent 54%),
+    #061114;
 }
 
 .preview img {
@@ -43,6 +45,9 @@
 }
 
 .body a {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
   font-weight: 800;
 }
 

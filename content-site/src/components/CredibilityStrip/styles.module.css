@@ -19,6 +19,13 @@
   margin: 0;
 }
 
+.heading span {
+  display: block;
+  margin-top: 0.75rem;
+  color: var(--cipher-muted);
+  line-height: 1.6;
+}
+
 .group + .group {
   margin-top: 2rem;
 }

@@ -19,7 +19,37 @@
   margin: 0;
 }
 
+.signalGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.signalCard {
+  min-height: 110px;
+  display: grid;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(55, 255, 222, 0.08), transparent 56%),
+    var(--cipher-surface);
+}
+
+.signalCard span {
+  color: var(--ifm-font-color-base);
+  font-weight: 900;
+}
+
 .note {
   margin-top: 1rem;
   color: var(--cipher-muted);
+}
+
+@media (max-width: 996px) {
+  .signalGrid {
+    grid-template-columns: 1fr;
+  }
 }

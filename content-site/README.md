@@ -1,15 +1,15 @@
 # CipherPlay Content Site
 
-CipherPlay's local Docusaurus v3 site for the `/info/` surface.
+CipherPlay's local Docusaurus v3 site for `/info/`.
 
 ## Current Routes
 
 | Route | Purpose |
 | --- | --- |
-| `/` | CipherPlay overview and primary site sections |
-| `/about` | Company overview, leadership, backers, TAP values, and investor diligence signals |
+| `/` | CipherPlay overview and main site sections |
+| `/about` | Company overview, leadership, backers, TAP values, and investor information |
 | `/about/tap-into-success` | Expanded TAP operating principle |
-| `/market-analysis` | Market Research surface and Full Report request path |
+| `/market-analysis` | Market Research and Full Report request path |
 | `/products` | Products & Services |
 | `/products/randao` | RANDAO product page |
 | `/partners` | Partner ecosystem and collaboration page |

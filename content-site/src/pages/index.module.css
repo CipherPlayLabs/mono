@@ -2,6 +2,11 @@
   padding: 4rem 0;
 }
 
+.band {
+  padding: 4rem 0;
+  background: var(--cipher-band);
+}
+
 .sectionHeader {
   max-width: 780px;
   margin-bottom: 1.6rem;
@@ -35,12 +40,90 @@
 }
 
 .textLink {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
   font-weight: 800;
 }
 
 .productList {
   display: grid;
   gap: 1rem;
+}
+
+.proofGrid,
+.audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.proofCard,
+.audienceCard,
+.investorPanel {
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.proofCard {
+  min-height: 260px;
+  padding: 1.3rem;
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.proofCard:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.proofCard span,
+.audienceCard span {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proofCard h3,
+.audienceCard h3 {
+  margin: 0 0 0.8rem;
+}
+
+.proofCard p,
+.audienceCard p,
+.investorPanel p {
+  color: var(--cipher-muted);
+  line-height: 1.65;
+}
+
+.proofCard strong {
+  display: inline-flex;
+  margin-top: 0.35rem;
+  color: var(--ifm-color-primary);
+}
+
+.audienceCard {
+  display: grid;
+  min-height: 280px;
+  align-content: space-between;
+  padding: 1.25rem;
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.audienceCard:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  border-color: var(--ifm-color-primary);
+}
+
+.audienceCard strong {
+  color: var(--ifm-color-primary);
 }
 
 .sectionGrid {
@@ -83,9 +166,29 @@
   line-height: 1.6;
 }
 
+.investorPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 1.25rem;
+  padding: 1.35rem;
+}
+
+.investorPanel h2 {
+  margin: 0;
+}
+
+.investorPanel p:last-child {
+  margin-bottom: 0;
+}
+
 @media (max-width: 996px) {
   .twoColumn,
-  .sectionGrid {
+  .sectionGrid,
+  .proofGrid,
+  .audienceGrid,
+  .investorPanel {
     grid-template-columns: 1fr;
   }
 }

@@ -45,8 +45,11 @@ export function CredibilityStrip(): React.JSX.Element {
     <section className={styles.strip}>
       <div className="container">
         <div className={styles.heading}>
-          <p>Company network</p>
-          <h2>Backers and partner ecosystem</h2>
+          <h2>Backers and partner ecosystem relationships</h2>
+          <span>
+            Relationship labels follow the public company glossary: backers provided financial
+            support; partner ecosystem entries indicate broader collaboration context.
+          </span>
         </div>
         <OrganizationGroup title="Backers" organizations={backers} />
         <OrganizationGroup title="Partner Ecosystem" organizations={partnerEcosystem} />

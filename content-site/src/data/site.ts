@@ -57,13 +57,14 @@ export interface TeamMember {
   summary: string;
   imageSrc: string;
   profileHref?: string;
+  websiteHref?: string;
 }
 
 export const investorDiligence: Pick<PageBrief, 'signals' | 'primaryCta'> = {
   signals: [
-    'Venture-backed studio model',
-    'RANDAO anchors blockchain infrastructure work',
-    'Focused emerging-technology industry map',
+    'Research-backed studio model',
+    'RANDAO anchors current product work',
+    'TAP explains how CipherPlay builds trust',
   ],
   primaryCta: {
     label: 'Request investor materials',
@@ -77,11 +78,14 @@ export const partnerPage: PageBrief = {
   eyebrow: 'Ecosystem and venture collaboration',
   title: 'Partner with a studio that can research, prototype, and ship.',
   summary:
-    'For accelerators, ecosystems, labs, and companies exploring collaboration with CipherPlay.',
+    'For accelerators, ecosystems, labs, and companies exploring research, product, protocol, or venture-support collaboration with CipherPlay.',
   signals: [
-    'Partner ecosystem relationships',
-    'Product and protocol experience',
-    'Market research plus software execution',
+    'Product Distribution',
+    'Market Validation',
+    'Product Integrations',
+    'Co-Marketing Channels',
+    'Interviews',
+    'Data Shares',
   ],
   primaryCta: {
     label: 'Propose a partnership',
@@ -218,6 +222,7 @@ export const teamMembers: TeamMember[] = [
       'Leads CipherPlay across company strategy, venture framing, product thesis development, and market research direction.',
     imageSrc: '/img/headshot.png',
     profileHref: links.allanLinkedIn,
+    websiteHref: links.allanWebsite,
   },
   {
     name: 'Tyler Warburton',

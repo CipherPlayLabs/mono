@@ -5,7 +5,7 @@ export default function InvestorMaterialsForm(): ReactNode {
   return (
     <FormStubPage
       title="Request investor materials"
-      summary="Reserved form route for investors requesting CipherPlay diligence materials."
+      summary="Reserved form route for investors requesting CipherPlay investor materials."
     />
   );
 }
