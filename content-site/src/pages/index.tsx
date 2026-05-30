@@ -5,11 +5,7 @@ import {CipherHero} from '@site/src/components/CipherHero';
 import {CredibilityStrip} from '@site/src/components/CredibilityStrip';
 import {ProductCard} from '@site/src/components/ProductCard';
 import {TrackedLink} from '@site/src/components/TrackedLink';
-import {
-  industryPillars,
-  marketResearchReports,
-  products,
-} from '@site/src/data/site';
+import {products} from '@site/src/data/site';
 import styles from './index.module.css';
 
 const primarySections = [
@@ -22,7 +18,7 @@ const primarySections = [
   {
     label: 'Reports',
     title: 'Market Research',
-    summary: 'Public Market Research reports with industry framing, market dynamics, and segment maps.',
+    summary: 'Public Market Research surface and Full Report request path.',
     href: '/market-analysis',
   },
   {
@@ -49,12 +45,12 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="CipherPlay"
-      description="CipherPlay is a venture-backed emerging-tech software development studio and market research firm.">
+      description="CipherPlay is an emerging-technology software studio and market research firm.">
       <main>
         <CipherHero
-          eyebrow="Emerging-tech software and market intelligence"
+          eyebrow="Emerging-technology software and market research"
           title="CipherPlay"
-          summary="A venture-backed emerging-tech software development studio and market research firm building products and public research for investors, partners, and customers."
+          summary="An emerging-technology software studio and market research firm building products and public research for investors, partners, and customers."
         />
 
         <section className={styles.section}>
@@ -99,47 +95,6 @@ export default function Home(): ReactNode {
                   <ProductCard key={product.slug} product={product} />
                 ))}
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.band}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <p>Market Research reports</p>
-              <h2>Explore useful public Market Research reports below.</h2>
-            </div>
-            <div className={styles.reportGrid}>
-              {marketResearchReports.map((report) => (
-                <TrackedLink
-                  key={report.slug}
-                  to={report.href}
-                  eventName="market_analysis_teaser_click"
-                  eventProps={{report: report.slug}}
-                  className={styles.report}>
-                  <span>{report.industries.join(' / ')}</span>
-                  <h3>{report.title}</h3>
-                  <p>{report.executiveSummary}</p>
-                </TrackedLink>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <p>Industry pillars</p>
-              <h2>Focused where emerging technology becomes software, infrastructure, and intelligence.</h2>
-            </div>
-            <div className={styles.pillarGrid}>
-              {industryPillars.map((pillar) => (
-                <article className={styles.pillar} key={pillar.name}>
-                  <h3>{pillar.name}</h3>
-                  <p>{pillar.summary}</p>
-                  <Link to={pillar.relatedHref}>Explore</Link>
-                </article>
-              ))}
             </div>
           </div>
         </section>

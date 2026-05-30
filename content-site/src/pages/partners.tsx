@@ -37,7 +37,6 @@ export default function Partners(): ReactNode {
                 <div className={styles.linkGrid}>
                   <TrackedLink to="/team" eventName="route_partner_review" eventProps={{destination: 'team'}}>Leadership team</TrackedLink>
                   <TrackedLink to="/products" eventName="route_partner_review" eventProps={{destination: 'products'}}>Products & Services</TrackedLink>
-                  <TrackedLink to="/industries" eventName="route_partner_review" eventProps={{destination: 'industries'}}>Industry pillars</TrackedLink>
                   <TrackedLink to="/media-kit" eventName="route_partner_review" eventProps={{destination: 'media-kit'}}>Media kit</TrackedLink>
                   <TrackedLink to={links.cipherplayLinkedIn} eventName="route_partner_review" eventProps={{destination: 'linkedin'}}>LinkedIn</TrackedLink>
                 </div>

@@ -21,9 +21,6 @@ export default function Team(): ReactNode {
               <h2>Research, product, and operating leadership for the studio.</h2>
             </div>
             <TeamGrid />
-            <p className={styles.note}>
-              Tyler and Alex use clean template visuals until approved headshots are supplied.
-            </p>
           </div>
         </section>
         <CredibilityStrip />

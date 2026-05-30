@@ -31,13 +31,13 @@ export default function Randao(): ReactNode {
                 <p className={styles.eyebrow}>Product thesis</p>
                 <h2>Reliable randomness is infrastructure for trust-sensitive software.</h2>
                 <p>
-                  RANDAO is CipherPlay's public blockchain infrastructure work in applied
-                  cryptographic systems. This page points to the live product and whitepaper
+                  RANDAO is a CipherPlay-owned and operated product brand for applied
+                  cryptographic infrastructure. This page points to the live product and whitepaper
                   while keeping deeper customer and commercialization material
                   out of the public site until approved.
                 </p>
                 <ul>
-                  <li>Connects CipherPlay's cryptographic protocol focus to a concrete product.</li>
+                  <li>Shows how CipherPlay owns and operates a dedicated cryptographic infrastructure product.</li>
                   <li>Gives investors and partners a public reference point for randomness and trust infrastructure.</li>
                   <li>Supports partner and customer conversations without publishing private materials.</li>
                 </ul>

@@ -20,73 +20,7 @@
   margin: 0;
 }
 
-.reportGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.report {
-  display: grid;
-  min-height: 430px;
-  align-content: space-between;
-  gap: 1.5rem;
-  padding: 1.25rem;
-  border: 1px solid var(--cipher-border);
-  border-radius: 8px;
-  background: var(--cipher-surface);
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.9rem;
-}
-
-.tags span {
-  padding: 0.3rem 0.55rem;
-  border: 1px solid var(--cipher-border);
-  border-radius: 999px;
-  color: var(--ifm-color-primary);
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.reportCode {
-  margin: 0 0 0.45rem;
-  color: var(--cipher-muted);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.report h2 {
-  margin: 0 0 0.75rem;
-}
-
-.report p {
-  color: var(--cipher-muted);
-  line-height: 1.65;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-}
-
-.actions a {
-  font-weight: 800;
-}
-
 .note {
-  margin-top: 1.5rem;
+  max-width: 700px;
   color: var(--cipher-muted);
-}
-
-@media (max-width: 996px) {
-  .reportGrid {
-    grid-template-columns: 1fr;
-  }
 }

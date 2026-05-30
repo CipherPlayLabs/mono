@@ -2,11 +2,6 @@
   padding: 4rem 0;
 }
 
-.band {
-  padding: 4rem 0;
-  background: var(--cipher-band);
-}
-
 .sectionHeader {
   max-width: 780px;
   margin-bottom: 1.6rem;
@@ -54,17 +49,8 @@
   gap: 1rem;
 }
 
-.reportGrid,
-.pillarGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.sectionCard,
-.report,
-.pillar {
-  min-height: 245px;
+.sectionCard {
+  min-height: 220px;
   padding: 1.25rem;
   border: 1px solid var(--cipher-border);
   border-radius: 8px;
@@ -73,19 +59,13 @@
   text-decoration: none;
 }
 
-.sectionCard {
-  min-height: 220px;
-}
-
-.sectionCard:hover,
-.report:hover {
+.sectionCard:hover {
   color: var(--ifm-font-color-base);
   text-decoration: none;
   border-color: var(--ifm-color-primary);
 }
 
-.sectionCard span,
-.report span {
+.sectionCard span {
   display: block;
   min-height: 2.5rem;
   color: var(--ifm-color-primary);
@@ -94,28 +74,18 @@
   text-transform: uppercase;
 }
 
-.sectionCard h3,
-.report h3,
-.pillar h3 {
+.sectionCard h3 {
   margin: 0 0 0.8rem;
 }
 
-.sectionCard p,
-.report p,
-.pillar p {
+.sectionCard p {
   color: var(--cipher-muted);
   line-height: 1.6;
 }
 
-.pillar a {
-  font-weight: 800;
-}
-
 @media (max-width: 996px) {
   .twoColumn,
-  .sectionGrid,
-  .reportGrid,
-  .pillarGrid {
+  .sectionGrid {
     grid-template-columns: 1fr;
   }
 }

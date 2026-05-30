@@ -5,7 +5,7 @@ export default function ReportRequestForm(): ReactNode {
   return (
     <FormStubPage
       title="Request full report"
-      summary="Reserved form route for full Market Research report requests."
+      summary="Reserved form route for Full Report requests."
     />
   );
 }

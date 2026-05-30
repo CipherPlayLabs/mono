@@ -60,6 +60,15 @@ body {
   flex-shrink: 0;
 }
 
+.navbar-sidebar__search {
+  padding: 0.75rem 1rem 0.5rem;
+}
+
+.navbar-sidebar__search .navbar__search,
+.navbar-sidebar__search .navbar__search-input {
+  width: 100%;
+}
+
 .navbar__link:hover,
 .navbar__link--active {
   color: var(--ifm-color-primary);

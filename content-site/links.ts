@@ -14,10 +14,10 @@ export const links = {
   ramp: 'https://ramprb.com',
   startupVirginia: 'https://startupvirginia.org',
   founderInstitute: 'https://fi.co/',
-  investorForm: '/forms/investor-materials',
-  partnerForm: '/forms/partnership',
-  customerForm: '/forms/consulting-discovery',
-  reportRequestForm: '/forms/report-request',
+  investorForm: 'https://forms.cipherplay.net/form/investor-materials',
+  partnerForm: 'https://forms.cipherplay.net/form/partnership',
+  customerForm: 'https://forms.cipherplay.net/form/consulting-discovery',
+  reportRequestForm: 'https://forms.cipherplay.net/form/report-request',
 } as const;
 
 export type LinkKey = keyof typeof links;

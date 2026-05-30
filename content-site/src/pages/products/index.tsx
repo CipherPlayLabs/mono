@@ -15,7 +15,7 @@ export default function Products(): ReactNode {
         <CipherHero
           eyebrow="Products & Services"
           title="Current infrastructure products and consulting services."
-          summary="CipherPlay builds and supports emerging-technology software across blockchain, AI, and VR. The current page separates active products and services from historic sunset projects."
+          summary="CipherPlay builds and supports emerging-technology software across blockchain, AI, and Spatial Computing."
         />
         <section className={styles.section}>
           <div className="container">
@@ -35,7 +35,7 @@ export default function Products(): ReactNode {
           <div className="container">
             <div className={styles.header}>
               <p>Current services</p>
-              <h2>Infrastructure and software consulting for blockchain, AI, and VR teams.</h2>
+              <h2>Infrastructure and software consulting for blockchain, AI, and Spatial Computing teams.</h2>
             </div>
             <div className={styles.serviceGrid}>
               {serviceOfferings.map((service) => (

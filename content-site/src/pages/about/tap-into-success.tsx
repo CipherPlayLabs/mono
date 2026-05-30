@@ -17,7 +17,7 @@ export default function TapIntoSuccess(): ReactNode {
   return (
     <Layout
       title="Tap into success"
-      description="CipherPlay values: Transparency, Authenticity, and Perspicacity as an investor-facing operating principle.">
+      description="CipherPlay values: Transparency, Authenticity, and Perspicacity as a company-wide value system.">
       <main>
         <CipherHero
           eyebrow="CipherPlay values"
@@ -73,10 +73,10 @@ export default function TapIntoSuccess(): ReactNode {
 
                   <h3>Perspicacity</h3>
                   <p>
-                    You can count on CipherPlay to turn abundant information into clear, actionable
-                    insight. Perspicacity is our edge: the ability to see through noisy markets,
-                    synthesize what matters, and use artificial intelligence and disciplined
-                    research to identify strong next moves.
+                    You can count on CipherPlay to turn abundant market information into clear,
+                    actionable market insight. Perspicacity is our edge: the ability to see through
+                    noisy markets, synthesize what matters, and use artificial intelligence and
+                    disciplined research to identify strong next moves.
                   </p>
                 </section>
 

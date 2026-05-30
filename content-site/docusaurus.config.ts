@@ -59,7 +59,11 @@ const config: Config = {
     [
       'classic',
       {
-        docs: false,
+        docs: {
+          routeBasePath: 'none',
+          path: 'docs',
+          sidebarPath: 'docs/sidebars.js',
+        },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
@@ -84,6 +88,17 @@ const config: Config = {
         onInlineTags: 'warn',
         onInlineAuthors: 'warn',
         onUntruncatedBlogPosts: 'ignore',
+      },
+    ],
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexDocs: false,
+        indexBlog: true,
+        indexPages: true,
+        blogDir: ['./newsroom'],
+        blogRouteBasePath: ['/newsroom'],
       },
     ],
   ],
@@ -128,6 +143,10 @@ const config: Config = {
           label: 'Media Kit',
           position: 'left',
         },
+        {
+          type: 'search',
+          position: 'right',
+        },
       ],
     },
     footer: {
@@ -147,7 +166,6 @@ const config: Config = {
           title: 'Company',
           items: [
             { to: '/team', label: 'Team' },
-            { to: '/industries', label: 'Industries' },
             { to: '/newsroom', label: 'Newsroom' },
           ],
         },

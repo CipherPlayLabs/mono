@@ -5,7 +5,7 @@ export default function ConsultingDiscoveryForm(): ReactNode {
   return (
     <FormStubPage
       title="Request consulting discovery"
-      summary="Reserved form route for blockchain, AI, and VR infrastructure/software consulting inquiries."
+      summary="Reserved form route for blockchain, AI, and Spatial Computing infrastructure/software consulting inquiries."
     />
   );
 }

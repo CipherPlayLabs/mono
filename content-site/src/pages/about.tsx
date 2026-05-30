@@ -35,7 +35,7 @@ export default function About(): ReactNode {
       <main>
         <CipherHero
           eyebrow="About CipherPlay"
-          title="A venture-backed studio for emerging-tech software and market intelligence."
+          title="An emerging-technology software studio and market research firm."
           summary="CipherPlay connects research, product thesis development, and software execution across AI, cryptographic infrastructure, and venture intelligence."
         />
 
@@ -46,10 +46,10 @@ export default function About(): ReactNode {
                 <p className={styles.eyebrow}>Company</p>
                 <h2>Research-backed product building.</h2>
                 <p>
-                  CipherPlay uses public market research and focused product work to make
-                  emerging-technology opportunities easier to evaluate. RANDAO anchors the
-                  current product portfolio, while the research pages show the markets and
-                  technical domains the studio is tracking.
+                  CipherPlay conducts detailed product research to make emerging-technology
+                  opportunities easier to evaluate. RANDAO anchors the current product portfolio,
+                  while the research pages show the markets and technical domains the studio is
+                  tracking.
                 </p>
               </article>
 
@@ -74,8 +74,9 @@ export default function About(): ReactNode {
               <h2>Tap into success.</h2>
             </div>
             <p className={styles.sectionIntro}>
-              At CipherPlay, TAP means Transparency, Authenticity, and Perspicacity. Game theory is
-              the frame, these values are our strategy, and trust is the investor signal they build.
+              At CipherPlay, TAP means Transparency, Authenticity, and Perspicacity. We operate a
+              game-theoretically optimized business model, and these core values define our
+              strategy.
             </p>
             <div className={styles.valuesGrid}>
               {tapValues.map((value) => (
@@ -117,14 +118,6 @@ export default function About(): ReactNode {
                 className={styles.linkCard}>
                 <span>Market intelligence</span>
                 <strong>Market Research</strong>
-              </TrackedLink>
-              <TrackedLink
-                to="/industries"
-                eventName="route_about_context"
-                eventProps={{destination: 'industries'}}
-                className={styles.linkCard}>
-                <span>Focus areas</span>
-                <strong>Industry pillars</strong>
               </TrackedLink>
               <TrackedLink
                 to="/partners"
