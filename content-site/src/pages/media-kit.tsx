@@ -12,7 +12,13 @@ export default function MediaKit(): ReactNode {
         <CipherHero
           eyebrow="Media kit"
           title="CipherPlay brand assets"
-          summary="Download approved public logo, banner, and display font assets from the CipherPlay media kit."
+          summary="Download approved public logo, banner, color, and display font assets. Use these files for external materials while keeping public claims aligned with the site and company context."
+          proofLabel="How to use these files"
+          proofItems={[
+            'Approved assets for external use',
+            'Link external materials back to cipherplay.net',
+            'Media files do not authorize unsupported claims',
+          ]}
         />
         <section className={styles.section}>
           <div className="container">

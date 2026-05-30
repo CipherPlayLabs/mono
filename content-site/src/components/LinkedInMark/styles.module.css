@@ -1,0 +1,14 @@
+.mark {
+  display: inline-flex;
+  width: 1.15rem;
+  height: 1.15rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(55, 255, 222, 0.44);
+  border-radius: 4px;
+  background: rgba(55, 255, 222, 0.1);
+  color: var(--ifm-color-primary);
+  font-size: 0.68rem;
+  line-height: 1;
+  vertical-align: -0.15rem;
+}
