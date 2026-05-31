@@ -2,13 +2,13 @@ import type {ReactNode} from 'react';
 import Layout from '@theme/Layout';
 import {CipherHero} from '@site/src/components/CipherHero';
 import {ConversionButton} from '@site/src/components/ConversionButton';
-import {links} from '../../links';
+import {stateOfWeb3, stateOfWeb3ReadCta, stateOfWeb3Reports} from '@site/src/data/stateOfWeb3';
 import styles from './market-analysis.module.css';
 
-const reportRequestCta = {
-  label: 'Request full report',
-  href: links.reportRequestForm,
-  eventName: 'cta_research_access',
+const stateOfWeb3CatalogCta = {
+  ...stateOfWeb3ReadCta,
+  label: 'Read State of Web3',
+  href: '/market-analysis/state-of-web3',
   disabled: false,
 };
 
@@ -34,6 +34,9 @@ const researchRoles = [
 ];
 
 export default function MarketAnalysis(): ReactNode {
+  const buidlerCount = stateOfWeb3Reports.filter((report) => report.side === 'Buidler report').length;
+  const providerCount = stateOfWeb3Reports.length - buidlerCount;
+
   return (
     <Layout
       title="Market Research Reports"
@@ -41,14 +44,15 @@ export default function MarketAnalysis(): ReactNode {
       <main>
         <CipherHero
           eyebrow="Market Research reports"
-          title="De-risk emerging digital technology markets."
-          summary="CipherPlay publishes Market Research to turn noisy emerging-digital markets into clearer context for investors, partners, and customers. Full Reports remain request-gated for deeper Market Intelligence."
-          cta={reportRequestCta}
+          title="Start with the public research. Go deeper when the signal matters."
+          summary="CipherPlay publishes Market Research to turn noisy emerging-digital markets into clearer context for investors, partners, and customers. State Of Web3 is the first public report surface, with deeper Market Intelligence available from inside the report."
+          cta={stateOfWeb3CatalogCta}
+          ctaEventProps={{report: 'state-of-web3', placement: 'market-analysis-hero'}}
           proofLabel="Market Research"
           proofItems={[
-            'Market visibility',
-            'Risk context',
-            'Product thesis development',
+            {label: 'State Of Web3', href: '/market-analysis/state-of-web3'},
+            'Identify Market Opportunities',
+            'Buyer Decision Making',
           ]}
         />
         <section className={styles.section}>
@@ -69,13 +73,22 @@ export default function MarketAnalysis(): ReactNode {
             <div className={styles.requestPanel}>
               <div>
                 <p className={styles.eyebrow}>Reports</p>
-                <h2>No approved public report pages are listed right now.</h2>
+                <h2>State Of Web3 is available to read.</h2>
                 <p className={styles.note}>
-                  Request a Full Report when you need deeper Market Intelligence for an investment,
-                  partnership, product, or customer decision.
+                  {stateOfWeb3.summary} The public pages give readers useful context first, then
+                  place the highest-value graph evidence and further-research roadmap behind the
+                  State of Web3 request path.
                 </p>
+                <div className={styles.reportMeta}>
+                  <span>{stateOfWeb3Reports.length} People-Class Reports</span>
+                  <span>{buidlerCount} buidler views</span>
+                  <span>{providerCount} provider views</span>
+                </div>
               </div>
-              <ConversionButton cta={reportRequestCta} />
+              <ConversionButton
+                cta={stateOfWeb3CatalogCta}
+                eventProps={{report: 'state-of-web3', placement: 'catalog-card'}}
+              />
             </div>
           </div>
         </section>

@@ -128,3 +128,91 @@ test('navbar CTA remains available in the mobile menu', () => {
   assert.match(css, /\.navbar__items--right > \.navbar-investor-cta\s*\{\s*display: none;/);
   assert.match(css, /\.navbar-sidebar\s+\.navbar-investor-cta/);
 });
+
+test('market analysis promotes reading State of Web3 before requesting the report', () => {
+  const marketPage = read('src/pages/market-analysis.tsx');
+  const links = read('links.ts');
+
+  assert.match(links, /reportRequestForm: 'https:\/\/forms\.cipherplay\.net\/form\/state-of-web3'/);
+  assert.match(marketPage, /label: 'Read State of Web3'/);
+  assert.match(marketPage, /href: '\/market-analysis\/state-of-web3'/);
+  assert.match(marketPage, /State Of Web3/);
+  assert.match(marketPage, /Identify Market Opportunities/);
+  assert.match(marketPage, /Buyer Decision Making/);
+  assert.doesNotMatch(marketPage, /'People-Class Reports',/);
+  assert.doesNotMatch(marketPage, /'Full Report request path',/);
+  assert.doesNotMatch(marketPage, /label: 'Request full report'/);
+});
+
+test('State of Web3 gated copy sells decision value instead of form mechanics', () => {
+  const stateData = read('src/data/stateOfWeb3.ts');
+  const aggregatePage = read('src/components/StateOfWeb3AggregatePage/index.tsx');
+  const reportPage = read('src/components/StateOfWeb3ReportPage/index.tsx');
+  const publicCopy = [stateData, aggregatePage, reportPage].join('\n');
+
+  assert.doesNotMatch(publicCopy, /n8n/i);
+  assert.doesNotMatch(publicCopy, /emails? the full PDF/i);
+  assert.doesNotMatch(publicCopy, /request context/i);
+  assert.doesNotMatch(publicCopy, /delivered through the State Of Web3 form/i);
+  assert.match(publicCopy, /complete evidence pack/i);
+  assert.match(publicCopy, /decisions that need more certainty/i);
+});
+
+test('State of Web3 aggregate uses compact overview cards and type-specific report actions', () => {
+  const aggregatePage = read('src/components/StateOfWeb3AggregatePage/index.tsx');
+  const aggregateCss = read('src/components/StateOfWeb3AggregatePage/styles.module.css');
+
+  assert.match(aggregatePage, /const reportActionLabel = report\.side === 'Buidler report'/);
+  assert.match(aggregatePage, /'Read Buidl report'/);
+  assert.match(aggregatePage, /'Read Provider report'/);
+  assert.doesNotMatch(aggregatePage, /Read People-Class Report/);
+  assert.match(aggregatePage, /styles\.overviewSection/);
+  assert.match(aggregateCss, /\.overviewSection/);
+  assert.match(aggregateCss, /min-height: 0;/);
+  assert.doesNotMatch(aggregateCss, /min-height: 230px;/);
+  assert.match(aggregateCss, /@media \(max-width: 760px\) \{\n  \.summaryGrid/);
+  assert.doesNotMatch(aggregateCss, /@media \(max-width: 996px\) \{\n  \.summaryGrid,/);
+});
+
+test('State of Web3 aggregate and people-class report routes exist', () => {
+  const stateData = read('src/data/stateOfWeb3.ts');
+
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/index.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/developers-building-on-new-chains.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/founders-proving-business-viability.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/wallet-teams-simplifying-crypto-payments.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/ai-agent-builders-securing-autonomous-transactions.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/operators-monetizing-assets-under-trust-and-compliance-constraints.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/blockchain-relations-teams-growing-ecosystem-adoption.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/gtm-teams-building-credibility-and-pipeline.tsx'), true);
+  assert.equal(exists('src/pages/market-analysis/state-of-web3/audit-providers-helping-projects-prove-launch-readiness.tsx'), true);
+  assert.match(stateData, /export const stateOfWeb3Reports/);
+  assert.match(stateData, /state-of-web3/);
+  assert.match(stateData, /People-Class Report/);
+  assert.match(stateData, /links\.reportRequestForm/);
+});
+
+test('State of Web3 subreports use reader-facing evidence language and parent links', () => {
+  const stateData = read('src/data/stateOfWeb3.ts');
+  const reportPage = read('src/components/StateOfWeb3ReportPage/index.tsx');
+
+  assert.match(stateData, /40 coded need signals from 10 included interviews/);
+  assert.match(stateData, /core coded project-need signals from 4 primary/);
+  assert.doesNotMatch(stateData, /coded .* rows/);
+  assert.match(reportPage, /Back to State Of Web3/);
+  assert.match(reportPage, /to="\/market-analysis\/state-of-web3"/);
+  assert.doesNotMatch(reportPage, /State Of Web3 aggregate/);
+  assert.doesNotMatch(reportPage, /Criterion rows/);
+});
+
+test('State of Web3 report pages gate high-value graph and further research sections', () => {
+  const reportPage = read('src/components/StateOfWeb3ReportPage/index.tsx');
+  const reportCss = read('src/components/StateOfWeb3ReportPage/styles.module.css');
+
+  assert.match(reportPage, /lockedGraph/);
+  assert.match(reportPage, /lockedFurtherResearch/);
+  assert.match(reportPage, /When the public signal matches your decision/);
+  assert.match(reportPage, /get the complete report for the chart/);
+  assert.match(reportCss, /filter: blur/);
+  assert.match(reportCss, /pointer-events: none/);
+});

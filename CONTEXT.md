@@ -74,6 +74,10 @@ _Avoid_: Market Intelligence as CTA copy, bigger PDF
 A Market Research report the owner has approved for publication because it looks clean from a branding perspective and contains useful information based on real market data. Marketing does not need to launch simultaneously, but it should follow quickly.
 _Avoid_: draft research, placeholder report, speculative report
 
+**People-Class Report**:
+A public State Of Web3 child report focused on one Web3 audience or work category, labeled as one report in the larger aggregate. People-Class Reports can show useful public Market Research while gating the juiciest Market Intelligence behind Full Report CTAs.
+_Avoid_: sub report, individual PDF, standalone market category
+
 **Real market data**:
 Well-sourced information from deep internet research, real market interviews, and validatable data that CipherPlay can stand behind in public Market Research.
 _Avoid_: vibes, unsourced claims, unverifiable assumptions
@@ -121,6 +125,10 @@ _Avoid_: main application, private workspace, permanent only public site
 **Public forms**:
 The n8n-hosted public request flows for investor materials, partnerships, consulting discovery, and Full Report access. CipherPlay handles forms only through n8n; local `/info/forms/*` routes are placeholders, not production forms.
 _Avoid_: local placeholder forms, production request pages, non-n8n form handling
+
+**Report-specific form**:
+An n8n-hosted Public form dedicated to access requests for one named Full Report, such as State Of Web3. Report-specific forms should preserve the report context without requiring the requester to restate which report they want.
+_Avoid_: generic contact form, local content-site form, untracked report request
 
 **Private analytics**:
 CipherPlay's internal-only operational site analytics for measuring public content. Public browser traffic must use same-origin `/_analytics/*` paths, while the Plausible origin and dashboard stay private.

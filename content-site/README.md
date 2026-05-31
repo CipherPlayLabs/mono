@@ -9,7 +9,9 @@ CipherPlay's local Docusaurus v3 site for `/info/`.
 | `/` | CipherPlay overview and main site sections |
 | `/about` | Company overview, leadership, backers, TAP values, and investor information |
 | `/about/tap-into-success` | Expanded TAP operating principle |
-| `/market-analysis` | Market Research and Full Report request path |
+| `/market-analysis` | Market Research catalog and State Of Web3 entry point |
+| `/market-analysis/state-of-web3` | State Of Web3 aggregate Market Research page |
+| `/market-analysis/state-of-web3/*` | State Of Web3 People-Class Report pages |
 | `/products` | Products |
 | `/products/randao` | RANDAO product page |
 | `/consulting` | Infrastructure and software consulting |
@@ -40,7 +42,7 @@ forms on `https://forms.cipherplay.net/form/*`:
 - `https://forms.cipherplay.net/form/investor-materials`
 - `https://forms.cipherplay.net/form/partnership`
 - `https://forms.cipherplay.net/form/consulting-discovery`
-- `https://forms.cipherplay.net/form/report-request`
+- `https://forms.cipherplay.net/form/state-of-web3`
 
 ## Commands
 

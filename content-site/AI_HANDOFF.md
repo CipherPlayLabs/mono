@@ -23,6 +23,8 @@
 - `/info/media-kit`
 - `/info/newsroom`
 - `/info/team`
+- `/info/market-analysis/state-of-web3`
+- `/info/market-analysis/state-of-web3/*`
 - `/info/forms/*` placeholder routes, not active CTA destinations
 
 Removed routes should resolve to the Docusaurus not-found page, including `/info/research`, `/info/insights`, `/info/featured`, `/info/investors`, `/info/customers`, `/info/industries`, `/info/market-analysis/ai-productivity-software`, `/info/market-analysis/cryptographic-infrastructure`, and `/info/market-analysis/venture-market-intelligence`.

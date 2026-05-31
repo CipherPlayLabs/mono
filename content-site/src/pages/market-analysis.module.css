@@ -82,6 +82,23 @@
   color: var(--cipher-muted);
 }
 
+.reportMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.reportMeta span {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 999px;
+  color: var(--ifm-color-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 @media (max-width: 996px) {
   .researchGrid,
   .requestPanel {

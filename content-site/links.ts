@@ -39,7 +39,7 @@ export const links = {
   investorForm: 'https://forms.cipherplay.net/form/investor-materials',
   partnerForm: 'https://forms.cipherplay.net/form/partnership',
   customerForm: 'https://forms.cipherplay.net/form/consulting-discovery',
-  reportRequestForm: 'https://forms.cipherplay.net/form/report-request',
+  reportRequestForm: 'https://forms.cipherplay.net/form/state-of-web3',
 } as const;
 
 export type LinkKey = keyof typeof links;
