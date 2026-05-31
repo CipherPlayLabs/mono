@@ -34,9 +34,36 @@
   gap: 1rem;
 }
 
+.textLink {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-weight: 800;
+}
+
+.consultingPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.35rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.consultingPanel h2 {
+  margin: 0;
+}
+
+.consultingPanel p:last-child {
+  margin-bottom: 0;
+}
+
 .serviceGrid {
   display: grid;
-  grid-template-columns: minmax(0, 720px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -164,7 +191,8 @@
   .randaoLayout,
   .mediaItem,
   .productGrid,
-  .serviceGrid {
+  .serviceGrid,
+  .consultingPanel {
     grid-template-columns: 1fr;
   }
 

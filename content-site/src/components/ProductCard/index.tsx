@@ -8,14 +8,25 @@ export function ProductCard({product}: {product: Product}): React.JSX.Element {
   return (
     <article className={styles.card}>
       <div>
-        <span>{product.status}</span>
+        <span className={styles.status}>{product.status}</span>
         <h3>{product.name}</h3>
         <p>{product.summary}</p>
       </div>
       {(product.href || product.cta) && (
         <div className={styles.actions}>
-          {product.href && <Link to={product.href}>{product.linkLabel ?? 'View product'}</Link>}
-          {product.cta && <ConversionButton cta={product.cta} />}
+          {product.href && (
+            <Link className={styles.secondaryAction} to={product.href}>
+              {product.linkLabel ?? 'View product'}
+            </Link>
+          )}
+          {product.cta && (
+            <div className={styles.primaryAction}>
+              <ConversionButton
+                cta={product.cta}
+                eventProps={{placement: 'product-card', product: product.slug}}
+              />
+            </div>
+          )}
         </div>
       )}
     </article>

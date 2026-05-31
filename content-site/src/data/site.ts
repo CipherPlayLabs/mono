@@ -5,6 +5,7 @@ export interface SiteCta {
   href: string;
   eventName: string;
   disabled: boolean;
+  proof?: string;
 }
 
 export interface PageBrief {
@@ -64,13 +65,14 @@ export const investorDiligence: Pick<PageBrief, 'signals' | 'primaryCta'> = {
   signals: [
     'Research-backed studio model',
     'RANDAO anchors current product work',
-    'TAP explains how CipherPlay builds trust',
+    'TAP keeps CipherPlay claims verifiable',
   ],
   primaryCta: {
-    label: 'Request investor materials',
+    label: 'Get investor materials',
     href: links.investorForm,
     eventName: 'cta_investor_materials',
     disabled: false,
+    proof: 'Public research, product, team, backer, and TAP context stay visible before the form.',
   },
 };
 
@@ -92,6 +94,7 @@ export const partnerPage: PageBrief = {
     href: links.partnerForm,
     eventName: 'cta_partner_inquiry',
     disabled: false,
+    proof: 'Best for accelerators, ecosystems, labs, companies, and technical communities.',
   },
 };
 
@@ -105,10 +108,11 @@ export const products: Product[] = [
     href: '/products/randao',
     linkLabel: 'View product',
     cta: {
-      label: 'Request a demo',
+      label: 'Schedule a RANDAO demo',
       href: links.customerForm,
       eventName: 'cta_customer_discovery',
       disabled: false,
+      proof: 'The public product site and whitepaper are available before the demo ask.',
     },
   },
 ];
@@ -116,21 +120,24 @@ export const products: Product[] = [
 export const serviceOfferings: ServiceOffering[] = [
   {
     slug: 'infrastructure-software-consulting',
-    name: 'Infrastructure & software consulting',
+    name: 'Emerging digital technology & IT consulting',
     status: 'Current service',
     summary:
-      'CipherPlay provides blockchain, AI, and Spatial Computing infrastructure/software consulting for teams that need technical architecture, prototypes, integrations, and research-backed product execution.',
+      'CipherPlay helps teams validate, plan, and ship emerging digital technology, IT, web, e-commerce, and market-validation work with research-backed technical execution.',
     capabilities: [
       'Blockchain infrastructure',
       'AI systems and workflows',
       'Spatial Computing software and interfaces',
-      'Technical architecture, prototypes, and integrations',
+      'IT systems and workflows',
+      'Web and e-commerce implementation',
+      'Market validation',
     ],
     cta: {
-      label: 'Request consulting discovery',
+      label: 'Start consulting discovery',
       href: links.customerForm,
       eventName: 'cta_customer_discovery',
       disabled: false,
+      proof: 'Best for teams evaluating digital technology, IT, web, commerce, or market-validation needs.',
     },
   },
 ];

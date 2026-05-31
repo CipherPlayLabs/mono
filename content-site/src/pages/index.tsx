@@ -6,7 +6,7 @@ import {ConversionButton} from '@site/src/components/ConversionButton';
 import {CredibilityStrip} from '@site/src/components/CredibilityStrip';
 import {ProductCard} from '@site/src/components/ProductCard';
 import {TrackedLink} from '@site/src/components/TrackedLink';
-import {investorDiligence, products} from '@site/src/data/site';
+import {investorDiligence, partnerPage, products, serviceOfferings} from '@site/src/data/site';
 import {links} from '../../links';
 import styles from './index.module.css';
 
@@ -22,6 +22,18 @@ const primarySections = [
     title: 'Market Research',
     summary: 'Public research and the Full Report request path.',
     href: '/market-analysis',
+  },
+  {
+    label: 'Software',
+    title: 'Products',
+    summary: 'RANDAO, current product work, and historic product history.',
+    href: '/products',
+  },
+  {
+    label: 'Services',
+    title: 'Consulting',
+    summary: 'Infrastructure and software consulting for blockchain, AI, and Spatial Computing execution.',
+    href: '/consulting',
   },
   {
     label: 'Values',
@@ -58,14 +70,14 @@ const proofLadder = [
     summary:
       'Market Research explains what CipherPlay sees; RANDAO and consulting capability show how the studio moves toward shipped software.',
     href: '/products',
-    action: 'Review Products & Services',
+    action: 'Review Products',
   },
   {
     label: 'Opportunity Formation',
     title: 'Emerging-technology uncertainty becomes software opportunity.',
     summary:
       'CipherPlay uses public research, product work, and ecosystem relationships to identify where software can reduce uncertainty.',
-    href: '/products/#consulting-services',
+    href: '/consulting',
     action: 'Review Consulting Services',
   },
 ];
@@ -77,7 +89,7 @@ const audiencePaths = [
     summary:
       'Start with the public company, research, product, team, backer, and partner context, then request the private materials when CipherPlay is relevant to your review.',
     href: links.investorForm,
-    action: 'Request investor materials',
+    action: investorDiligence.primaryCta.label,
   },
   {
     label: 'For partners',
@@ -91,9 +103,30 @@ const audiencePaths = [
     label: 'For customers',
     title: 'Customers',
     summary:
-      'Request consulting discovery when you need research-backed architecture, prototypes, integrations, or software execution for blockchain, AI, or Spatial Computing work.',
+      'Start consulting discovery when you need research-backed architecture, prototypes, integrations, or software execution for blockchain, AI, or Spatial Computing work.',
     href: links.customerForm,
-    action: 'Request consulting discovery',
+    action: serviceOfferings[0].cta.label,
+  },
+];
+
+const heroAudienceCtas = [
+  {
+    audience: 'For investors',
+    cta: investorDiligence.primaryCta,
+    proof: 'Public research, product, team, backer, and TAP context first.',
+    eventProps: {page: 'home'},
+  },
+  {
+    audience: 'For partners',
+    cta: partnerPage.primaryCta,
+    proof: 'Collaboration types and ecosystem fit are visible before the form.',
+    eventProps: {page: 'home'},
+  },
+  {
+    audience: 'For customers',
+    cta: serviceOfferings[0].cta,
+    proof: 'Architecture, prototype, integration, and execution needs route here.',
+    eventProps: {page: 'home'},
   },
 ];
 
@@ -107,7 +140,7 @@ export default function Home(): ReactNode {
           eyebrow="Emerging-technology software studio"
           title="Research-backed software venture formation for emerging-digital markets."
           summary="CipherPlay connects public Market Research, product thesis development, technical execution, and ecosystem access for investors, partners, and customers."
-          cta={investorDiligence.primaryCta}
+          ctaList={heroAudienceCtas}
           proofLabel="Start here"
           proofItems={[
             {label: 'Published Market Research', href: '/market-analysis'},
@@ -160,7 +193,7 @@ export default function Home(): ReactNode {
                   key={path.title}
                   to={path.href}
                   eventName="route_home_audience"
-                  eventProps={{destination: path.title.toLowerCase()}}
+                  eventProps={{destination: path.title.toLowerCase(), label: path.action}}
                   className={styles.audienceCard}>
                   <span>{path.label}</span>
                   <h3>{path.title}</h3>
@@ -219,13 +252,16 @@ export default function Home(): ReactNode {
             <div className={styles.investorPanel}>
               <div>
                 <p className={styles.eyebrow}>Investor materials</p>
-                <h2>Request the private investor materials.</h2>
+                <h2>Get the private investor materials.</h2>
                 <p>
                   After reviewing the public pages, use CipherPlay's hosted request flow for the
                   private investor materials.
                 </p>
               </div>
-              <ConversionButton cta={investorDiligence.primaryCta} />
+              <ConversionButton
+                cta={investorDiligence.primaryCta}
+                eventProps={{page: 'home', placement: 'investor-panel'}}
+              />
             </div>
           </div>
         </section>

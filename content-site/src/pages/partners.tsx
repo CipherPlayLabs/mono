@@ -20,6 +20,7 @@ export default function Partners(): ReactNode {
           title="Partner with a studio that turns market insight into product opportunities."
           summary="CipherPlay works with accelerators, ecosystems, labs, companies, and technical communities where research, product execution, and market access can create mutual leverage."
           cta={partner.primaryCta}
+          ctaEventProps={{page: 'partners', placement: 'hero'}}
           proofLabel="Partner on"
           proofItems={[
             'Product Integration',
@@ -45,13 +46,17 @@ export default function Partners(): ReactNode {
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
-                <ConversionButton cta={partner.primaryCta} />
+                <ConversionButton
+                  cta={partner.primaryCta}
+                  eventProps={{page: 'partners', placement: 'ways-to-collaborate'}}
+                />
               </article>
               <article className={styles.linkPanel}>
                 <h2>Review next</h2>
                 <div className={styles.linkGrid}>
                   <TrackedLink to="/team" eventName="route_partner_review" eventProps={{destination: 'team'}}>Leadership team</TrackedLink>
-                  <TrackedLink to="/products" eventName="route_partner_review" eventProps={{destination: 'products'}}>Products & Services</TrackedLink>
+                  <TrackedLink to="/products" eventName="route_partner_review" eventProps={{destination: 'products'}}>Products</TrackedLink>
+                  <TrackedLink to="/consulting" eventName="route_partner_review" eventProps={{destination: 'consulting'}}>Consulting</TrackedLink>
                   <TrackedLink to="/media-kit" eventName="route_partner_review" eventProps={{destination: 'media-kit'}}>Media kit</TrackedLink>
                   <TrackedLink to={links.cipherplayLinkedIn} eventName="route_partner_review" eventProps={{destination: 'linkedin'}}>
                     <span className={styles.iconLink}>
