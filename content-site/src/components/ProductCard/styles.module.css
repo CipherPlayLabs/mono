@@ -9,7 +9,7 @@
   background: var(--cipher-surface);
 }
 
-.card span {
+.status {
   color: var(--ifm-color-primary);
   font-size: 0.82rem;
   font-weight: 800;
@@ -25,12 +25,42 @@
 }
 
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 25rem);
+  gap: 1rem 1.5rem;
+  align-items: start;
+  padding-top: 1rem;
+  border-top: 1px solid var(--cipher-border);
 }
 
-.actions a:first-child {
+.secondaryAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   font-weight: 800;
+}
+
+.primaryAction {
+  justify-self: end;
+  width: 100%;
+}
+
+.primaryAction > span {
+  width: 100%;
+  max-width: none;
+}
+
+.primaryAction > span > a,
+.primaryAction > span > button {
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryAction {
+    justify-self: stretch;
+  }
 }

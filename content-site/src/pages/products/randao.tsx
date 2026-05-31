@@ -22,6 +22,7 @@ export default function Randao(): ReactNode {
           title="RANDAO is CipherPlay's current product for cryptographic infrastructure execution."
           summary="RANDAO is a CipherPlay-owned and operated product brand for decentralized and verifiable randomness. It gives investors, partners, and customers a concrete product anchor without turning CipherPlay into a single-product company."
           cta={randao.cta}
+          ctaEventProps={{page: 'randao', placement: 'hero'}}
           proofLabel="RANDAO"
           proofItems={[
             'CipherPlay-owned and operated product brand',
@@ -59,7 +60,12 @@ export default function Randao(): ReactNode {
                     eventProps={{destination: 'whitepaper'}}>
                     Read whitepaper
                   </TrackedLink>
-                  {randao.cta && <ConversionButton cta={randao.cta} />}
+                  {randao.cta && (
+                    <ConversionButton
+                      cta={randao.cta}
+                      eventProps={{page: 'randao', placement: 'product-thesis-panel'}}
+                    />
+                  )}
                 </div>
               </article>
               <aside className={styles.panel}>

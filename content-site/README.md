@@ -10,8 +10,9 @@ CipherPlay's local Docusaurus v3 site for `/info/`.
 | `/about` | Company overview, leadership, backers, TAP values, and investor information |
 | `/about/tap-into-success` | Expanded TAP operating principle |
 | `/market-analysis` | Market Research and Full Report request path |
-| `/products` | Products & Services |
+| `/products` | Products |
 | `/products/randao` | RANDAO product page |
+| `/consulting` | Infrastructure and software consulting |
 | `/partners` | Partner ecosystem and collaboration page |
 | `/media-kit` | Approved CipherPlay brand assets |
 | `/newsroom` | CipherPlay announcements |

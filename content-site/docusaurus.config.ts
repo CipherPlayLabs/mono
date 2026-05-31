@@ -130,7 +130,12 @@ const config: Config = {
         },
         {
           to: '/products',
-          label: 'Products & Services',
+          label: 'Products',
+          position: 'left',
+        },
+        {
+          to: '/consulting',
+          label: 'Consulting',
           position: 'left',
         },
         {
@@ -145,7 +150,7 @@ const config: Config = {
         },
         {
           href: links.investorForm,
-          label: 'Investor Materials',
+          label: 'Get Investor Materials',
           position: 'right',
           className: 'navbar-investor-cta',
         },
@@ -163,7 +168,8 @@ const config: Config = {
           items: [
             { to: '/about', label: 'About' },
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products & Services' },
+            { to: '/products', label: 'Products' },
+            { to: '/consulting', label: 'Consulting' },
             { to: '/partners', label: 'Partners' },
             { to: '/media-kit', label: 'Media Kit' },
           ],
@@ -173,7 +179,7 @@ const config: Config = {
           items: [
             { to: '/team', label: 'Team' },
             { to: '/newsroom', label: 'Newsroom' },
-            { href: links.investorForm, label: 'Investor Materials' },
+            { href: links.investorForm, label: 'Get Investor Materials' },
           ],
         },
         {
@@ -187,7 +193,8 @@ const config: Config = {
           title: 'Resources',
           items: [
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products & Services' },
+            { to: '/products', label: 'Products' },
+            { to: '/consulting', label: 'Consulting' },
             { to: '/products/randao', label: 'RANDAO' },
             { href: links.randaoWhitepaper, label: 'RANDAO Whitepaper' },
           ],

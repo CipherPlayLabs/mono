@@ -13,17 +13,17 @@ const tapValues = [
   {
     name: 'Transparency',
     summary:
-      'We show the markets we research and the products we build so investors, partners, and customers can move closer to a perfect information game with us.',
+      'We make the research, products, partners, and company context visible so people can understand what we are doing before they contact us.',
   },
   {
     name: 'Authenticity',
     summary:
-      'We make sure our actions reinforce our words, our products do what we say they do, and our market claims match what we observe.',
+      'We keep claims tied to shipped work, public materials, and observable decisions so our words can be checked against what we actually do.',
   },
   {
     name: 'Perspicacity',
     summary:
-      'We turn abundant market information into clear, actionable insight, giving CipherPlay an edge as a long-term ally.',
+      'We look for the useful signals inside noisy emerging markets and turn them into clearer choices for products, partnerships, and capital.',
   },
 ];
 
@@ -38,6 +38,7 @@ export default function About(): ReactNode {
           title="A research-backed studio built to make emerging-technology opportunities easier to understand."
           summary="CipherPlay connects Market Research, product thesis development, infrastructure/software consulting, and ecosystem access across AI, cryptographic infrastructure, Spatial Computing, and venture intelligence."
           cta={investorDiligence.primaryCta}
+          ctaEventProps={{page: 'about', placement: 'hero'}}
           proofLabel="Company Snapshot"
           proofItems={[
             'Leadership across research, product, and operations',
@@ -71,7 +72,10 @@ export default function About(): ReactNode {
                     <li key={point}>{point}</li>
                   ))}
                 </ul>
-                <ConversionButton cta={investorDiligence.primaryCta} />
+                <ConversionButton
+                  cta={investorDiligence.primaryCta}
+                  eventProps={{page: 'about', placement: 'investor-panel'}}
+                />
               </article>
             </div>
           </div>
@@ -84,9 +88,9 @@ export default function About(): ReactNode {
               <h2>Transparency, Authenticity, and Perspicacity guide how CipherPlay operates.</h2>
             </div>
             <p className={styles.sectionIntro}>
-              At CipherPlay, TAP means Transparency, Authenticity, and Perspicacity. The public
-              site shows enough context to evaluate the company, keeps claims aligned with
-              observable behavior, and turns market information into useful insight.
+              We publish what we know, show what we are building, and keep our reasoning visible.
+              Investors, partners, and customers should be able to compare those claims against our
+              work before they decide to engage.
             </p>
             <div className={styles.valuesGrid}>
               {tapValues.map((value) => (

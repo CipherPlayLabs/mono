@@ -44,6 +44,30 @@
   line-height: 1.6;
 }
 
+.ctaList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.ctaCard {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid rgba(55, 255, 222, 0.2);
+  border-radius: 8px;
+  background: rgba(245, 247, 247, 0.05);
+}
+
+.ctaAudience {
+  color: #37ffde;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .proofPanel {
   position: relative;
   display: grid;
@@ -130,6 +154,10 @@
 
   .proofPanel {
     min-height: auto;
+  }
+
+  .ctaList {
+    grid-template-columns: 1fr;
   }
 }
 

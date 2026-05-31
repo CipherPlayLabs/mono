@@ -6,12 +6,20 @@ import type {SiteCta} from '@site/src/data/site';
 import styles from './styles.module.css';
 
 type ProofItem = string | {label: string; href: string};
+type HeroCtaItem = {
+  audience: string;
+  cta: SiteCta;
+  proof?: string;
+  eventProps?: Record<string, string>;
+};
 
 interface CipherHeroProps {
   eyebrow?: string;
   title: string;
   summary: string;
   cta?: SiteCta;
+  ctaEventProps?: Record<string, string>;
+  ctaList?: HeroCtaItem[];
   proofLabel?: string;
   proofItems?: ProofItem[];
 }
@@ -27,6 +35,8 @@ export function CipherHero({
   title,
   summary,
   cta,
+  ctaEventProps,
+  ctaList,
   proofLabel = 'At a glance',
   proofItems = defaultProofItems,
 }: CipherHeroProps): React.JSX.Element {
@@ -40,7 +50,22 @@ export function CipherHero({
             {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
             <h1>{title}</h1>
             <p className={styles.summary}>{summary}</p>
-            {cta && <ConversionButton cta={cta} />}
+            {ctaList ? (
+              <div className={styles.ctaList}>
+                {ctaList.map((item) => (
+                  <div className={styles.ctaCard} key={item.audience}>
+                    <span className={styles.ctaAudience}>{item.audience}</span>
+                    <ConversionButton
+                      cta={item.cta}
+                      proof={item.proof}
+                      eventProps={{placement: 'hero', audience: item.audience, ...item.eventProps}}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              cta && <ConversionButton cta={cta} eventProps={ctaEventProps} />
+            )}
           </div>
           <aside className={styles.proofPanel} aria-label={proofLabel}>
             <img className={styles.panelMark} src={brandMark} alt="" />
