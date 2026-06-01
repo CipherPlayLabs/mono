@@ -17,13 +17,19 @@ export default function TapIntoSuccess(): ReactNode {
   return (
     <Layout
       title="Tap into success"
-      description="CipherPlay values: Transparency, Authenticity, and Perspicacity as an investor-facing operating principle.">
+      description="CipherPlay values: Transparency, Authenticity, and Perspicacity as a company-wide value system.">
       <main>
         <CipherHero
           eyebrow="CipherPlay values"
-          title="Tap into success."
-          summary="At CipherPlay, TAP is how we play the game: Transparency, Authenticity, and Perspicacity."
+          title="Transparency, Authenticity, and Perspicacity guide how CipherPlay operates."
+          summary="TAP shapes how CipherPlay publishes research, explains product decisions, works with partners, and builds trust over time."
           cta={tapCta}
+          proofLabel="TAP values"
+          proofItems={[
+            'Transparency: show the markets CipherPlay studies',
+            'Authenticity: keep words aligned with shipped work',
+            'Perspicacity: turn market information into useful insight',
+          ]}
         />
 
         <section className={styles.articleShell}>
@@ -31,7 +37,7 @@ export default function TapIntoSuccess(): ReactNode {
             <div className={styles.articleLayout}>
               <article className={styles.articleBody}>
                 <section className={styles.articleBlock}>
-                  <h2>Game theory is the frame.</h2>
+                  <h2>Trust is the Game</h2>
                   <p>
                     We believe business is a non-zero-sum, repeated, incomplete-information,
                     asymmetric, multiplayer game. CipherPlay values are our strategy in that game,
@@ -46,15 +52,15 @@ export default function TapIntoSuccess(): ReactNode {
                   </p>
                   <p>
                     The game is incomplete-information, but it is not information scarce. There is
-                    an abundance of market, product, customer, and technical signal available. We
-                    can move toward a more complete information game by gathering that signal,
+                    an abundance of market, product, customer, and technical information available.
+                    We can move toward a more complete information game by gathering that information,
                     analyzing it, and sharing the useful parts with the people building alongside
                     us.
                   </p>
                 </section>
 
                 <section className={styles.articleBlock}>
-                  <h2>TAP is the strategy.</h2>
+                  <h2>TAP is the Strategy</h2>
                   <h3>Transparency</h3>
                   <p>
                     You can count on CipherPlay to be transparent about the markets we research and
@@ -73,26 +79,26 @@ export default function TapIntoSuccess(): ReactNode {
 
                   <h3>Perspicacity</h3>
                   <p>
-                    You can count on CipherPlay to turn abundant information into clear, actionable
-                    insight. Perspicacity is our edge: the ability to see through noisy markets,
-                    synthesize what matters, and use artificial intelligence and disciplined
-                    research to identify strong next moves.
+                    You can count on CipherPlay to turn abundant market information into clear,
+                    actionable market insight. Perspicacity is our edge: the ability to see through
+                    noisy markets, synthesize what matters, and use artificial intelligence and
+                    disciplined research to identify strong next moves.
                   </p>
                 </section>
 
                 <section className={styles.articleBlock}>
-                  <h2>Trust is the investor signal.</h2>
+                  <h2>Trust in the Values</h2>
                   <p>
-                    Values matter most when they are repeatable. For investors, TAP is a signal that
-                    CipherPlay is building a company whose research, product decisions, and
-                    ecosystem relationships can be evaluated with clarity.
+                    Values matter most when they are repeatable. TAP helps investors, partners, and
+                    customers understand how CipherPlay approaches research, product decisions, and
+                    ecosystem relationships.
                   </p>
                   <ul>
                     <li>
-                      <strong>Transparency</strong> makes the company easier to diligence.
+                      <strong>Transparency</strong> makes the company easier to understand.
                     </li>
                     <li>
-                      <strong>Authenticity</strong> makes our claims easier to verify over time.
+                      <strong>Authenticity</strong> makes our words easier to verify over time.
                     </li>
                     <li>
                       <strong>Perspicacity</strong> makes us a sharper ally in emerging markets

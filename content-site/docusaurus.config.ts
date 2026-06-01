@@ -59,7 +59,11 @@ const config: Config = {
     [
       'classic',
       {
-        docs: false,
+        docs: {
+          routeBasePath: 'none',
+          path: 'docs',
+          sidebarPath: 'docs/sidebars.js',
+        },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
@@ -84,6 +88,17 @@ const config: Config = {
         onInlineTags: 'warn',
         onInlineAuthors: 'warn',
         onUntruncatedBlogPosts: 'ignore',
+      },
+    ],
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexDocs: false,
+        indexBlog: true,
+        indexPages: true,
+        blogDir: ['./newsroom'],
+        blogRouteBasePath: ['/newsroom'],
       },
     ],
   ],
@@ -115,7 +130,12 @@ const config: Config = {
         },
         {
           to: '/products',
-          label: 'Products & Services',
+          label: 'Products',
+          position: 'left',
+        },
+        {
+          to: '/consulting',
+          label: 'Consulting',
           position: 'left',
         },
         {
@@ -128,6 +148,16 @@ const config: Config = {
           label: 'Media Kit',
           position: 'left',
         },
+        {
+          href: links.investorForm,
+          label: 'Get Investor Materials',
+          position: 'right',
+          className: 'navbar-investor-cta',
+        },
+        {
+          type: 'search',
+          position: 'right',
+        },
       ],
     },
     footer: {
@@ -138,7 +168,8 @@ const config: Config = {
           items: [
             { to: '/about', label: 'About' },
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products & Services' },
+            { to: '/products', label: 'Products' },
+            { to: '/consulting', label: 'Consulting' },
             { to: '/partners', label: 'Partners' },
             { to: '/media-kit', label: 'Media Kit' },
           ],
@@ -147,8 +178,8 @@ const config: Config = {
           title: 'Company',
           items: [
             { to: '/team', label: 'Team' },
-            { to: '/industries', label: 'Industries' },
             { to: '/newsroom', label: 'Newsroom' },
+            { href: links.investorForm, label: 'Get Investor Materials' },
           ],
         },
         {
@@ -162,7 +193,8 @@ const config: Config = {
           title: 'Resources',
           items: [
             { to: '/market-analysis', label: 'Market Research' },
-            { to: '/products', label: 'Products & Services' },
+            { to: '/products', label: 'Products' },
+            { to: '/consulting', label: 'Consulting' },
             { to: '/products/randao', label: 'RANDAO' },
             { href: links.randaoWhitepaper, label: 'RANDAO Whitepaper' },
           ],

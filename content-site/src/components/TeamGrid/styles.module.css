@@ -19,11 +19,11 @@
   background: #061114;
 }
 
-.member div {
+.member > div {
   padding: 1.1rem;
 }
 
-.member p {
+.member > div > p {
   margin: 0 0 0.3rem;
   color: var(--ifm-color-primary);
   font-size: 0.82rem;
@@ -31,27 +31,40 @@
   text-transform: uppercase;
 }
 
-.member h3 {
+.member > div > h3 {
   margin: 0 0 0.75rem;
 }
 
-.member strong {
+.member > div > strong {
   display: block;
   margin-bottom: 0.75rem;
   color: var(--ifm-font-color-base);
   line-height: 1.45;
 }
 
-.member span {
+.member > div > span {
   display: block;
   color: var(--cipher-muted);
   line-height: 1.55;
 }
 
-.member a {
-  display: inline-block;
+.profileLinks {
+  display: flex;
+  gap: 0.45rem;
   margin-top: 1rem;
-  font-weight: 800;
+}
+
+.profileLink {
+  display: inline-block;
+  margin: -0.35rem;
+  padding: 0.35rem;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.profileLink:hover {
+  background: rgba(55, 255, 222, 0.08);
+  text-decoration: none;
 }
 
 @media (max-width: 996px) {

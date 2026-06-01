@@ -7,9 +7,11 @@ import styles from './styles.module.css';
 export function FormStubPage({
   title,
   summary,
+  formHref,
 }: {
   title: string;
   summary: string;
+  formHref: string;
 }): ReactNode {
   return (
     <Layout title={title} description={summary}>
@@ -19,10 +21,15 @@ export function FormStubPage({
           <div className="container">
             <div className={styles.panel}>
               <p>
-                This route is reserved for the live form integration. The final form can
-                replace this page without changing any conversion CTA links.
+                Public request flows are hosted on CipherPlay's form surface. Continue
+                there when you are ready to submit the details for this request.
               </p>
-              <Link to="/about">Return to About</Link>
+              <div className={styles.actions}>
+                <Link href={formHref} className={styles.primaryAction}>
+                  Continue to the hosted form
+                </Link>
+                <Link to="/about">Return to About</Link>
+              </div>
             </div>
           </div>
         </section>

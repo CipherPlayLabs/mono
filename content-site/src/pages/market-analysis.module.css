@@ -15,78 +15,93 @@
   text-transform: uppercase;
 }
 
+.eyebrow {
+  margin: 0 0 0.45rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .header h1,
 .header h2 {
   margin: 0;
 }
 
-.reportGrid {
+.researchGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.report {
-  display: grid;
-  min-height: 430px;
-  align-content: space-between;
-  gap: 1.5rem;
-  padding: 1.25rem;
+.researchCard,
+.requestPanel {
   border: 1px solid var(--cipher-border);
   border-radius: 8px;
   background: var(--cipher-surface);
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.9rem;
+.researchCard {
+  min-height: 230px;
+  padding: 1.2rem;
 }
 
-.tags span {
-  padding: 0.3rem 0.55rem;
-  border: 1px solid var(--cipher-border);
-  border-radius: 999px;
+.researchCard span {
+  display: block;
+  margin-bottom: 0.65rem;
   color: var(--ifm-color-primary);
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.reportCode {
-  margin: 0 0 0.45rem;
-  color: var(--cipher-muted);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
-.report h2 {
+.researchCard h3,
+.requestPanel h2 {
   margin: 0 0 0.75rem;
 }
 
-.report p {
+.researchCard p {
   color: var(--cipher-muted);
   line-height: 1.65;
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+.requestPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem;
   align-items: center;
-}
-
-.actions a {
-  font-weight: 800;
+  padding: 1.3rem;
+  background:
+    linear-gradient(135deg, rgba(55, 255, 222, 0.06), transparent 54%),
+    var(--cipher-surface);
 }
 
 .note {
-  margin-top: 1.5rem;
+  max-width: 700px;
   color: var(--cipher-muted);
 }
 
+.reportMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.reportMeta span {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 999px;
+  color: var(--ifm-color-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 @media (max-width: 996px) {
-  .reportGrid {
+  .researchGrid,
+  .requestPanel {
     grid-template-columns: 1fr;
   }
 }

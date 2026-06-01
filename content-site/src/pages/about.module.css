@@ -25,6 +25,12 @@
   background: var(--cipher-surface);
 }
 
+.panel:first-child {
+  background:
+    linear-gradient(180deg, rgba(55, 255, 222, 0.06), transparent 52%),
+    var(--cipher-surface);
+}
+
 .panel h2,
 .sectionHeader h2 {
   margin: 0;
@@ -100,7 +106,7 @@
 
 .linkGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 

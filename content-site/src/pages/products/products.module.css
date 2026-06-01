@@ -1,10 +1,12 @@
 .section {
   padding: 3.5rem 0;
+  scroll-margin-top: 5rem;
 }
 
 .band {
   padding: 3.5rem 0;
   background: var(--cipher-band);
+  scroll-margin-top: 5rem;
 }
 
 .header {
@@ -32,9 +34,36 @@
   gap: 1rem;
 }
 
+.textLink {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-weight: 800;
+}
+
+.consultingPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.35rem;
+  border: 1px solid var(--cipher-border);
+  border-radius: 8px;
+  background: var(--cipher-surface);
+}
+
+.consultingPanel h2 {
+  margin: 0;
+}
+
+.consultingPanel p:last-child {
+  margin-bottom: 0;
+}
+
 .serviceGrid {
   display: grid;
-  grid-template-columns: minmax(0, 720px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
@@ -44,7 +73,9 @@
   padding: 1.4rem;
   border: 1px solid var(--cipher-border);
   border-radius: 8px;
-  background: var(--cipher-surface);
+  background:
+    linear-gradient(135deg, rgba(55, 255, 222, 0.06), transparent 48%),
+    var(--cipher-surface);
 }
 
 .serviceCard span {
@@ -86,6 +117,12 @@
   background: var(--cipher-surface);
 }
 
+.panel:first-child {
+  background:
+    linear-gradient(135deg, rgba(55, 255, 222, 0.06), transparent 54%),
+    var(--cipher-surface);
+}
+
 .panel h2,
 .panel h3 {
   margin-top: 0;
@@ -121,7 +158,7 @@
   padding: 1rem;
   border: 1px solid var(--cipher-border);
   border-radius: 8px;
-  background: var(--cipher-band);
+  background: var(--cipher-panel);
   color: var(--ifm-font-color-base);
   text-decoration: none;
 }
@@ -154,7 +191,8 @@
   .randaoLayout,
   .mediaItem,
   .productGrid,
-  .serviceGrid {
+  .serviceGrid,
+  .consultingPanel {
     grid-template-columns: 1fr;
   }
 

@@ -1,24 +1,26 @@
 # CipherPlay Content Site
 
-CipherPlay's local Docusaurus v3 site for the `/info/` surface.
+CipherPlay's local Docusaurus v3 site for `/info/`.
 
 ## Current Routes
 
 | Route | Purpose |
 | --- | --- |
-| `/` | CipherPlay overview and primary site sections |
-| `/about` | Company overview, leadership, backers, TAP values, and investor diligence signals |
+| `/` | CipherPlay overview and main site sections |
+| `/about` | Company overview, leadership, backers, TAP values, and investor information |
 | `/about/tap-into-success` | Expanded TAP operating principle |
-| `/market-analysis` | Market Research report index |
-| `/market-analysis/*` | Public Market Research report pages |
-| `/products` | Products & Services |
+| `/market-analysis` | Market Research catalog and State Of Web3 entry point |
+| `/market-analysis/state-of-web3` | State Of Web3 aggregate Market Research page |
+| `/market-analysis/state-of-web3/*` | State Of Web3 People-Class Report pages |
+| `/products` | Products |
 | `/products/randao` | RANDAO product page |
+| `/consulting` | Infrastructure and software consulting |
 | `/partners` | Partner ecosystem and collaboration page |
 | `/media-kit` | Approved CipherPlay brand assets |
 | `/newsroom` | CipherPlay announcements |
-| `/forms/*` | Stub routes for upcoming forms |
+| `/forms/*` | Legacy local placeholders; active CTAs link to n8n forms on `forms.cipherplay.net` |
 
-The old research, insights, featured, investors, and customers routes are intentionally not part of the active site.
+The old research, insights, featured, investors, customers, industries, and market-analysis report routes are intentionally not part of the active site.
 
 ## Configuration
 
@@ -31,6 +33,16 @@ The old research, insights, featured, investors, and customers routes are intent
 - Analytics domain: `PLAUSIBLE_SITE_DOMAIN` environment variable, falling back to the hostname in `SITE_URL`.
 
 The public site must not expose the private Plausible dashboard or origin hostname.
+
+## CTA Forms
+
+The content site does not render production request forms. CTA links point to n8n-hosted
+forms on `https://forms.cipherplay.net/form/*`:
+
+- `https://forms.cipherplay.net/form/investor-materials`
+- `https://forms.cipherplay.net/form/partnership`
+- `https://forms.cipherplay.net/form/consulting-discovery`
+- `https://forms.cipherplay.net/form/state-of-web3`
 
 ## Commands
 

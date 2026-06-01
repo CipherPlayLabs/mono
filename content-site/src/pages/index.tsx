@@ -2,46 +2,131 @@ import type {ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import {CipherHero} from '@site/src/components/CipherHero';
+import {ConversionButton} from '@site/src/components/ConversionButton';
 import {CredibilityStrip} from '@site/src/components/CredibilityStrip';
 import {ProductCard} from '@site/src/components/ProductCard';
 import {TrackedLink} from '@site/src/components/TrackedLink';
-import {
-  industryPillars,
-  marketResearchReports,
-  products,
-} from '@site/src/data/site';
+import {investorDiligence, partnerPage, products, serviceOfferings} from '@site/src/data/site';
+import {links} from '../../links';
 import styles from './index.module.css';
 
 const primarySections = [
   {
     label: 'Company',
     title: 'About',
-    summary: 'Company overview, leadership, backers, partner ecosystem, and diligence signals.',
+    summary: 'Leadership, TAP, backers, and partner ecosystem context.',
     href: '/about',
   },
   {
-    label: 'Reports',
+    label: 'Research',
     title: 'Market Research',
-    summary: 'Public Market Research reports with industry framing, market dynamics, and segment maps.',
+    summary: 'Public research and the Full Report request path.',
     href: '/market-analysis',
   },
   {
     label: 'Software',
-    title: 'Products & Services',
-    summary: 'Current blockchain infrastructure product work, consulting services, and historic product history.',
+    title: 'Products',
+    summary: 'RANDAO, current product work, and historic product history.',
     href: '/products',
   },
   {
-    label: 'Ecosystem',
+    label: 'Services',
+    title: 'Consulting',
+    summary: 'Infrastructure and software consulting for blockchain, AI, and Spatial Computing execution.',
+    href: '/consulting',
+  },
+  {
+    label: 'Values',
+    title: 'TAP',
+    summary: 'Transparency, Authenticity, and Perspicacity guide how CipherPlay operates.',
+    href: '/about/tap-into-success',
+  },
+  {
+    label: 'Access',
     title: 'Partners',
-    summary: 'Partnerships, collaboration signals, and CipherPlay LinkedIn.',
+    summary: 'Backer and partner ecosystem relationships that support collaboration.',
     href: '/partners',
   },
   {
-    label: 'Brand',
-    title: 'Media Kit',
-    summary: 'Approved logos, banners, downloads, and public brand assets.',
-    href: '/media-kit',
+    label: 'Leadership',
+    title: 'Team',
+    summary: 'CEO, CTO, and COO leadership across research, product, technology, and operations.',
+    href: '/team',
+  },
+];
+
+const proofLadder = [
+  {
+    label: 'Published Market Research',
+    title: 'Public Market Research is available for review.',
+    summary:
+      'Review CipherPlay research posture, product ownership, team, backers, and ecosystem context from the public site.',
+    href: '/market-analysis',
+    action: 'Review Market Research',
+  },
+  {
+    label: 'Product Execution',
+    title: 'Research and product execution live in the same operating loop.',
+    summary:
+      'Market Research explains what CipherPlay sees; RANDAO shows how the studio moves from thesis work toward shipped software.',
+    href: '/products',
+    action: 'Review Products',
+  },
+  {
+    label: 'Partner Opportunity Formation',
+    title: 'Partner ecosystems turn market signal into shared opportunity.',
+    summary:
+      'CipherPlay uses research collaboration, product validation, ecosystem access, and co-marketing channels to identify where partner relationships can reduce uncertainty.',
+    href: '/partners',
+    action: 'Explore Partners',
+  },
+];
+
+const audiencePaths = [
+  {
+    label: 'For investors',
+    title: 'Investors',
+    summary:
+      'Start with the public company, research, product, team, backer, and partner context, then request the private materials when CipherPlay is relevant to your review.',
+    href: links.investorForm,
+    action: investorDiligence.primaryCta.label,
+  },
+  {
+    label: 'For partners',
+    title: 'Partners',
+    summary:
+      'Go to the Partners page when you want to explore research collaboration, product validation, ecosystem access, protocol work, pilots, or venture-support opportunities.',
+    href: '/partners',
+    action: 'Explore partnership options',
+  },
+  {
+    label: 'For customers',
+    title: 'Customers',
+    summary:
+      'Start consulting discovery when you need research-backed architecture, prototypes, integrations, or software execution for blockchain, AI, or Spatial Computing work.',
+    href: links.customerForm,
+    action: serviceOfferings[0].cta.label,
+  },
+];
+
+const heroAudienceCtas = [
+  {
+    audience: 'For investors',
+    cta: investorDiligence.primaryCta,
+    proof: 'Public research, product, team, backer, and TAP context first.',
+    eventProps: {page: 'home'},
+  },
+  {
+    audience: 'For partners',
+    cta: partnerPage.primaryCta,
+    proof: 'Collaboration types and ecosystem fit are visible before the form.',
+    eventProps: {page: 'home'},
+  },
+  {
+    audience: 'For customers',
+    cta: serviceOfferings[0].cta,
+    proof: 'Architecture, prototype, integration, and execution needs route here.',
+    eventProps: {page: 'home'},
   },
 ];
 
@@ -49,19 +134,106 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title="CipherPlay"
-      description="CipherPlay is a venture-backed emerging-tech software development studio and market research firm.">
+      description="CipherPlay is an emerging-technology software studio and market research firm.">
       <main>
         <CipherHero
-          eyebrow="Emerging-tech software and market intelligence"
-          title="CipherPlay"
-          summary="A venture-backed emerging-tech software development studio and market research firm building products and public research for investors, partners, and customers."
+          eyebrow="Emerging-technology software studio"
+          title="Research-backed software venture formation for emerging-digital markets."
+          summary="CipherPlay connects public Market Research, product thesis development, technical execution, and ecosystem access for investors, partners, and customers."
+          ctaList={heroAudienceCtas}
+          proofLabel="Start here"
+          proofItems={[
+            {label: 'Published Market Research', href: '/market-analysis'},
+            {label: 'Proven Product Execution', href: '/products'},
+            {label: 'TAP operating principles', href: '/about/tap-into-success'},
+          ]}
         />
 
         <section className={styles.section}>
           <div className="container">
             <div className={styles.sectionHeader}>
-              <p>Site sections</p>
-              <h2>Explore CipherPlay company, research, products and services, partners, and media.</h2>
+              <p>Start here</p>
+              <h2>Begin with what CipherPlay has made public.</h2>
+            </div>
+            <div className={styles.proofGrid}>
+              {proofLadder.map((proof, index) =>
+                proof.href ? (
+                  <TrackedLink
+                    key={proof.label}
+                    to={proof.href}
+                    eventName="route_home_proof"
+                    eventProps={{destination: proof.href}}
+                    className={styles.proofCard}>
+                    <span>{String(index + 1).padStart(2, '0')} / {proof.label}</span>
+                    <h3>{proof.title}</h3>
+                    <p>{proof.summary}</p>
+                    <strong>{proof.action}</strong>
+                  </TrackedLink>
+                ) : (
+                  <article className={styles.proofCard} key={proof.label}>
+                    <span>{String(index + 1).padStart(2, '0')} / {proof.label}</span>
+                    <h3>{proof.title}</h3>
+                    <p>{proof.summary}</p>
+                  </article>
+                ),
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.band}>
+          <div className="container">
+            <div className={styles.sectionHeader}>
+              <p>Choose your next step</p>
+              <h2>Start where your relationship to CipherPlay begins.</h2>
+            </div>
+            <div className={styles.audienceGrid}>
+              {audiencePaths.map((path) => (
+                <TrackedLink
+                  key={path.title}
+                  to={path.href}
+                  eventName="route_home_audience"
+                  eventProps={{destination: path.title.toLowerCase(), label: path.action}}
+                  className={styles.audienceCard}>
+                  <span>{path.label}</span>
+                  <h3>{path.title}</h3>
+                  <p>{path.summary}</p>
+                  <strong>{path.action}</strong>
+                </TrackedLink>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className="container">
+            <div className={styles.twoColumn}>
+              <div>
+                <p className={styles.eyebrow}>Product spotlight</p>
+                <h2>RANDAO turns cryptographic infrastructure research into a live product.</h2>
+                <p>
+                  CipherPlay owns and operates RANDAO, a decentralized and verifiable randomness
+                  product for blockchain and cryptographic infrastructure. It is one public example
+                  of how the studio moves from research-backed thesis work to shipped software.
+                </p>
+                <Link to="/products/randao" className={styles.textLink}>
+                  View RANDAO
+                </Link>
+              </div>
+              <div className={styles.productList}>
+                {products.map((product) => (
+                  <ProductCard key={product.slug} product={product} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.band}>
+          <div className="container">
+            <div className={styles.sectionHeader}>
+              <p>Explore CipherPlay</p>
+              <h2>Continue with the pages that answer your next question.</h2>
             </div>
             <div className={styles.sectionGrid}>
               {primarySections.map((section) => (
@@ -77,69 +249,19 @@ export default function Home(): ReactNode {
                 </TrackedLink>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className="container">
-            <div className={styles.twoColumn}>
+            <div className={styles.investorPanel}>
               <div>
-                <p className={styles.eyebrow}>Blockchain infrastructure</p>
-                <h2>RANDAO anchors CipherPlay's cryptographic software work.</h2>
+                <p className={styles.eyebrow}>Investor materials</p>
+                <h2>Get the private investor materials.</h2>
                 <p>
-                  RANDAO gives the site a public blockchain infrastructure anchor while the broader
-                  studio and research surfaces stay focused on reviewable material.
+                  After reviewing the public pages, use CipherPlay's hosted request flow for the
+                  private investor materials.
                 </p>
-                <Link to="/products/randao" className={styles.textLink}>
-                  View RANDAO product page
-                </Link>
               </div>
-              <div className={styles.productList}>
-                {products.map((product) => (
-                  <ProductCard key={product.slug} product={product} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.band}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <p>Market Research reports</p>
-              <h2>Explore useful public Market Research reports below.</h2>
-            </div>
-            <div className={styles.reportGrid}>
-              {marketResearchReports.map((report) => (
-                <TrackedLink
-                  key={report.slug}
-                  to={report.href}
-                  eventName="market_analysis_teaser_click"
-                  eventProps={{report: report.slug}}
-                  className={styles.report}>
-                  <span>{report.industries.join(' / ')}</span>
-                  <h3>{report.title}</h3>
-                  <p>{report.executiveSummary}</p>
-                </TrackedLink>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.section}>
-          <div className="container">
-            <div className={styles.sectionHeader}>
-              <p>Industry pillars</p>
-              <h2>Focused where emerging technology becomes software, infrastructure, and intelligence.</h2>
-            </div>
-            <div className={styles.pillarGrid}>
-              {industryPillars.map((pillar) => (
-                <article className={styles.pillar} key={pillar.name}>
-                  <h3>{pillar.name}</h3>
-                  <p>{pillar.summary}</p>
-                  <Link to={pillar.relatedHref}>Explore</Link>
-                </article>
-              ))}
+              <ConversionButton
+                cta={investorDiligence.primaryCta}
+                eventProps={{page: 'home', placement: 'investor-panel'}}
+              />
             </div>
           </div>
         </section>

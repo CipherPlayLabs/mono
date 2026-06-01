@@ -18,19 +18,19 @@ export const mediaItems: MediaItem[] = [
     date: '2026-01-15',
   },
   {
-    title: 'RandAO Builder Spotlight with Allan Pedin',
+    title: 'RANDAO Builder Spotlight with Allan Pedin',
     outlet: 'Community Labs',
     description:
-      'Builder spotlight featuring Allan Pedin discussing RandAO and decentralized random number generation.',
+      'Builder spotlight featuring Allan Pedin discussing RANDAO and decentralized random number generation.',
     preview: 'https://i.ytimg.com/vi/LOlYGTt1LIc/hqdefault.jpg',
     website: 'https://www.youtube.com/watch?v=LOlYGTt1LIc',
     date: '2025-05-10',
   },
   {
-    title: 'RandAO Keynote - ETH Denver 2025',
-    outlet: 'RandAO',
+    title: 'RANDAO Keynote - ETH Denver 2025',
+    outlet: 'RANDAO',
     description:
-      'Keynote presentation at ETH Denver 2025 on RandAO and the future of decentralized applications.',
+      'Keynote presentation at ETH Denver 2025 on RANDAO and the future of decentralized applications.',
     preview: 'https://i.ytimg.com/vi/z9hJnxGRxj4/hqdefault.jpg',
     website: 'https://www.youtube.com/watch?v=z9hJnxGRxj4',
     date: '2025-03-03',

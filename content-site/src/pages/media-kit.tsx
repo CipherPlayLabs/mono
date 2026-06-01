@@ -12,7 +12,13 @@ export default function MediaKit(): ReactNode {
         <CipherHero
           eyebrow="Media kit"
           title="CipherPlay brand assets"
-          summary="Download approved public logo and banner assets from the CipherPlay media kit. The display font is excluded until redistribution rights are confirmed."
+          summary="Download approved public logo, banner, color, and display font assets. Use these files for external materials while keeping public claims aligned with the site and company context."
+          proofLabel="How to use these files"
+          proofItems={[
+            'Approved assets for external use',
+            'Link external materials back to cipherplay.net',
+            'Media files do not authorize unsupported claims',
+          ]}
         />
         <section className={styles.section}>
           <div className="container">
@@ -34,13 +40,9 @@ export default function MediaKit(): ReactNode {
 
             <div className={styles.header}>
               <p>Downloads</p>
-              <h2>Approved logos, banners, and packaged assets.</h2>
+              <h2>Approved logos, banners, font, and packaged assets.</h2>
             </div>
             <MediaAssetGrid />
-            <p className={styles.note}>
-              The custom display font is referenced by the source media kit but is not included
-              in public downloads until redistribution rights are confirmed.
-            </p>
           </div>
         </section>
       </main>
