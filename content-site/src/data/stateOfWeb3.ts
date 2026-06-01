@@ -485,12 +485,12 @@ export const stateOfWeb3Reports: StateOfWeb3Report[] = [
     peopleClass: 'Audit and Web3 security providers',
     title: 'Audit Providers Helping Projects Prove Launch Readiness',
     headline:
-      'Audit providers package technical assurance into trust proof that clients can reuse for launch, fundraising, and partner confidence.',
+      'Audit providers package technical assurance into trust proof that customer teams can reuse for launch, fundraising, and partner confidence.',
     methods:
       'CipherPlay interviewed audit and Web3 security providers and treated adjacent trust-proof signals as market context.',
     codedEvidence: '8 provider-side coded need signals from 2 audit-provider interviews.',
     work:
-      'Audit providers are trying to win trust in a reputation-led market while helping client teams reassure investors, users, communities, and partners.',
+      'Audit providers are trying to win trust in a reputation-led market while helping customer teams reassure investors, users, communities, and partners.',
     serves: [
       {
         audience: 'Developers and technical teams',

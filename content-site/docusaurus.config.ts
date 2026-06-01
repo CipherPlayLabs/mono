@@ -150,7 +150,7 @@ const config: Config = {
         },
         {
           href: links.investorForm,
-          label: 'Request Investor Materials',
+          label: 'Get Investor Materials',
           position: 'right',
           className: 'navbar-investor-cta',
         },

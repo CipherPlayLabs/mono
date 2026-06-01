@@ -68,17 +68,17 @@ const proofLadder = [
     label: 'Product Execution',
     title: 'Research and product execution live in the same operating loop.',
     summary:
-      'Market Research explains what CipherPlay sees; RANDAO and consulting capability show how the studio moves toward shipped software.',
+      'Market Research explains what CipherPlay sees; RANDAO shows how the studio moves from thesis work toward shipped software.',
     href: '/products',
     action: 'Review Products',
   },
   {
-    label: 'Opportunity Formation',
-    title: 'Emerging-technology uncertainty becomes software opportunity.',
+    label: 'Partner Opportunity Formation',
+    title: 'Partner ecosystems turn market signal into shared opportunity.',
     summary:
-      'CipherPlay uses public research, product work, and ecosystem relationships to identify where software can reduce uncertainty.',
-    href: '/consulting',
-    action: 'Review Consulting Services',
+      'CipherPlay uses research collaboration, product validation, ecosystem access, and co-marketing channels to identify where partner relationships can reduce uncertainty.',
+    href: '/partners',
+    action: 'Explore Partners',
   },
 ];
 

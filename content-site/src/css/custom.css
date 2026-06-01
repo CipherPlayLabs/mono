@@ -88,24 +88,16 @@ body {
   min-height: 34px;
   margin-left: 0.5rem;
   padding: 0 0.85rem;
-  border: 1px solid rgba(55, 255, 222, 0.48);
-  border-radius: 6px;
-  background: rgba(55, 255, 222, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(217, 255, 247, 0.04);
-  color: #d9fff7 !important;
-  font-weight: 700;
-  text-decoration: none;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 8px;
+  color: #061114 !important;
+  background: var(--ifm-color-primary);
+  font-weight: 800;
 }
 
 .navbar-investor-cta:hover {
-  border-color: var(--ifm-color-primary);
-  background: rgba(55, 255, 222, 0.14);
-  color: var(--ifm-color-primary-lightest) !important;
-  text-decoration: none;
+  color: #061114 !important;
+  opacity: 0.88;
 }
 
 @media (max-width: 1100px) {

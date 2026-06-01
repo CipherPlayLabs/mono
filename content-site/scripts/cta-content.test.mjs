@@ -24,6 +24,19 @@ test('home hero segments the first CTA moment by audience', () => {
   assert.match(homePage, /For customers/);
 });
 
+test('home proof ladder frames opportunity formation around partners', () => {
+  const homePage = read('src/pages/index.tsx');
+
+  assert.match(
+    homePage,
+    /label: 'Partner Opportunity Formation'[\s\S]*title: 'Partner ecosystems turn market signal into shared opportunity\.'[\s\S]*href: '\/partners'[\s\S]*action: 'Explore Partners'/,
+  );
+  assert.match(homePage, /research collaboration, product validation, ecosystem access/);
+  assert.doesNotMatch(homePage, /RANDAO and consulting capability/);
+  assert.doesNotMatch(homePage, /Emerging-technology uncertainty becomes software opportunity/);
+  assert.doesNotMatch(homePage, /action: 'Review Consulting Services'/);
+});
+
 test('products page is product-only and links to consulting separately', () => {
   const productsPage = read('src/pages/products/index.tsx');
 
@@ -122,12 +135,8 @@ test('conversion buttons send placement metadata to Plausible', () => {
 });
 
 test('navbar CTA remains available in the mobile menu', () => {
-  const config = read('docusaurus.config.ts');
   const css = read('src/css/custom.css');
 
-  assert.match(config, /href: links\.investorForm,\s+label: 'Request Investor Materials'/);
-  assert.match(css, /border: 1px solid rgba\(55, 255, 222, 0\.48\)/);
-  assert.match(css, /background: rgba\(55, 255, 222, 0\.08\)/);
   assert.match(css, /\.navbar__items--right > \.navbar-investor-cta/);
   assert.match(css, /\.navbar__items--right > \.navbar-investor-cta\s*\{\s*display: none;/);
   assert.match(css, /\.navbar-sidebar\s+\.navbar-investor-cta/);
@@ -219,4 +228,34 @@ test('State of Web3 report pages gate high-value graph and further research sect
   assert.match(reportPage, /get the complete report for the chart/);
   assert.match(reportCss, /filter: blur/);
   assert.match(reportCss, /pointer-events: none/);
+});
+
+test('legacy form routes send visitors to hosted n8n forms', () => {
+  const formStub = read('src/components/FormStubPage/index.tsx');
+  const formPages = [
+    read('src/pages/forms/investor-materials.tsx'),
+    read('src/pages/forms/partnership.tsx'),
+    read('src/pages/forms/consulting-discovery.tsx'),
+    read('src/pages/forms/report-request.tsx'),
+  ].join('\n');
+
+  assert.match(formStub, /formHref: string/);
+  assert.match(formStub, /Continue to the hosted form/);
+  assert.match(formPages, /links\.investorForm/);
+  assert.match(formPages, /links\.partnerForm/);
+  assert.match(formPages, /links\.customerForm/);
+  assert.match(formPages, /links\.reportRequestForm/);
+  assert.doesNotMatch(formStub, /final form can\s+replace this page/i);
+});
+
+test('public copy avoids stale client, industry, and private report wording', () => {
+  const stateData = read('src/data/stateOfWeb3.ts');
+  const launchPost = read('newsroom/2026-04-30-site-launch.mdx');
+  const publicCopy = [stateData, launchPost].join('\n');
+
+  assert.doesNotMatch(publicCopy, /\bclients?\b/i);
+  assert.doesNotMatch(launchPost, /industry material/i);
+  assert.doesNotMatch(launchPost, /private reports/i);
+  assert.match(launchPost, /Full Report access/);
+  assert.match(launchPost, /State Of Web3/);
 });
