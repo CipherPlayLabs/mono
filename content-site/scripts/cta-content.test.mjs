@@ -122,8 +122,12 @@ test('conversion buttons send placement metadata to Plausible', () => {
 });
 
 test('navbar CTA remains available in the mobile menu', () => {
+  const config = read('docusaurus.config.ts');
   const css = read('src/css/custom.css');
 
+  assert.match(config, /href: links\.investorForm,\s+label: 'Request Investor Materials'/);
+  assert.match(css, /border: 1px solid rgba\(55, 255, 222, 0\.48\)/);
+  assert.match(css, /background: rgba\(55, 255, 222, 0\.08\)/);
   assert.match(css, /\.navbar__items--right > \.navbar-investor-cta/);
   assert.match(css, /\.navbar__items--right > \.navbar-investor-cta\s*\{\s*display: none;/);
   assert.match(css, /\.navbar-sidebar\s+\.navbar-investor-cta/);
