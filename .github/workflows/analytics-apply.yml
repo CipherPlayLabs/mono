@@ -29,16 +29,52 @@ jobs:
     environment: production
     env:
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      TF_VAR_lobst3rs_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_LOBST3RS }}
-      TF_VAR_public_site_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_PUBLIC_SITE }}
-      TF_VAR_gcp_project_id: ${{ vars.GCP_PROJECT_ID }}
-      TF_VAR_gcp_region: ${{ vars.GCP_REGION }}
-      TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME }}
+      TF_VAR_analytics_dashboard_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_CIPHERINTERNAL }}
+      TF_VAR_analytics_dashboard_zone_name: ${{ vars.ANALYTICS_DASHBOARD_ZONE_NAME || 'cipherinternal.com' }}
+      TF_VAR_public_site_zone_id: ${{ vars.CLOUDFLARE_ZONE_ID_PUBLIC_SITE || vars.CLOUDFLARE_ZONE_ID_CIPHERPLAY }}
+      TF_VAR_gcp_project_id: ${{ vars.GCP_PROJECT_ID || vars.N8N_GCP_PROJECT_ID || 'cipherplay-production' }}
+      TF_VAR_gcp_region: ${{ vars.GCP_REGION || vars.N8N_GCP_REGION || 'us-east1' }}
+      TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME || 'analytics.cipherinternal.com' }}
       TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check required analytics configuration
+        env:
+          ANALYTICS_ACCESS_ALLOWED_EMAIL: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
+          ANALYTICS_PRIMARY_SITE_DOMAIN: ${{ vars.ANALYTICS_PRIMARY_SITE_DOMAIN }}
+          ANALYTICS_PROXY_ROUTE: ${{ vars.ANALYTICS_PROXY_ROUTE }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT || vars.N8N_GCP_SERVICE_ACCOUNT }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER || vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        run: |
+          missing=0
+
+          for name in \
+            ANALYTICS_ACCESS_ALLOWED_EMAIL \
+            ANALYTICS_PRIMARY_SITE_DOMAIN \
+            ANALYTICS_PROXY_ROUTE \
+            CLOUDFLARE_API_TOKEN \
+            TF_VAR_cloudflare_account_id \
+            TF_VAR_gcp_project_id \
+            TF_VAR_gcp_region \
+            TF_VAR_public_site_zone_id \
+            GCP_SERVICE_ACCOUNT \
+            GCP_WORKLOAD_IDENTITY_PROVIDER
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing analytics configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          if [ -z "$TF_VAR_analytics_dashboard_zone_id" ] && [ -z "$TF_VAR_analytics_dashboard_zone_name" ]; then
+            echo "::error title=Missing analytics dashboard zone::Set CLOUDFLARE_ZONE_ID_CIPHERINTERNAL or ANALYTICS_DASHBOARD_ZONE_NAME"
+            missing=1
+          fi
+
+          exit "$missing"
 
       - name: Prepare analytics site settings
         env:
@@ -52,8 +88,8 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER || vars.N8N_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT || vars.N8N_GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
