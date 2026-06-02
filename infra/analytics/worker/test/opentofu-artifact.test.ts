@@ -53,6 +53,9 @@ describe("OpenTofu worker artifact", () => {
     expect(applyWorkflow).toContain(
       "TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME || 'analytics.cipherinternal.com' }}",
     );
+    expect(applyWorkflow).toContain("TOFU_STATE_BUCKET: cipherplay-analytics-opentofu-state");
+    expect(applyWorkflow).toContain("Ensure OpenTofu state bucket");
+    expect(applyWorkflow).toContain('--lifecycle-file="${TOFU_DIR}/state-lifecycle.json"');
     expect(provisionWorkflow).toContain(
       "PLAUSIBLE_HOSTNAME: ${{ vars.PLAUSIBLE_HOSTNAME || 'analytics.cipherinternal.com' }}",
     );

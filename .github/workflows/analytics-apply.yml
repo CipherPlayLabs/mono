@@ -19,6 +19,7 @@ concurrency:
 env:
   NODE_VERSION: '20'
   TOFU_DIR: infra/analytics/opentofu
+  TOFU_STATE_BUCKET: cipherplay-analytics-opentofu-state
   WORKER_DIR: infra/analytics/worker
 
 jobs:
@@ -92,6 +93,25 @@ jobs:
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT || vars.N8N_GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Ensure OpenTofu state bucket
+        run: |
+          bucket="gs://${TOFU_STATE_BUCKET}"
+
+          if ! gcloud storage buckets describe "$bucket" --project="${TF_VAR_gcp_project_id}" >/dev/null 2>&1; then
+            gcloud storage buckets create "$bucket" \
+              --project="${TF_VAR_gcp_project_id}" \
+              --location="${TF_VAR_gcp_region}" \
+              --uniform-bucket-level-access \
+              --public-access-prevention
+          fi
+
+          gcloud storage buckets update "$bucket" \
+            --project="${TF_VAR_gcp_project_id}" \
+            --uniform-bucket-level-access \
+            --public-access-prevention \
+            --versioning \
+            --lifecycle-file="${TOFU_DIR}/state-lifecycle.json"
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1

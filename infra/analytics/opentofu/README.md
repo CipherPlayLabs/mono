@@ -16,7 +16,7 @@ The Google provider uses Application Default Credentials locally or GitHub Actio
 
 The Cloudflare provider reads `CLOUDFLARE_API_TOKEN` from the environment. In GitHub Actions, map the encrypted repository secret `CLOUDFLARE_ANALYTICS_API_TOKEN` to `CLOUDFLARE_API_TOKEN` for the OpenTofu step.
 
-OpenTofu state is stored in a private GCS bucket under the `infra/analytics` prefix. The bucket is intentionally managed outside this OpenTofu project to avoid a bootstrap cycle.
+OpenTofu state is stored in a private GCS bucket under the `infra/analytics` prefix. The apply workflow bootstraps this bucket before `tofu init`, then keeps uniform bucket-level access, public access prevention, versioning, and the state lifecycle policy enabled.
 
 ## Required Variables
 
