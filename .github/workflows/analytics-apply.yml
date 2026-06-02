@@ -37,7 +37,7 @@ jobs:
       TF_VAR_gcp_region: ${{ vars.GCP_REGION || vars.N8N_GCP_REGION || 'us-east1' }}
       TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME || 'analytics.cipherinternal.com' }}
       TF_VAR_access_allowed_email: ${{ vars.ANALYTICS_ACCESS_ALLOWED_EMAIL }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
