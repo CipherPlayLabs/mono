@@ -1,3 +1,13 @@
+data "cloudflare_zones" "analytics_dashboard" {
+  count = var.analytics_dashboard_zone_id == "" ? 1 : 0
+
+  account = {
+    id = var.cloudflare_account_id
+  }
+  name      = var.analytics_dashboard_zone_name
+  max_items = 1
+}
+
 resource "cloudflare_zero_trust_tunnel_cloudflared" "plausible" {
   account_id = var.cloudflare_account_id
   name       = "plausible-analytics-origin"
@@ -22,7 +32,7 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "plausible" {
 }
 
 resource "cloudflare_dns_record" "plausible_dashboard" {
-  zone_id = var.lobst3rs_zone_id
+  zone_id = local.analytics_dashboard_zone_id
   name    = var.plausible_hostname
   content = "${cloudflare_zero_trust_tunnel_cloudflared.plausible.id}.cfargotunnel.com"
   type    = "CNAME"

@@ -9,6 +9,6 @@
     "head_sampling_rate": 1
   },
   "vars": {
-    "PLAUSIBLE_ORIGIN_HOSTNAME": "analytics.lobst3rs.com"
+    "PLAUSIBLE_ORIGIN_HOSTNAME": "analytics.cipherinternal.com"
   }
 }
