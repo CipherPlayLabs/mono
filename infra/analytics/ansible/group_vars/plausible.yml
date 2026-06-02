@@ -1,5 +1,5 @@
 ---
-plausible_hostname: analytics.lobst3rs.com
+plausible_hostname: analytics.cipherinternal.com
 plausible_base_url: "https://{{ plausible_hostname }}"
 plausible_local_bind_address: "127.0.0.1"
 plausible_local_port: 8000

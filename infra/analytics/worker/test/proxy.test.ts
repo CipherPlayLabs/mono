@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
 
 const env = {
-  PLAUSIBLE_ORIGIN_HOSTNAME: "analytics.lobst3rs.com",
+  PLAUSIBLE_ORIGIN_HOSTNAME: "analytics.cipherinternal.com",
   CF_ACCESS_CLIENT_ID: "worker-client-id",
   CF_ACCESS_CLIENT_SECRET: "worker-client-secret",
 };
@@ -36,7 +36,7 @@ describe("analytics proxy worker", () => {
 
     const upstreamRequest = vi.mocked(fetch).mock.calls[0]?.[0];
     expect(upstreamRequest).toBeInstanceOf(Request);
-    expect((upstreamRequest as Request).url).toBe("https://analytics.lobst3rs.com/js/script.js");
+    expect((upstreamRequest as Request).url).toBe("https://analytics.cipherinternal.com/js/script.js");
   });
 
   it("proxies event posts to the Plausible event endpoint with the original body", async () => {
@@ -54,7 +54,7 @@ describe("analytics proxy worker", () => {
     expect(response.status).toBe(200);
 
     const upstreamRequest = vi.mocked(fetch).mock.calls[0]?.[0] as Request;
-    expect(upstreamRequest.url).toBe("https://analytics.lobst3rs.com/api/event");
+    expect(upstreamRequest.url).toBe("https://analytics.cipherinternal.com/api/event");
     expect(upstreamRequest.method).toBe("POST");
     expect(await upstreamRequest.text()).toBe(
       JSON.stringify({ name: "pageview", url: "https://cipherplay.local/" }),
@@ -104,10 +104,10 @@ describe("analytics proxy worker", () => {
 
   it("does not expose the Plausible origin hostname in public response bodies or redirects", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response("analytics.lobst3rs.com", {
+      new Response("analytics.cipherinternal.com", {
         status: 302,
         headers: {
-          location: "https://analytics.lobst3rs.com/login",
+          location: "https://analytics.cipherinternal.com/login",
         },
       }),
     );
@@ -115,6 +115,6 @@ describe("analytics proxy worker", () => {
     const response = await worker.fetch(makeRequest("/_analytics/js/script.js"), env);
 
     expect(response.headers.get("location")).toBeNull();
-    expect(await response.text()).not.toContain("analytics.lobst3rs.com");
+    expect(await response.text()).not.toContain("analytics.cipherinternal.com");
   });
 });

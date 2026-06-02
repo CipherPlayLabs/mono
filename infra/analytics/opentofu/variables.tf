@@ -20,9 +20,21 @@ variable "cloudflare_account_id" {
   type        = string
 }
 
-variable "lobst3rs_zone_id" {
-  description = "Cloudflare zone ID for the private Plausible dashboard hostname."
+variable "analytics_dashboard_zone_id" {
+  description = "Optional Cloudflare zone ID for the private Plausible dashboard hostname. When empty, analytics_dashboard_zone_name is used to look up the zone."
   type        = string
+  default     = ""
+}
+
+variable "analytics_dashboard_zone_name" {
+  description = "Cloudflare zone name for the private Plausible dashboard hostname, used when analytics_dashboard_zone_id is empty."
+  type        = string
+  default     = "cipherinternal.com"
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$", var.analytics_dashboard_zone_name))
+    error_message = "analytics_dashboard_zone_name must be a lowercase DNS zone name."
+  }
 }
 
 variable "public_site_zone_id" {
@@ -38,6 +50,12 @@ variable "access_allowed_email" {
 variable "plausible_hostname" {
   description = "Hostname for the private Plausible dashboard. Keep this operational hostname out of public site HTML and browser-visible JavaScript."
   type        = string
+  default     = "analytics.cipherinternal.com"
+
+  validation {
+    condition     = can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$", var.plausible_hostname))
+    error_message = "plausible_hostname must be a lowercase DNS hostname."
+  }
 }
 
 variable "analytics_sites" {
