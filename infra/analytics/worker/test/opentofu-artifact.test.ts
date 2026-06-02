@@ -53,6 +53,7 @@ describe("OpenTofu worker artifact", () => {
     expect(applyWorkflow).toContain(
       "TF_VAR_plausible_hostname: ${{ vars.PLAUSIBLE_HOSTNAME || 'analytics.cipherinternal.com' }}",
     );
+    expect(applyWorkflow).toContain("TF_VAR_gcp_zone: ${{ vars.GCP_ZONE || vars.N8N_GCP_ZONE || 'us-east1-b' }}");
     expect(applyWorkflow).toContain(
       "CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ANALYTICS_API_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}",
     );
@@ -65,9 +66,14 @@ describe("OpenTofu worker artifact", () => {
     expect(provisionWorkflow).toContain(
       "CLOUDFLARE_TUNNEL_NAME: ${{ vars.ANALYTICS_CLOUDFLARE_TUNNEL_NAME || 'plausible-analytics-origin' }}",
     );
+    expect(provisionWorkflow).toContain(
+      "GCP_INSTANCE_NAME: ${{ vars.ANALYTICS_GCP_INSTANCE_NAME || 'cipherplay-analytics-vm' }}",
+    );
+    expect(provisionWorkflow).toContain('gcloud compute ssh "${GCP_INSTANCE_NAME}"');
     expect(provisionWorkflow).toContain('cfd_tunnel?name=${encoded_tunnel_name}&is_deleted=false');
     expect(applyWorkflow).not.toContain("TF_VAR_lobst3rs_zone_id");
     expect(applyWorkflow).not.toContain("CLOUDFLARE_ZONE_ID_LOBST3RS");
+    expect(provisionWorkflow).not.toContain("gcloud compute ssh plausible-analytics-vm");
     expect(provisionWorkflow).not.toContain("4af10406-0f31-46ae-8d00-15ec71d2029f");
   });
 });
