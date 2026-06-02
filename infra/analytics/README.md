@@ -29,15 +29,23 @@ Repository variables:
 
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_ZONE_ID_PUBLIC_SITE`
-- `CLOUDFLARE_ZONE_ID_LOBST3RS` or the future private dashboard zone variable once the dashboard hostname is finalized
+- `ANALYTICS_DASHBOARD_ZONE_NAME`, defaults to `cipherinternal.com`
+- `CLOUDFLARE_ZONE_ID_CIPHERINTERNAL`, optional when the dashboard zone should not be looked up by name
 - `GCP_PROJECT_ID`
 - `GCP_REGION`
+- `GCP_ZONE`, defaults to `us-east1-b`
 - `GCP_SERVICE_ACCOUNT`
 - `GCP_WORKLOAD_IDENTITY_PROVIDER`
-- `PLAUSIBLE_HOSTNAME`
+- `PLAUSIBLE_HOSTNAME`, defaults to `analytics.cipherinternal.com`
 - `ANALYTICS_ACCESS_ALLOWED_EMAIL`
 - `ANALYTICS_PRIMARY_SITE_DOMAIN`
 - `ANALYTICS_PROXY_ROUTE`
+
+Optional repository variables:
+
+- `ANALYTICS_CLOUDFLARE_TUNNEL_NAME`, defaults to `plausible-analytics-origin` for host provisioning
+- `ANALYTICS_CLOUDFLARE_TUNNEL_ID`, skips the tunnel-name lookup when set
+- `ANALYTICS_GCP_INSTANCE_NAME`, defaults to `cipherplay-analytics-vm` for host provisioning
 
 Repository secrets:
 

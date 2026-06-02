@@ -16,23 +16,24 @@ The Google provider uses Application Default Credentials locally or GitHub Actio
 
 The Cloudflare provider reads `CLOUDFLARE_API_TOKEN` from the environment. In GitHub Actions, map the encrypted repository secret `CLOUDFLARE_ANALYTICS_API_TOKEN` to `CLOUDFLARE_API_TOKEN` for the OpenTofu step.
 
-OpenTofu state is stored in a private GCS bucket under the `infra/analytics` prefix. The bucket is intentionally managed outside this OpenTofu project to avoid a bootstrap cycle.
+OpenTofu state is stored in a private GCS bucket under the `infra/analytics` prefix. The apply workflow bootstraps this bucket before `tofu init`, then keeps uniform bucket-level access, public access prevention, versioning, and the state lifecycle policy enabled.
 
 ## Required Variables
 
 Set these values from repository variables, a local uncommitted `.tfvars` file, or CI environment variables:
 
 - `cloudflare_account_id`
-- `lobst3rs_zone_id` or the future private dashboard zone variable after the hostname is finalized
+- `analytics_dashboard_zone_name`, defaults to `cipherinternal.com`
+- `analytics_dashboard_zone_id`, optional when the dashboard zone should not be looked up by name
 - `public_site_zone_id` for the current public CipherPlay content-site domain
 - `gcp_project_id`
-- `plausible_hostname`
 - `access_allowed_email`
 
 Defaults are provided for:
 
 - `gcp_region = "us-east1"`
 - `gcp_zone = "us-east1-b"`
+- `plausible_hostname = "analytics.cipherinternal.com"`
 - `analytics_sites = []`
 
 Set `analytics_sites` explicitly when a public CipherPlay domain is ready.
@@ -51,6 +52,6 @@ Do not run `tofu apply` until the generated plan, provider permissions, hostname
 
 The Worker script is deployed from `../worker/dist/index.js`, which is generated from the tested TypeScript Worker source in `../worker/src/index.ts`.
 
-Additional analytics sites need zone mapping in `locals.tf` before they can use a different Cloudflare zone. Public browser requests must remain same-origin through `/_analytics/*`.
+Additional analytics sites need a public-site Cloudflare zone ID before they can use a different Cloudflare zone. Public browser requests must remain same-origin through `/_analytics/*`.
 
 Cloudflare Tunnel runtime installation and Plausible service configuration are handled by the later provisioning task. The tunnel token is intentionally not output because it is sensitive.

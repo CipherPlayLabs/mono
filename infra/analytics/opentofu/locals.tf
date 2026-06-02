@@ -17,6 +17,12 @@ locals {
 
   plausible_origin_service = "http://localhost:8000"
 
+  analytics_dashboard_zone_id = (
+    var.analytics_dashboard_zone_id != "" ?
+    var.analytics_dashboard_zone_id :
+    data.cloudflare_zones.analytics_dashboard[0].result[0].id
+  )
+
   analytics_routes = {
     for site in var.analytics_sites : site.route_pattern => merge(site, {
       zone_id = var.public_site_zone_id
