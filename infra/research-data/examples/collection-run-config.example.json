@@ -1,0 +1,58 @@
+{
+  "schema_version": "2026-06-05",
+  "provider": "reddit",
+  "community": {
+    "platform": "reddit",
+    "name": "smallbusiness",
+    "display_name": "r/smallbusiness"
+  },
+  "lookback": {
+    "mode": "one_year",
+    "start_date": "2025-06-05",
+    "end_date": "2026-06-05"
+  },
+  "collection": {
+    "goal": "provider_accessible_backfill",
+    "include_full_comment_tree": true,
+    "respect_rate_limits": true,
+    "max_requests_per_batch": 100,
+    "batch_pause_seconds": 60
+  },
+  "query_modes": [
+    {
+      "mode": "new",
+      "enabled": true
+    },
+    {
+      "mode": "top",
+      "time_filter": "year",
+      "enabled": true
+    },
+    {
+      "mode": "search",
+      "time_filter": "year",
+      "sort": "new",
+      "queries": [],
+      "enabled": false
+    }
+  ],
+  "triage": {
+    "enabled": true,
+    "language": "en",
+    "minimum_signal": {
+      "minimum_total_text_characters": 500,
+      "minimum_non_deleted_comments": 2,
+      "allow_ai_review_below_threshold": true
+    }
+  },
+  "analysis": {
+    "mode": "jtbd_first",
+    "run_automatically_after_collection": false,
+    "thread_level_only": true,
+    "allow_chunking": true,
+    "allow_truncation": false
+  },
+  "secrets": {
+    "provider_credentials_secret": "projects/cipherplay-production/secrets/reddit-api-credentials"
+  }
+}

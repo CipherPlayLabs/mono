@@ -1,5 +1,11 @@
 .DS_Store
 node_modules/
+__pycache__/
+*.py[cod]
 .wrangler/
 .terraform/
 .codex-local/
+infra/research-data/private/
+infra/research-data/run-configs/
+infra/research-data/**/*.tfvars
+infra/research-data/**/*.tfvars.json
