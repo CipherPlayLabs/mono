@@ -1,0 +1,12 @@
+[
+  {"name":"evidence_claim_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral atomic evidence claim ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID."},
+  {"name":"thread_excerpt_ids","type":"STRING","mode":"REPEATED","description":"Excerpt IDs supporting this claim."},
+  {"name":"claim_type","type":"STRING","mode":"REQUIRED","description":"JTBD-relevant claim type."},
+  {"name":"claim_text","type":"STRING","mode":"REQUIRED","description":"Atomic claim text."},
+  {"name":"inference_level","type":"STRING","mode":"REQUIRED","description":"direct, strong_inference, weak_inference, or unsupported."},
+  {"name":"confidence_level","type":"STRING","mode":"REQUIRED","description":"high, medium, low, or none."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Claim creation timestamp."},
+  {"name":"claim_json","type":"JSON","mode":"NULLABLE","description":"Claim metadata and review flags."}
+]

@@ -1,0 +1,9 @@
+[
+  {"name":"community_source_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral community source ID."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Community data provider, such as reddit."},
+  {"name":"platform","type":"STRING","mode":"REQUIRED","description":"Community platform."},
+  {"name":"community_name","type":"STRING","mode":"REQUIRED","description":"Provider-native community name."},
+  {"name":"display_name","type":"STRING","mode":"NULLABLE","description":"Reader-facing community label."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Registry creation timestamp."},
+  {"name":"metadata_json","type":"JSON","mode":"NULLABLE","description":"Provider-neutral metadata."}
+]

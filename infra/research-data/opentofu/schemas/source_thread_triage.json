@@ -1,0 +1,13 @@
+[
+  {"name":"source_thread_triage_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral triage row ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID used for triage."},
+  {"name":"triage_status","type":"STRING","mode":"REQUIRED","description":"jtbd_eligible, low_signal, off_topic, duplicate_discussion, mostly_news_link, mostly_jokes, deleted_or_removed, insufficient_context, non_english, or needs_review."},
+  {"name":"eligible_for_jtbd","type":"BOOLEAN","mode":"REQUIRED","description":"Whether full thread-level JTBD extraction should run."},
+  {"name":"triage_reason","type":"STRING","mode":"REQUIRED","description":"Reason for the triage status."},
+  {"name":"confidence","type":"FLOAT","mode":"NULLABLE","description":"Triage confidence from 0 to 1."},
+  {"name":"deterministic_flags","type":"STRING","mode":"REPEATED","description":"Deterministic triage flags."},
+  {"name":"semantic_flags","type":"STRING","mode":"REPEATED","description":"Semantic triage flags or review requirements."},
+  {"name":"observed_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Triage timestamp."},
+  {"name":"triage_json","type":"JSON","mode":"NULLABLE","description":"Triage details and source-quality factors."}
+]

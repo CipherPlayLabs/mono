@@ -1,0 +1,13 @@
+[
+  {"name":"coverage_gap_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral coverage gap ID."},
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Collection run ID."},
+  {"name":"community_source_id","type":"STRING","mode":"NULLABLE","description":"Community source ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"NULLABLE","description":"Source thread ID when gap is thread-specific."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"NULLABLE","description":"Snapshot ID when gap is snapshot-specific."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Provider name."},
+  {"name":"gap_type","type":"STRING","mode":"REQUIRED","description":"Coverage gap category."},
+  {"name":"severity","type":"STRING","mode":"REQUIRED","description":"note, warning, or error."},
+  {"name":"description","type":"STRING","mode":"REQUIRED","description":"Human-readable coverage note."},
+  {"name":"observed_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Observation timestamp."},
+  {"name":"details_json","type":"JSON","mode":"NULLABLE","description":"Provider-accessible details and limits."}
+]

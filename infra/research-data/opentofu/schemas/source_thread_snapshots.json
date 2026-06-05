@@ -1,0 +1,12 @@
+[
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral snapshot ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Collection run ID."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Provider name."},
+  {"name":"gcs_uri","type":"STRING","mode":"REQUIRED","description":"Private GCS URI for the full raw source-thread snapshot."},
+  {"name":"raw_checksum_sha256","type":"STRING","mode":"REQUIRED","description":"SHA-256 checksum of the provider snapshot payload."},
+  {"name":"byte_size","type":"INTEGER","mode":"REQUIRED","description":"Stored JSON byte size."},
+  {"name":"fetched_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Fetch timestamp."},
+  {"name":"fetch_metadata_json","type":"JSON","mode":"NULLABLE","description":"Provider/API fetch metadata."},
+  {"name":"processing_json","type":"JSON","mode":"NULLABLE","description":"Processing posture, including no-truncation flags."}
+]

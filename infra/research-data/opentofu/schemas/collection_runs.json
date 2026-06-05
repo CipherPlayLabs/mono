@@ -1,0 +1,11 @@
+[
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral collection run ID."},
+  {"name":"collection_run_config_id","type":"STRING","mode":"NULLABLE","description":"Collection config ID used by this run."},
+  {"name":"community_source_id","type":"STRING","mode":"REQUIRED","description":"Community source ID."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Provider name."},
+  {"name":"run_status","type":"STRING","mode":"REQUIRED","description":"Run lifecycle status."},
+  {"name":"started_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Run start timestamp."},
+  {"name":"finished_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Run finish timestamp."},
+  {"name":"operator_notes","type":"STRING","mode":"NULLABLE","description":"Private operator notes."},
+  {"name":"run_json","type":"JSON","mode":"NULLABLE","description":"Additional run metadata."}
+]

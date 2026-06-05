@@ -1,0 +1,9 @@
+[
+  {"name":"collection_checkpoint_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral checkpoint ID."},
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Collection run ID."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Provider name."},
+  {"name":"query_mode","type":"STRING","mode":"REQUIRED","description":"Provider listing/search mode."},
+  {"name":"checkpoint_json","type":"JSON","mode":"NULLABLE","description":"Provider cursor/token/checkpoint data."},
+  {"name":"recorded_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Checkpoint timestamp."},
+  {"name":"coverage_json","type":"JSON","mode":"NULLABLE","description":"Coverage details observed during the batch."}
+]
