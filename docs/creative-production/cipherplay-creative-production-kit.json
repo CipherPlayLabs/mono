@@ -1,0 +1,335 @@
+{
+  "id": "cipherplay-creative-production-kit",
+  "version": "2026-06-03",
+  "status": "reusable production guidance",
+  "source_basis": [
+    {
+      "type": "local_file",
+      "path": "CipherPlay Media Kit/DesignDetail.txt",
+      "use": "approved palette and display-font guidance"
+    },
+    {
+      "type": "local_folder",
+      "path": "CipherPlay Media Kit/",
+      "use": "approved logos, wordmarks, banners, backgrounds, and display font"
+    },
+    {
+      "type": "repo_file",
+      "path": "docs/superpowers/specs/2026-05-29-cipherplay-investor-first-brand-strategy-design.md",
+      "use": "investor-first positioning, audience modes, TAP, claim standards, and page implications"
+    },
+    {
+      "type": "repo_file",
+      "path": "CONTEXT.md",
+      "use": "canonical public vocabulary and relationship labels"
+    },
+    {
+      "type": "repo_files",
+      "paths": [
+        "content-site/src/pages/index.tsx",
+        "content-site/src/css/custom.css",
+        "content-site/src/data/site.ts"
+      ],
+      "use": "current live-site layout grammar, CTAs, and visual roles"
+    },
+    {
+      "type": "public_url",
+      "url": "https://cipherplay.net/",
+      "checked_at": "2026-06-03",
+      "use": "current public homepage language and /info/ surface"
+    }
+  ],
+  "brand_spine": {
+    "category": "research-backed emerging-technology software studio and market research firm",
+    "primary_audience": "investors",
+    "supporting_audiences": [
+      "partners",
+      "customers"
+    ],
+    "master_promise": "Research-backed software venture formation for emerging-technology markets.",
+    "plain_description": "CipherPlay is an emerging-technology software studio and market research firm connecting research, product thesis development, and software execution.",
+    "motion_tagline": "From market signal to software proof."
+  },
+  "palette": {
+    "deep_ink": {
+      "hex": "#061114",
+      "role": "primary dark background and motion canvas"
+    },
+    "panel_ink": {
+      "hex": "#0D1D22",
+      "role": "cards, proof panels, and content bands"
+    },
+    "very_dark_blue": {
+      "hex": "#0E6B99",
+      "role": "depth, section structure, and secondary surfaces"
+    },
+    "dark_blue": {
+      "hex": "#1EA5B4",
+      "role": "charts, proof paths, and secondary highlights"
+    },
+    "light_blue": {
+      "hex": "#37FFDE",
+      "role": "primary accent, active states, investor CTAs, and signal pulses"
+    },
+    "white": {
+      "hex": "#D9D9D9",
+      "role": "logo variants and readable text on dark"
+    },
+    "gray": {
+      "hex": "#444444",
+      "role": "dividers, restraint, and secondary labels"
+    }
+  },
+  "typography": {
+    "primary": "Inter or clean sans-serif system font",
+    "display": "You're Gone",
+    "display_guidance": "Use only for logo, wordmark, or very short display moments; use imported logo assets when Canva cannot reliably use the font.",
+    "avoid": [
+      "long investor copy in display font",
+      "dense captions in decorative fonts",
+      "tiny all-caps labels on mobile"
+    ]
+  },
+  "motion_language": {
+    "personality": "precise, technical, evidence-aware, and calm",
+    "timing": {
+      "social_card_seconds": "6-8",
+      "reel_story_seconds": "8-12",
+      "carousel_page_seconds": "3-5",
+      "logo_resolve_seconds": "0.7-1.2",
+      "card_entry_ms": "160-280",
+      "proof_ladder_gap_ms": "240-420",
+      "cta_settle_ms": "600-900"
+    },
+    "motifs": [
+      {
+        "name": "Circuit trace",
+        "description": "A cyan line or dot travels through the symbol arms before the mark resolves."
+      },
+      {
+        "name": "Dot-field drift",
+        "description": "Low-opacity ring clusters drift slowly behind content, echoing media-kit backgrounds."
+      },
+      {
+        "name": "Proof ladder build",
+        "description": "Numbered proof cards enter in sequence to make diligence visible."
+      },
+      {
+        "name": "Research-to-product loop",
+        "description": "Market Research, Product Thesis, and Software Proof reveal in order."
+      },
+      {
+        "name": "CTA lock-in",
+        "description": "The final CTA gains a restrained cyan border or fill and then holds steady."
+      }
+    ],
+    "avoid": [
+      "glitch or signal failure effects",
+      "fast crypto-trading flashes",
+      "meme-like kinetic type",
+      "spinning coins or token rain",
+      "neon tunnels or generic blockchain grids",
+      "excessive blur, bloom, or bokeh"
+    ]
+  },
+  "layout_system": {
+    "core_structures": [
+      "hero proof panel",
+      "three-proof ladder",
+      "audience cards for investors, partners, and customers",
+      "RANDAO product spotlight",
+      "investor CTA panel"
+    ],
+    "shape_rules": {
+      "card_radius": "8px",
+      "border": "subtle cyan border",
+      "button": "cyan fill for investor CTAs, restrained text links for secondary paths",
+      "bands": "full-width dark or near-dark sections"
+    }
+  },
+  "creative_routes": [
+    {
+      "id": "investor-diligence-signal",
+      "name": "Investor Diligence Signal",
+      "best_for": [
+        "investor materials prompts",
+        "fundraising-adjacent posts",
+        "public company overview cards"
+      ],
+      "formula": [
+        "open with a bounded strategic claim",
+        "reveal the proof ladder",
+        "close with a public-context-first investor CTA"
+      ],
+      "primary_cta": "Get investor materials"
+    },
+    {
+      "id": "research-to-product",
+      "name": "Research To Product",
+      "best_for": [
+        "Market Research announcements",
+        "report launch cards",
+        "research insight clips"
+      ],
+      "formula": [
+        "lead with market uncertainty",
+        "show the research signal",
+        "connect the signal to a product thesis or technical path",
+        "keep Full Reports as the deeper request path"
+      ],
+      "primary_cta": "Request Full Report or review Market Research"
+    },
+    {
+      "id": "randao-product-proof",
+      "name": "RANDAO Product Proof",
+      "best_for": [
+        "RANDAO demos",
+        "blockchain infrastructure proof posts",
+        "product spotlight cards"
+      ],
+      "formula": [
+        "name RANDAO as CipherPlay-owned and operated",
+        "state the factual product category",
+        "tie it back to research-backed execution"
+      ],
+      "primary_cta": "Schedule a RANDAO demo"
+    },
+    {
+      "id": "partner-ecosystem-leverage",
+      "name": "Partner Ecosystem Leverage",
+      "best_for": [
+        "partnership posts",
+        "event recaps",
+        "ecosystem collaboration",
+        "co-marketing prompts"
+      ],
+      "formula": [
+        "lead with mutual leverage",
+        "clarify collaboration type",
+        "avoid inflated logo language"
+      ],
+      "primary_cta": "Propose a partnership"
+    }
+  ],
+  "canva_templates": [
+    {
+      "name": "Investor Proof Social Card",
+      "formats": [
+        "1080x1080",
+        "1200x630"
+      ],
+      "fields": [
+        "headline",
+        "proof_01",
+        "proof_02",
+        "proof_03",
+        "cta_label",
+        "source_note"
+      ],
+      "motion": [
+        "dot-field background slowly pans",
+        "logo symbol fades in at top right",
+        "headline enters from 12px upward with opacity",
+        "proof cards enter in sequence",
+        "CTA locks in during the last second"
+      ]
+    },
+    {
+      "name": "Research-To-Product Reel",
+      "formats": [
+        "1080x1920"
+      ],
+      "duration_seconds": "8-12",
+      "fields": [
+        "opening_market_signal",
+        "research_point",
+        "product_thesis",
+        "software_proof",
+        "cta_label"
+      ],
+      "motion": [
+        "three stacked stages reveal as a vertical path",
+        "light-blue trace line connects stages",
+        "final frame resolves to wordmark and CTA"
+      ]
+    },
+    {
+      "name": "RANDAO Product Proof",
+      "formats": [
+        "1080x1080",
+        "1080x1920"
+      ],
+      "fields": [
+        "product_name",
+        "product_category",
+        "proof_statement",
+        "demo_cta"
+      ],
+      "motion": [
+        "circuit-node pulse opens the frame",
+        "proof statement enters in compact card",
+        "CipherPlay ownership line remains visible before demo CTA"
+      ]
+    },
+    {
+      "name": "Partner Ecosystem Tile",
+      "formats": [
+        "1080x1080",
+        "1920x1080"
+      ],
+      "fields": [
+        "partner_context",
+        "collaboration_type",
+        "mutual_value",
+        "cta_label"
+      ],
+      "motion": [
+        "relationship entries fade in as labeled proof blocks",
+        "relationship labels remain accurate",
+        "no endorsement-style customer-wall treatment"
+      ]
+    },
+    {
+      "name": "Report Launch Carousel",
+      "formats": [
+        "1080x1080"
+      ],
+      "pages": [
+        "report title and market question",
+        "public signal",
+        "why it matters",
+        "what CipherPlay is watching",
+        "Full Report CTA",
+        "optional source/context page"
+      ]
+    }
+  ],
+  "claim_rules": {
+    "safe_factual_claims": [
+      "CipherPlay is an emerging-technology software studio and market research firm.",
+      "CipherPlay publishes Market Research.",
+      "CipherPlay owns and operates RANDAO.",
+      "RANDAO is a product for decentralized and verifiable randomness in blockchain and cryptographic infrastructure.",
+      "TAP means Transparency, Authenticity, and Perspicacity."
+    ],
+    "forbidden_without_owner_review": [
+      "customer names",
+      "revenue, retention, performance, or traction",
+      "guaranteed outcomes",
+      "superiority claims such as best, leading, fastest, or most advanced",
+      "partnership implications stronger than documented relationship labels",
+      "investment advice or regulated financial claims"
+    ]
+  },
+  "prompt_templates": {
+    "canva_animation": "Create an animated Canva social design using the CipherPlay Creative Production Kit. Use a dark technical canvas based on #061114 and #0D1D22. Use #37FFDE only for primary accents, proof traces, and CTAs. Use proof cards, numbered evidence paths, restrained cyan borders, and a subtle dot-field or circuit-trace motif. Locked copy: <content>. Audience mode: <Investor | Partner | Customer | Research | Product>. Reveal headline and proof blocks in sequence, then end on a stable CTA frame with the CipherPlay mark. Do not rewrite locked copy or add unsupported traction, customer, revenue, partnership, investment, or technical-superiority claims.",
+    "generated_background": "Create a premium dark technical background for a CipherPlay social animation. No text, no logos, no UI, no charts, no numbers, no product claims, no watermarks. Use a deep ink field, subtle cyan circuit-node clusters, restrained depth, and clean negative space for deterministic copy overlays. The feeling should be investor-ready, evidence-aware, precise, and technically literate, not hype-driven or decorative."
+  },
+  "durable_assets": [
+    "content-site/static/img/cipherplay/logo-gradient.svg",
+    "content-site/static/img/cipherplay/logo.svg",
+    "content-site/static/img/cipherplay/logo-text.svg",
+    "content-site/static/img/cipherplay/social-card.jpg",
+    "https://cipherplay.net/info/media-kit"
+  ]
+}
