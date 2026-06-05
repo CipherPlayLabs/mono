@@ -1,3 +1,4 @@
+import json
 from typing import Any, Iterable
 
 
@@ -93,7 +94,8 @@ class BigQueryResearchStore:
             return
         table_id = f"{self.project_id}.{self.dataset_id}.{table}"
         row_ids = [_row_insert_id(row) for row in rows]
-        errors = self.client.insert_rows_json(table_id, rows, row_ids=row_ids)
+        insert_rows = [_prepare_row_for_insert(row) for row in rows]
+        errors = self.client.insert_rows_json(table_id, insert_rows, row_ids=row_ids)
         if errors:
             raise RuntimeError(f"BigQuery insert failed for {table_id}: {errors}")
 
@@ -103,3 +105,11 @@ def _row_insert_id(row: dict[str, Any]) -> str | None:
         if key.endswith("_id") and value:
             return str(value)
     return None
+
+
+def _prepare_row_for_insert(row: dict[str, Any]) -> dict[str, Any]:
+    prepared = dict(row)
+    for key, value in row.items():
+        if key.endswith("_json") and value is not None and not isinstance(value, str):
+            prepared[key] = json.dumps(value, sort_keys=True, separators=(",", ":"))
+    return prepared
