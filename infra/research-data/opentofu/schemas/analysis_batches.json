@@ -1,0 +1,8 @@
+[
+  {"name":"analysis_batch_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral analysis batch ID."},
+  {"name":"analysis_mode","type":"STRING","mode":"REQUIRED","description":"Analysis mode, v1 uses jtbd_first."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"NULLABLE","description":"Snapshot ID for thread-level batch."},
+  {"name":"source_thread_id","type":"STRING","mode":"NULLABLE","description":"Source thread ID for thread-level batch."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Analysis batch creation timestamp."},
+  {"name":"batch_json","type":"JSON","mode":"NULLABLE","description":"Batch processing metadata."}
+]

@@ -1,0 +1,19 @@
+[
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral source thread ID."},
+  {"name":"community_source_id","type":"STRING","mode":"REQUIRED","description":"Community source ID."},
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Collection run ID."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Provider name."},
+  {"name":"community_name","type":"STRING","mode":"REQUIRED","description":"Provider-native community name."},
+  {"name":"provider_thread_id","type":"STRING","mode":"REQUIRED","description":"Reddit-native thread ID."},
+  {"name":"provider_thread_fullname","type":"STRING","mode":"NULLABLE","description":"Reddit fullname, such as t3_x."},
+  {"name":"title","type":"STRING","mode":"NULLABLE","description":"Starting post title."},
+  {"name":"author_label","type":"STRING","mode":"NULLABLE","description":"Provider-visible author label."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Provider-native creation timestamp."},
+  {"name":"score","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible score."},
+  {"name":"comment_count","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible comment count."},
+  {"name":"permalink","type":"STRING","mode":"NULLABLE","description":"Provider permalink."},
+  {"name":"source_url","type":"STRING","mode":"NULLABLE","description":"Provider source URL."},
+  {"name":"latest_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Latest source-thread snapshot ID."},
+  {"name":"latest_fetched_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Latest fetch timestamp."},
+  {"name":"provider_native_json","type":"JSON","mode":"NULLABLE","description":"Provider-native thread metadata for audit."}
+]

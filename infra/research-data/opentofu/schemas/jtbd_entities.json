@@ -1,0 +1,12 @@
+[
+  {"name":"jtbd_entity_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral normalized JTBD entity ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID."},
+  {"name":"evidence_claim_ids","type":"STRING","mode":"REPEATED","description":"Evidence claim IDs supporting this entity."},
+  {"name":"entity_type","type":"STRING","mode":"REQUIRED","description":"job, criterion, context, pain, workaround, solution, or people_role."},
+  {"name":"entity_statement","type":"STRING","mode":"REQUIRED","description":"Normalized JTBD entity statement."},
+  {"name":"inference_level","type":"STRING","mode":"REQUIRED","description":"direct, strong_inference, weak_inference, or unsupported."},
+  {"name":"confidence_level","type":"STRING","mode":"REQUIRED","description":"high, medium, low, or none."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Entity creation timestamp."},
+  {"name":"entity_json","type":"JSON","mode":"NULLABLE","description":"Entity metadata and source sentence."}
+]

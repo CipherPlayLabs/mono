@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CipherPlay Reddit Customer Discovery Collection Run Config",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "provider",
+    "community",
+    "lookback",
+    "collection",
+    "query_modes",
+    "triage",
+    "analysis",
+    "secrets"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2026-06-05"
+    },
+    "provider": {
+      "const": "reddit"
+    },
+    "community": {
+      "type": "object",
+      "required": ["platform", "name", "display_name"],
+      "properties": {
+        "platform": {"const": "reddit"},
+        "name": {"type": "string", "minLength": 1},
+        "display_name": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "lookback": {
+      "type": "object",
+      "required": ["mode", "start_date", "end_date"],
+      "properties": {
+        "mode": {"const": "one_year"},
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"}
+      },
+      "additionalProperties": false
+    },
+    "collection": {
+      "type": "object",
+      "required": [
+        "goal",
+        "include_full_comment_tree",
+        "respect_rate_limits",
+        "max_requests_per_batch",
+        "batch_pause_seconds"
+      ],
+      "properties": {
+        "goal": {"const": "provider_accessible_backfill"},
+        "include_full_comment_tree": {"const": true},
+        "respect_rate_limits": {"const": true},
+        "max_requests_per_batch": {"type": "integer", "minimum": 1},
+        "batch_pause_seconds": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "query_modes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["mode", "enabled"],
+        "properties": {
+          "mode": {"enum": ["new", "top", "search"]},
+          "enabled": {"type": "boolean"},
+          "time_filter": {"type": "string"},
+          "sort": {"type": "string"},
+          "queries": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "triage": {
+      "type": "object",
+      "required": ["enabled", "language", "minimum_signal"],
+      "properties": {
+        "enabled": {"const": true},
+        "language": {"const": "en"},
+        "minimum_signal": {
+          "type": "object",
+          "required": [
+            "minimum_total_text_characters",
+            "minimum_non_deleted_comments",
+            "allow_ai_review_below_threshold"
+          ],
+          "properties": {
+            "minimum_total_text_characters": {"type": "integer", "minimum": 0},
+            "minimum_non_deleted_comments": {"type": "integer", "minimum": 0},
+            "allow_ai_review_below_threshold": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "analysis": {
+      "type": "object",
+      "required": [
+        "mode",
+        "run_automatically_after_collection",
+        "thread_level_only",
+        "allow_chunking",
+        "allow_truncation"
+      ],
+      "properties": {
+        "mode": {"const": "jtbd_first"},
+        "run_automatically_after_collection": {"const": false},
+        "thread_level_only": {"const": true},
+        "allow_chunking": {"const": true},
+        "allow_truncation": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "secrets": {
+      "type": "object",
+      "required": ["provider_credentials_secret"],
+      "properties": {
+        "provider_credentials_secret": {
+          "type": "string",
+          "pattern": "^projects/.+/secrets/.+"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

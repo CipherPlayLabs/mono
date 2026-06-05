@@ -1,0 +1,21 @@
+[
+  {"name":"thread_node_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral thread node ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID."},
+  {"name":"collection_run_id","type":"STRING","mode":"REQUIRED","description":"Collection run ID."},
+  {"name":"node_type","type":"STRING","mode":"REQUIRED","description":"post or comment."},
+  {"name":"provider_kind","type":"STRING","mode":"NULLABLE","description":"Reddit kind, such as t3 or t1."},
+  {"name":"provider_native_id","type":"STRING","mode":"NULLABLE","description":"Provider-native node ID."},
+  {"name":"provider_fullname","type":"STRING","mode":"NULLABLE","description":"Provider fullname."},
+  {"name":"provider_parent_fullname","type":"STRING","mode":"NULLABLE","description":"Provider parent fullname."},
+  {"name":"provider_link_fullname","type":"STRING","mode":"NULLABLE","description":"Provider link fullname."},
+  {"name":"node_depth","type":"INTEGER","mode":"NULLABLE","description":"Depth in provider-available tree."},
+  {"name":"title","type":"STRING","mode":"NULLABLE","description":"Post title when applicable."},
+  {"name":"body","type":"STRING","mode":"NULLABLE","description":"Provider-visible body text."},
+  {"name":"text","type":"STRING","mode":"NULLABLE","description":"Combined analysis text."},
+  {"name":"author_label","type":"STRING","mode":"NULLABLE","description":"Provider-visible author label."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Provider-native creation timestamp."},
+  {"name":"score","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible node score."},
+  {"name":"permalink","type":"STRING","mode":"NULLABLE","description":"Node permalink."},
+  {"name":"raw_json","type":"JSON","mode":"NULLABLE","description":"Provider-native node JSON for audit."}
+]

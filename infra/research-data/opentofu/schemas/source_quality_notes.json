@@ -1,0 +1,10 @@
+[
+  {"name":"source_quality_note_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral source-quality note ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID."},
+  {"name":"note_type","type":"STRING","mode":"REQUIRED","description":"Bias or source-quality note type."},
+  {"name":"confidence_impact","type":"STRING","mode":"REQUIRED","description":"How the note should affect confidence."},
+  {"name":"note_text","type":"STRING","mode":"REQUIRED","description":"Human-readable source-quality note."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Note creation timestamp."},
+  {"name":"note_json","type":"JSON","mode":"NULLABLE","description":"Structured bias and quality factors."}
+]

@@ -1,0 +1,10 @@
+[
+  {"name":"thread_excerpt_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral excerpt ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Snapshot ID."},
+  {"name":"thread_node_id","type":"STRING","mode":"REQUIRED","description":"Thread node ID."},
+  {"name":"provider_fullname","type":"STRING","mode":"NULLABLE","description":"Provider fullname for the node."},
+  {"name":"excerpt_text","type":"STRING","mode":"REQUIRED","description":"Short source passage used as evidence."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Excerpt creation timestamp."},
+  {"name":"locator_json","type":"JSON","mode":"NULLABLE","description":"Tree locator and permalink context."}
+]

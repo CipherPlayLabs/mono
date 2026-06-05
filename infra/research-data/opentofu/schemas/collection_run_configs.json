@@ -1,0 +1,10 @@
+[
+  {"name":"collection_run_config_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral collection config ID."},
+  {"name":"schema_version","type":"STRING","mode":"REQUIRED","description":"Collection config schema version."},
+  {"name":"provider","type":"STRING","mode":"REQUIRED","description":"Configured data provider."},
+  {"name":"community_source_id","type":"STRING","mode":"REQUIRED","description":"Configured community source ID."},
+  {"name":"config_gcs_uri","type":"STRING","mode":"NULLABLE","description":"Private GCS URI for the active config."},
+  {"name":"config_json","type":"JSON","mode":"REQUIRED","description":"Validated JSON collection config without credentials."},
+  {"name":"validation_status","type":"STRING","mode":"REQUIRED","description":"Validation status."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"NULLABLE","description":"Config registration timestamp."}
+]
