@@ -296,7 +296,7 @@ resource "google_certificate_manager_certificate_map_entry" "crm" {
   description  = "Certificate map entry for ${var.crm_hostname}."
   map          = google_certificate_manager_certificate_map.crm.name
   labels       = local.labels
-  certificates = [google_certificate_manager_certificate.crm.id]
+  certificates = var.crm_origin_certificate_override == "" ? [google_certificate_manager_certificate.crm.id] : [var.crm_origin_certificate_override]
   hostname     = var.crm_hostname
 }
 

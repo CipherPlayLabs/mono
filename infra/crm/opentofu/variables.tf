@@ -113,6 +113,12 @@ variable "crm_access_allowed_group_ids" {
   default     = []
 }
 
+variable "crm_origin_certificate_override" {
+  description = "Optional existing Certificate Manager certificate resource ID to serve for the CRM hostname while the Google-managed certificate is provisioning."
+  type        = string
+  default     = ""
+}
+
 variable "github_oidc_principal_set" {
   description = "Optional Workload Identity principalSet member allowed to impersonate the CRM GitHub deployer service account."
   type        = string

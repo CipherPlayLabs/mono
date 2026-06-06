@@ -1,0 +1,153 @@
+name: Install CRM Cloudflare Origin Certificate
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_install:
+        description: Type install to generate and install a Cloudflare Origin CA certificate.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: crm-origin-cert
+  cancel-in-progress: false
+
+env:
+  CRM_CERTIFICATE_MAP: cipherplay-crm-cert-map
+  CRM_CERTIFICATE_MAP_ENTRY: cipherplay-crm
+  CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
+  CRM_HOSTNAME: ${{ vars.CRM_HOSTNAME || 'crm.cipherinternal.com' }}
+  CRM_ORIGIN_CERTIFICATE: cipherplay-crm-cloudflare-origin
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  install:
+    if: inputs.confirm_install == 'install'
+    name: Install CRM Cloudflare origin certificate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check required configuration
+        env:
+          CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
+          CRM_GCP_SERVICE_ACCOUNT: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+          CRM_GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          missing=0
+
+          for name in \
+            CRM_GCP_PROJECT_ID \
+            CRM_GCP_SERVICE_ACCOUNT \
+            CRM_GCP_WORKLOAD_IDENTITY_PROVIDER \
+            CLOUDFLARE_API_TOKEN
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing required configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          exit "$missing"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Generate Cloudflare Origin CA certificate
+        run: |
+          set -euo pipefail
+
+          openssl genrsa -out origin.key 2048
+
+          cat > csr.conf <<EOF
+          [ req ]
+          default_bits = 2048
+          prompt = no
+          default_md = sha256
+          distinguished_name = dn
+          req_extensions = req_ext
+
+          [ dn ]
+          CN = ${CRM_HOSTNAME}
+
+          [ req_ext ]
+          subjectAltName = @alt_names
+
+          [ alt_names ]
+          DNS.1 = ${CRM_HOSTNAME}
+          EOF
+
+          openssl req -new -key origin.key -out origin.csr -config csr.conf
+
+          jq -n \
+            --arg host "${CRM_HOSTNAME}" \
+            --arg csr "$(cat origin.csr)" \
+            '{
+              hostnames: [$host],
+              requested_validity: 5475,
+              request_type: "origin-rsa",
+              csr: $csr
+            }' > origin-request.json
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://api.cloudflare.com/client/v4/certificates" \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data @origin-request.json > origin-response.json
+
+          jq -e '.success == true' origin-response.json > /dev/null
+          jq -r '.result.certificate' origin-response.json > origin.pem
+
+          test -s origin.key
+          test -s origin.pem
+
+      - name: Upload origin certificate to Certificate Manager
+        run: |
+          set -euo pipefail
+
+          if gcloud certificate-manager certificates describe "${CRM_ORIGIN_CERTIFICATE}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --location=global > /dev/null 2>&1
+          then
+            gcloud certificate-manager certificates update "${CRM_ORIGIN_CERTIFICATE}" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --location=global \
+              --certificate-file=origin.pem \
+              --private-key-file=origin.key \
+              --quiet
+          else
+            gcloud certificate-manager certificates create "${CRM_ORIGIN_CERTIFICATE}" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --location=global \
+              --certificate-file=origin.pem \
+              --private-key-file=origin.key \
+              --labels=app=nocodb,component=crm,company=cipherplay,environment=production,managed_by=github-actions \
+              --quiet
+          fi
+
+      - name: Point CRM certificate map at origin certificate
+        run: |
+          gcloud certificate-manager maps entries update "${CRM_CERTIFICATE_MAP_ENTRY}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --location=global \
+            --map="${CRM_CERTIFICATE_MAP}" \
+            --certificates="${CRM_ORIGIN_CERTIFICATE}" \
+            --quiet
+
+      - name: Verify certificate map entry
+        run: |
+          gcloud certificate-manager maps entries describe "${CRM_CERTIFICATE_MAP_ENTRY}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --location=global \
+            --map="${CRM_CERTIFICATE_MAP}" \
+            --format='yaml(name,hostname,certificates,state)'
