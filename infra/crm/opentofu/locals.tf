@@ -17,6 +17,11 @@ locals {
   cloud_run_concurrency    = 20
 
   sql_instance_name = "${local.name_prefix}-postgres"
+  state_bucket_name = (
+    var.opentofu_state_bucket_name != "" ?
+    var.opentofu_state_bucket_name :
+    "${var.gcp_project_id}-opentofu-state"
+  )
 
   crm_cloudflare_zone_id = (
     var.crm_zone_id != "" ?

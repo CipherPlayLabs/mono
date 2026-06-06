@@ -10,6 +10,12 @@ variable "gcp_region" {
   default     = "us-east1"
 }
 
+variable "opentofu_state_bucket_name" {
+  description = "Existing GCS bucket used by the CRM OpenTofu remote backend. Defaults to <gcp_project_id>-opentofu-state."
+  type        = string
+  default     = ""
+}
+
 variable "cloudflare_account_id" {
   description = "Cloudflare account ID that owns Zero Trust Access resources."
   type        = string
