@@ -1,0 +1,120 @@
+name: Apply CRM Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_apply:
+        description: Type apply to create or update CRM infrastructure.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: crm-infra-apply
+  cancel-in-progress: false
+
+env:
+  TOFU_DIR: infra/crm/opentofu
+  TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+  TF_VAR_cloudflare_access_auth_domain: ${{ vars.CRM_CLOUDFLARE_ACCESS_AUTH_DOMAIN || 'cipherplay.cloudflareaccess.com' }}
+  TF_VAR_cloudflare_access_organization_name: ${{ vars.CRM_CLOUDFLARE_ACCESS_ORGANIZATION_NAME || 'CipherPlay Internal' }}
+  TF_VAR_enable_cloudflare_edge: ${{ vars.CRM_ENABLE_CLOUDFLARE_EDGE || 'false' }}
+  TF_VAR_gcp_project_id: ${{ vars.CRM_GCP_PROJECT_ID }}
+  TF_VAR_gcp_region: ${{ vars.CRM_GCP_REGION }}
+  TF_VAR_crm_hostname: ${{ vars.CRM_HOSTNAME || 'crm.cipherinternal.com' }}
+  TF_VAR_crm_zone_id: ${{ vars.CRM_ZONE_ID }}
+  TF_VAR_crm_zone_name: ${{ vars.CRM_ZONE_NAME || 'cipherinternal.com' }}
+  TF_VAR_crm_access_allowed_emails: ${{ vars.CRM_ACCESS_ALLOWED_EMAILS || '[]' }}
+  TF_VAR_crm_access_allowed_group_ids: ${{ vars.CRM_ACCESS_ALLOWED_GROUP_IDS || '[]' }}
+  TF_VAR_manage_cloudflare_access_organization: ${{ vars.CRM_MANAGE_CLOUDFLARE_ACCESS_ORGANIZATION || 'false' }}
+  TF_VAR_github_oidc_principal_set: ${{ vars.CRM_GITHUB_OIDC_PRINCIPAL_SET }}
+  TF_VAR_nocodb_image: ${{ vars.CRM_NOCODB_IMAGE || 'docker.io/nocodb/nocodb:latest' }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  apply:
+    if: inputs.confirm_apply == 'apply'
+    name: Apply CRM infrastructure
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required configuration
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CRM_ACCESS_ALLOWED_EMAILS: ${{ vars.CRM_ACCESS_ALLOWED_EMAILS || '[]' }}
+          CRM_ACCESS_ALLOWED_GROUP_IDS: ${{ vars.CRM_ACCESS_ALLOWED_GROUP_IDS || '[]' }}
+          CRM_ENABLE_CLOUDFLARE_EDGE: ${{ vars.CRM_ENABLE_CLOUDFLARE_EDGE || 'false' }}
+          CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
+          CRM_GCP_REGION: ${{ vars.CRM_GCP_REGION }}
+          CRM_GCP_SERVICE_ACCOUNT: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+          CRM_GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          CRM_ZONE_ID: ${{ vars.CRM_ZONE_ID }}
+          CRM_ZONE_NAME: ${{ vars.CRM_ZONE_NAME || 'cipherinternal.com' }}
+        run: |
+          missing=0
+
+          for name in \
+            CRM_GCP_PROJECT_ID \
+            CRM_GCP_REGION \
+            CRM_GCP_SERVICE_ACCOUNT \
+            CRM_GCP_WORKLOAD_IDENTITY_PROVIDER
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing required configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          if [ "$CRM_ENABLE_CLOUDFLARE_EDGE" = "true" ]; then
+            for name in \
+              CLOUDFLARE_ACCOUNT_ID \
+              CLOUDFLARE_API_TOKEN
+            do
+              if [ -z "${!name}" ]; then
+                echo "::error title=Missing required Cloudflare configuration::$name is required when CRM_ENABLE_CLOUDFLARE_EDGE is true"
+                missing=1
+              fi
+            done
+
+            if [ -z "$CRM_ZONE_ID" ] && [ -z "$CRM_ZONE_NAME" ]; then
+              echo "::error title=Missing required CRM Cloudflare configuration::Set CRM_ZONE_ID or CRM_ZONE_NAME when CRM_ENABLE_CLOUDFLARE_EDGE is true"
+              missing=1
+            fi
+
+            if [ "$CRM_ACCESS_ALLOWED_EMAILS" = "[]" ] && [ "$CRM_ACCESS_ALLOWED_GROUP_IDS" = "[]" ]; then
+              echo "::error title=Missing required CRM Access configuration::Set CRM_ACCESS_ALLOWED_EMAILS or CRM_ACCESS_ALLOWED_GROUP_IDS when CRM_ENABLE_CLOUDFLARE_EDGE is true"
+              missing=1
+            fi
+          fi
+
+          exit "$missing"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+
+      - name: Initialize OpenTofu
+        run: tofu -chdir=${{ env.TOFU_DIR }} init -input=false
+
+      - name: Plan CRM infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} plan -input=false -out=tfplan
+
+      - name: Apply CRM infrastructure
+        run: tofu -chdir=${{ env.TOFU_DIR }} apply -input=false -auto-approve tfplan
+
+      - name: Show CRM outputs
+        run: tofu -chdir=${{ env.TOFU_DIR }} output
