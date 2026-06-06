@@ -41,9 +41,9 @@ resource "google_project_iam_member" "github_deployer_project_roles" {
   member  = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
-resource "google_storage_bucket_iam_member" "github_deployer_state_bucket_object_admin" {
+resource "google_storage_bucket_iam_member" "github_deployer_state_bucket_admin" {
   bucket = local.state_bucket_name
-  role   = "roles/storage.objectAdmin"
+  role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.github_deployer.email}"
 }
 
