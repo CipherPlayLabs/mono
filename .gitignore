@@ -9,3 +9,7 @@ infra/research-data/private/
 infra/research-data/run-configs/
 infra/research-data/**/*.tfvars
 infra/research-data/**/*.tfvars.json
+infra/crm/private/
+infra/crm/**/*.tfvars
+infra/crm/**/*.tfvars.json
+infra/crm/opentofu/*.tfplan
