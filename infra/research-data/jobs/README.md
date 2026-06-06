@@ -2,11 +2,13 @@
 
 This package runs the private Reddit customer discovery v1 pipeline:
 
-- `collect`: reads a JSON collection config, fetches provider-accessible source threads, stores full raw snapshots in GCS, and writes BigQuery indexes/checkpoints/coverage rows.
-- `triage`: reads untriaged source-thread snapshots and writes source-thread triage rows.
+- `collect`: reads a JSON collection config, fetches provider-accessible source threads, stores the current full raw thread in GCS, and upserts BigQuery current indexes/checkpoints/coverage rows.
+- `triage`: reads untriaged current source threads and writes current source-thread triage rows.
 - `analyze`: reads JTBD-eligible threads and writes excerpts, evidence claims, JTBD entities, source-quality notes, and thread-level JTBD records.
 
 It does not create aggregate analysis, opportunity scores, RBO results, segment validation, charts, or report claims.
+
+Collection keeps one live provider-available version per source thread. Re-fetches overwrite the current GCS object and upsert `source_threads`, `source_thread_snapshots`, and `thread_nodes` instead of appending historical copies. The table name `source_thread_snapshots` is retained as a legacy schema name for the current raw-thread pointer.
 
 ## Local Checks
 
