@@ -7,6 +7,11 @@ on:
         description: Type apply to create or update CRM infrastructure.
         required: true
         type: string
+      replace_origin_certificate:
+        description: Replace only the GCP-managed origin certificate during plan/apply.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,6 +38,7 @@ env:
   TF_VAR_github_oidc_principal_set: ${{ vars.CRM_GITHUB_OIDC_PRINCIPAL_SET }}
   TF_VAR_nocodb_image: ${{ vars.CRM_NOCODB_IMAGE || 'docker.io/nocodb/nocodb:latest' }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  REPLACE_ORIGIN_CERTIFICATE: ${{ inputs.replace_origin_certificate }}
 
 jobs:
   apply:
@@ -111,7 +117,14 @@ jobs:
         run: tofu -chdir=${{ env.TOFU_DIR }} init -input=false
 
       - name: Plan CRM infrastructure
-        run: tofu -chdir=${{ env.TOFU_DIR }} plan -input=false -out=tfplan
+        run: |
+          replace_args=()
+
+          if [ "${REPLACE_ORIGIN_CERTIFICATE}" = "true" ]; then
+            replace_args+=("-replace=google_certificate_manager_certificate.crm")
+          fi
+
+          tofu -chdir="${TOFU_DIR}" plan -input=false "${replace_args[@]}" -out=tfplan
 
       - name: Apply CRM infrastructure
         run: tofu -chdir=${{ env.TOFU_DIR }} apply -input=false -auto-approve tfplan
