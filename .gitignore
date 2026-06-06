@@ -2,3 +2,7 @@
 node_modules/
 .wrangler/
 .terraform/
+infra/crm/private/
+infra/crm/**/*.tfvars
+infra/crm/**/*.tfvars.json
+infra/crm/opentofu/*.tfplan
