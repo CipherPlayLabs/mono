@@ -135,3 +135,31 @@ resource "google_cloud_scheduler_job" "collection" {
     google_project_service.required["cloudscheduler.googleapis.com"],
   ]
 }
+
+resource "google_cloud_scheduler_job" "triage" {
+  name        = "${local.name_prefix}-triage"
+  project     = var.gcp_project_id
+  region      = var.gcp_region
+  description = "Scheduled Reddit source-thread triage for private customer discovery research."
+  schedule    = var.triage_schedule
+  time_zone   = "America/New_York"
+  paused      = var.triage_scheduler_paused
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://${var.gcp_region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${var.gcp_project_id}/jobs/${google_cloud_run_v2_job.research_data["triage"].name}:run"
+    body        = base64encode("{}")
+
+    headers = {
+      Content-Type = "application/json"
+    }
+
+    oauth_token {
+      service_account_email = google_service_account.scheduler.email
+    }
+  }
+
+  depends_on = [
+    google_project_service.required["cloudscheduler.googleapis.com"],
+  ]
+}

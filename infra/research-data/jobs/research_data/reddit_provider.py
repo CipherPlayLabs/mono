@@ -17,8 +17,14 @@ class RedditProvider:
         self._token: str | None = None
         self._last_rate_limit: dict[str, Any] = {}
 
-    def list_thread_refs(self, config: dict[str, Any], checkpoint: dict[str, Any] | None, limit: int) -> dict[str, Any]:
-        mode = _first_enabled_mode(config)
+    def list_thread_refs(
+        self,
+        config: dict[str, Any],
+        checkpoint: dict[str, Any] | None,
+        limit: int,
+        query_mode: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        mode = query_mode or _first_enabled_mode(config)
         params: dict[str, Any] = {"limit": min(limit, 100)}
         if checkpoint and checkpoint.get("after"):
             params["after"] = checkpoint["after"]
