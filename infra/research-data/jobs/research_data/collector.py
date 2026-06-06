@@ -23,7 +23,7 @@ def run_collection_batch(
     query_mode = _select_query_mode(config, query_mode_name)
     max_requests = int(config["collection"]["max_requests_per_batch"])
     checkpoint = research_store.get_latest_checkpoint(collection_run_id, query_mode["mode"])
-    page = provider.list_thread_refs(config, checkpoint, max_requests)
+    page = provider.list_thread_refs(config, checkpoint, max_requests, query_mode)
     refs = page.get("refs", [])
     page_gaps = page.get("coverage_gaps", [])
     threads_fetched = 0

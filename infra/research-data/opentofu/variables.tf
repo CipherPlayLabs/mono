@@ -65,7 +65,7 @@ variable "collection_query_mode" {
 variable "collection_schedule" {
   description = "Cloud Scheduler cron expression for slow resumable collection."
   type        = string
-  default     = "*/30 * * * *"
+  default     = "*/10 * * * *"
 }
 
 variable "collection_scheduler_paused" {
@@ -102,6 +102,18 @@ variable "triage_batch_limit" {
   description = "Default number of untriaged source threads each triage job should process."
   type        = number
   default     = 25
+}
+
+variable "triage_schedule" {
+  description = "Cloud Scheduler cron expression for source-thread triage."
+  type        = string
+  default     = "*/30 * * * *"
+}
+
+variable "triage_scheduler_paused" {
+  description = "Whether the triage scheduler starts paused."
+  type        = bool
+  default     = false
 }
 
 variable "analysis_batch_limit" {

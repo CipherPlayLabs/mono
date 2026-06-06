@@ -23,6 +23,11 @@ output "collection_scheduler_name" {
   value       = google_cloud_scheduler_job.collection.name
 }
 
+output "triage_scheduler_name" {
+  description = "Cloud Scheduler job that starts the triage Cloud Run Job."
+  value       = google_cloud_scheduler_job.triage.name
+}
+
 output "runtime_service_account_email" {
   description = "Runtime service account for the research data Cloud Run Jobs."
   value       = google_service_account.runtime.email
