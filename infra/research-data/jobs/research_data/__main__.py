@@ -11,7 +11,6 @@ from .pipeline import run_analysis_batch, run_triage_batch
 from .reddit_provider import RedditProvider
 from .secrets import load_secret_json
 from .snapshots import GcsSnapshotStore
-from .time_utils import utc_now_iso
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,7 +43,11 @@ def main(argv: list[str] | None = None) -> int:
         if not args.config_uri:
             raise SystemExit("--config-uri or COLLECTION_CONFIG_URI is required")
         config = load_collection_config(args.config_uri)
-        collection_run_id = args.collection_run_id or research_id("collection_run", args.config_uri, utc_now_iso())
+        collection_run_id = args.collection_run_id or _default_collection_run_id(
+            config_uri=args.config_uri,
+            config=config,
+            query_mode_name=args.query_mode,
+        )
         credentials = load_secret_json(config["secrets"]["provider_credentials_secret"])
         provider = RedditProvider(credentials)
         result = run_collection_batch(
@@ -89,6 +92,25 @@ def _research_store() -> BigQueryResearchStore:
 
 def _snapshot_store() -> GcsSnapshotStore:
     return GcsSnapshotStore(_required_env("SNAPSHOT_BUCKET"))
+
+
+def _default_collection_run_id(*, config_uri: str, config: dict[str, Any], query_mode_name: str | None) -> str:
+    query_mode = query_mode_name or _first_enabled_query_mode(config)
+    return research_id(
+        "collection_run",
+        config_uri,
+        config["provider"],
+        config["community"]["platform"],
+        config["community"]["name"],
+        query_mode,
+    )
+
+
+def _first_enabled_query_mode(config: dict[str, Any]) -> str:
+    for mode in config["query_modes"]:
+        if mode.get("enabled"):
+            return mode["mode"]
+    raise ValueError("no enabled query mode")
 
 
 def _required_env(name: str) -> str:
