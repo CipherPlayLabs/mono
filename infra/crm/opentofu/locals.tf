@@ -84,7 +84,6 @@ locals {
     NC_PUBLIC_URL                      = "https://${var.crm_hostname}"
     NODE_ENV                           = "production"
     NUXT_PUBLIC_NC_BACKEND_URL         = "https://${var.crm_hostname}"
-    PORT                               = tostring(local.cloud_run_container_port)
   }
 
   github_deployer_project_roles = toset([
