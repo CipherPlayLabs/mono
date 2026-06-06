@@ -2,6 +2,8 @@
 
 This repo hosts the local CipherPlay `/info/` content site and private analytics infrastructure.
 
+If the user says `@crm`, read `docs/contexts/crm.md` first. That file is the fast handoff for the self-hosted NocoDB CRM, Cloud SQL database, Cloudflare Access hostname, GitHub workflows, and n8n/database contract.
+
 ## Current Direction
 
 - Repository: `CipherPlayLabs/mono`
@@ -21,6 +23,8 @@ Keep Plausible operational/private. Public HTML and browser-visible JavaScript s
 - `content-site/src/data/site.ts`: typed company, product, report, team, and organization data.
 - `content-site/src/pages/`: route implementations.
 - `infra/analytics/`: private Plausible infrastructure and Worker proxy.
+- `infra/crm/`: private NocoDB CRM, Cloud SQL PostgreSQL database, Cloudflare Access, and related workflows.
+- `docs/contexts/crm.md`: `@crm` context pack for future agents and operators.
 - `.github/workflows/deploy.yml`: content-site CI plus Cloudflare Pages deploys gated by GitHub Environments.
 - `.github/workflows/content-site-setup.yml`: manual hosting bootstrap for the Cloudflare Pages project, custom domains, and DNS aliases.
 

@@ -2,6 +2,8 @@
 
 This directory contains the isolated infrastructure for CipherPlay's self-hosted CRM surface. It follows the same OpenTofu-first shape as `infra/n8n`: dedicated state, dedicated networking, a Cloud Run application, Cloud SQL PostgreSQL, Secret Manager bootstrap placeholders, and optional Cloudflare DNS plus Access protection.
 
+For fast agent handoff, especially when the user says `@crm`, start with `docs/contexts/crm.md`.
+
 ## Architecture
 
 ```text
@@ -25,8 +27,36 @@ PostgreSQL is the source of truth for CRM data. NocoDB provides the Airtable-lik
 - Database: Cloud SQL PostgreSQL over private IP
 - CRM UI hostname: `crm.cipherinternal.com`
 - Public access model: Cloudflare Access-protected internal tool
+- NocoDB private external DB access: `NC_ALLOW_LOCAL_EXTERNAL_DBS=true`
 
 NocoDB attachment/file-field storage is not configured in this MVP. Treat the CRM as structured relationship, campaign, and email-event data until object storage is added.
+
+## Current Production Connection Details
+
+These are non-secret operational details for the production CRM.
+
+- GCP project: `cipherplay-production`
+- Region: `us-east1`
+- Cloud Run service: `cipherplay-crm`
+- Cloud SQL instance: `cipherplay-crm-postgres`
+- Cloud SQL connection name: `cipherplay-production:us-east1:cipherplay-crm-postgres`
+- Cloud SQL private IP: `10.216.0.3`
+- NocoDB metadata database: `nocodb`
+- CRM data database: `crm`
+- CRM data database user: `crm_writer`
+- CRM data password secret: `cipherplay-crm-postgres-password`
+
+To connect NocoDB to the CRM data database as an external PostgreSQL source:
+
+- Host: `10.216.0.3`
+- Port: `5432`
+- Database: `crm`
+- Schema: `public`
+- User: `crm_writer`
+- Password: Secret Manager value for `cipherplay-crm-postgres-password`
+- SSL: off/disabled
+
+Do not connect NocoDB external data sources to the `nocodb` database. That database is only for NocoDB's own metadata.
 
 ## Workflows
 
