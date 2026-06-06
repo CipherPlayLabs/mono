@@ -81,6 +81,7 @@ locals {
   }
 
   nocodb_static_env = {
+    NC_ALLOW_LOCAL_EXTERNAL_DBS        = "true"
     NC_CONNECT_TO_EXTERNAL_DB_DISABLED = "false"
     NC_DISABLE_ERR_REPORTS             = "true"
     NC_DISABLE_PG_DATA_REFLECTION      = "false"
