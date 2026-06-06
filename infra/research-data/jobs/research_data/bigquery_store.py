@@ -53,13 +53,21 @@ class BigQueryResearchStore:
 
     def iter_threads_for_triage(self, limit: int) -> Iterable[dict[str, Any]]:
         query = f"""
+            WITH untriaged_source_threads AS (
+              SELECT
+                s.source_thread_id,
+                ARRAY_AGG(s.latest_snapshot_id ORDER BY s.latest_fetched_at DESC LIMIT 1)[OFFSET(0)] AS latest_snapshot_id,
+                MAX(s.created_at) AS created_at
+              FROM `{self.project_id}.{self.dataset_id}.source_threads` s
+              LEFT JOIN `{self.project_id}.{self.dataset_id}.source_thread_triage` t
+                ON s.source_thread_id = t.source_thread_id
+              WHERE t.source_thread_id IS NULL
+              GROUP BY s.source_thread_id
+            )
             SELECT s.source_thread_id, snap.gcs_uri
-            FROM `{self.project_id}.{self.dataset_id}.source_threads` s
+            FROM untriaged_source_threads s
             JOIN `{self.project_id}.{self.dataset_id}.source_thread_snapshots` snap
               ON s.latest_snapshot_id = snap.source_thread_snapshot_id
-            LEFT JOIN `{self.project_id}.{self.dataset_id}.source_thread_triage` t
-              ON s.source_thread_id = t.source_thread_id
-            WHERE t.source_thread_id IS NULL
             ORDER BY s.created_at DESC
             LIMIT @limit
         """
@@ -67,16 +75,29 @@ class BigQueryResearchStore:
 
     def iter_threads_for_analysis(self, limit: int) -> Iterable[dict[str, Any]]:
         query = f"""
+            WITH eligible_source_threads AS (
+              SELECT t.source_thread_id
+              FROM `{self.project_id}.{self.dataset_id}.source_thread_triage` t
+              LEFT JOIN `{self.project_id}.{self.dataset_id}.thread_level_jtbd_records` r
+                ON t.source_thread_id = r.source_thread_id
+              WHERE t.triage_status = 'jtbd_eligible'
+                AND r.source_thread_id IS NULL
+              GROUP BY t.source_thread_id
+            ),
+            latest_source_threads AS (
+              SELECT
+                s.source_thread_id,
+                ARRAY_AGG(s.latest_snapshot_id ORDER BY s.latest_fetched_at DESC LIMIT 1)[OFFSET(0)] AS latest_snapshot_id,
+                MAX(s.created_at) AS created_at
+              FROM `{self.project_id}.{self.dataset_id}.source_threads` s
+              JOIN eligible_source_threads e
+                ON s.source_thread_id = e.source_thread_id
+              GROUP BY s.source_thread_id
+            )
             SELECT s.source_thread_id, snap.gcs_uri
-            FROM `{self.project_id}.{self.dataset_id}.source_threads` s
+            FROM latest_source_threads s
             JOIN `{self.project_id}.{self.dataset_id}.source_thread_snapshots` snap
               ON s.latest_snapshot_id = snap.source_thread_snapshot_id
-            JOIN `{self.project_id}.{self.dataset_id}.source_thread_triage` t
-              ON s.source_thread_id = t.source_thread_id
-            LEFT JOIN `{self.project_id}.{self.dataset_id}.thread_level_jtbd_records` r
-              ON s.source_thread_id = r.source_thread_id
-            WHERE t.triage_status = 'jtbd_eligible'
-              AND r.source_thread_id IS NULL
             ORDER BY s.created_at DESC
             LIMIT @limit
         """
