@@ -13,8 +13,10 @@ FIXTURE = Path(__file__).parent / "fixtures" / "reddit_thread_snapshot.json"
 class FakeProvider:
     def __init__(self, raw_thread):
         self.raw_thread = raw_thread
+        self.seen_query_mode = None
 
-    def list_thread_refs(self, config, checkpoint, limit):
+    def list_thread_refs(self, config, checkpoint, limit, query_mode):
+        self.seen_query_mode = query_mode
         return {
             "refs": [
                 {
@@ -91,6 +93,22 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(rows["source_threads"][0]["provider_thread_id"], "abc123")
         self.assertEqual(rows["coverage_gaps"][0]["gap_type"], "listing_limit")
         self.assertEqual(research_store.checkpoints[0]["checkpoint_json"]["after"], "t3_abc123")
+
+    def test_collection_batch_passes_selected_query_mode_to_provider(self):
+        raw_thread = json.loads(FIXTURE.read_text())
+        provider = FakeProvider(raw_thread)
+
+        run_collection_batch(
+            config=VALID_CONFIG,
+            collection_run_id="collection_run_test",
+            provider=provider,
+            snapshot_store=FakeSnapshotStore(),
+            research_store=FakeResearchStore(),
+            fetched_at="2026-06-05T12:00:00Z",
+            query_mode_name="top",
+        )
+
+        self.assertEqual(provider.seen_query_mode["mode"], "top")
 
 
 if __name__ == "__main__":

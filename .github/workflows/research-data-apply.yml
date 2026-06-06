@@ -28,8 +28,10 @@ env:
   TF_VAR_collection_config_uri: ${{ vars.RESEARCH_DATA_COLLECTION_CONFIG_URI }}
   TF_VAR_collection_run_id: ${{ vars.RESEARCH_DATA_COLLECTION_RUN_ID }}
   TF_VAR_collection_query_mode: ${{ vars.RESEARCH_DATA_COLLECTION_QUERY_MODE }}
-  TF_VAR_collection_schedule: ${{ vars.RESEARCH_DATA_COLLECTION_SCHEDULE || '*/30 * * * *' }}
+  TF_VAR_collection_schedule: ${{ vars.RESEARCH_DATA_COLLECTION_SCHEDULE || '*/10 * * * *' }}
   TF_VAR_collection_scheduler_paused: ${{ vars.RESEARCH_DATA_COLLECTION_SCHEDULER_PAUSED || 'true' }}
+  TF_VAR_triage_schedule: ${{ vars.RESEARCH_DATA_TRIAGE_SCHEDULE || '*/30 * * * *' }}
+  TF_VAR_triage_scheduler_paused: ${{ vars.RESEARCH_DATA_TRIAGE_SCHEDULER_PAUSED || 'false' }}
   TF_VAR_github_oidc_principal_set: ${{ vars.RESEARCH_DATA_GITHUB_OIDC_PRINCIPAL_SET }}
 
 jobs:
