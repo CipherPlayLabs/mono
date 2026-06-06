@@ -18,7 +18,7 @@ def build_snapshot_envelope(
 ) -> dict[str, Any]:
     checksum = _json_checksum(raw_thread)
     source_thread_id = research_id("source_thread", provider, community_name, provider_thread_id)
-    snapshot_id = research_id("source_thread_snapshot", source_thread_id, fetched_at, checksum)
+    snapshot_id = research_id("source_thread_snapshot", source_thread_id, "current")
     thread_data = raw_thread.get("thread_listing", {}).get("data", {})
     return {
         "schema_version": "2026-06-05",
@@ -53,12 +53,11 @@ def snapshot_object_path(
     snapshot_id: str,
     fetched_at: datetime,
 ) -> str:
-    safe_community = re.sub(r"[^A-Za-z0-9_~-]+", "_", community_name.strip().lstrip("r/"))
-    return (
-        f"raw/provider={provider}/community={safe_community}/"
-        f"year={fetched_at.year:04d}/month={fetched_at.month:02d}/day={fetched_at.day:02d}/"
-        f"source_thread_id={source_thread_id}/source_thread_snapshot_id={snapshot_id}.json"
-    )
+    del snapshot_id, fetched_at
+    safe_provider = _safe_path_component(provider)
+    safe_community = _safe_path_component(community_name.strip().lstrip("r/"))
+    safe_source_thread_id = _safe_path_component(source_thread_id)
+    return f"current/{safe_provider}/{safe_community}/{safe_source_thread_id}.json"
 
 
 class GcsSnapshotStore:
@@ -102,3 +101,7 @@ def _split_gcs_uri(uri: str) -> tuple[str, str]:
     if not bucket or not object_name:
         raise ValueError(f"invalid GCS URI: {uri}")
     return bucket, object_name
+
+
+def _safe_path_component(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_~-]+", "_", value)

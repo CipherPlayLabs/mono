@@ -4,7 +4,7 @@ Date: 2026-06-05
 
 ## Goal
 
-Build a provider-agnostic research data system that can point at a Reddit community, slowly collect provider-accessible source threads from the previous one-year lookback window, preserve intact raw thread snapshots, filter noisy threads, and create thread-level Jobs-to-be-Done records for customer discovery.
+Build a provider-agnostic research data system that can point at a Reddit community, slowly collect provider-accessible source threads from the previous one-year lookback window, preserve the current intact raw provider-available thread, filter noisy threads, and create thread-level Jobs-to-be-Done records for customer discovery.
 
 The v1 system stops at JTBD creation for individual threads. It does not produce aggregate conclusions, opportunity scores, RBO comparisons, validated segments, charts, or final report claims.
 
@@ -29,7 +29,7 @@ The v1 system stops at JTBD creation for individual threads. It does not produce
 - Keep collection and analysis separate.
 - Add source-thread triage between collection and JTBD analysis.
 - Triage every collected source thread, but only run full JTBD extraction on eligible threads.
-- Store raw Reddit content as source-thread snapshots with no voluntary retention expiry.
+- Store raw Reddit content as one current full source-thread object per canonical source thread. Re-fetches overwrite/upsert the current version rather than accumulating historical snapshots.
 - Keep removal capability for provider-required, legal, or operator-required cases.
 - Use provider-accessible completeness, not a literal guarantee of all Reddit history.
 - Target a one-year lookback window. For work started on 2026-06-05, that means threads created from 2025-06-05 through collection time.
@@ -38,7 +38,7 @@ The v1 system stops at JTBD creation for individual threads. It does not produce
 - Use versioned JSON collection run configs, not YAML.
 - Use Google Cloud for v1 storage and scheduled execution.
 - Manage infrastructure as code with OpenTofu.
-- Use Cloud Storage for raw source-thread JSON snapshots.
+- Use Cloud Storage for current raw source-thread JSON objects.
 - Use BigQuery for collection state, indexes, triage rows, excerpts, evidence claims, and thread-level JTBD records.
 - Use Cloud Run Jobs plus Cloud Scheduler for slow, resumable collection.
 - Do not store raw community data in git or the public content site.
@@ -61,7 +61,7 @@ The `customer-discovery` skill is transcript-oriented. V1 keeps the same evidenc
 
 | Transcript Methodology Unit | Reddit Thread Unit |
 |---|---|
-| Source file | Source-thread snapshot |
+| Source file | Current source-thread raw object |
 | Canonical interview | Source thread |
 | Transcript excerpt | Thread excerpt |
 | Atomic evidence claim | Atomic evidence claim |
@@ -75,7 +75,7 @@ The required v1 lineage is:
 ```text
 community
   -> collection run
-  -> source-thread snapshot
+  -> current source-thread raw object
   -> source thread
   -> thread node
   -> thread excerpt
@@ -84,7 +84,7 @@ community
   -> thread-level JTBD record
 ```
 
-Every material JTBD item must trace back to one or more thread excerpts and the original source-thread snapshot.
+Every material JTBD item must trace back to one or more thread excerpts and the current raw source-thread object used for analysis.
 
 ## V1 Analysis Boundary
 
@@ -93,7 +93,7 @@ V1 analysis creates thread-level JTBD records only.
 Each eligible source thread should produce a structured record containing:
 
 - Canonical research IDs and provider-native IDs.
-- Snapshot pointer in Cloud Storage.
+- Current raw-thread pointer in Cloud Storage.
 - Thread metadata: community, title, author label, creation time, score/comment counts where available, permalink, fetched-at timestamp.
 - Short thread summary for orientation.
 - Extracted jobs.
@@ -177,7 +177,7 @@ The system must record coverage limits rather than pretending completeness when 
 
 ## Lossless Thread Handling
 
-Raw source-thread snapshots should preserve the full provider-available thread:
+Current raw source-thread objects should preserve the full provider-available thread:
 
 - Starting post.
 - Full provider-available comment tree.
@@ -201,7 +201,7 @@ Canonical research IDs should be used across the Research data store and analysi
 - `community_source_id`
 - `collection_run_id`
 - `source_thread_id`
-- `source_thread_snapshot_id`
+- `source_thread_snapshot_id` (legacy schema name for the current raw-thread version)
 - `thread_node_id`
 - `thread_excerpt_id`
 - `evidence_claim_id`
@@ -284,7 +284,7 @@ Reusable examples and JSON schema may live in git. Active run configs, run state
 
 Recommended v1 resources:
 
-- Cloud Storage bucket for raw source-thread snapshots and optional analysis artifacts.
+- Cloud Storage bucket for current raw source-thread objects and optional analysis artifacts.
 - BigQuery dataset for collection state, provider-neutral indexes, triage, excerpts, evidence claims, and JTBD records.
 - Secret Manager secrets for Reddit/API provider credentials.
 - Cloud Run Job for collection batches.
@@ -327,8 +327,8 @@ The exact schema can be refined during implementation, but v1 should include the
 - `collection_runs`: run lifecycle and operator metadata.
 - `collection_checkpoints`: provider cursors, query modes, and resume state.
 - `source_threads`: one row per canonical thread.
-- `source_thread_snapshots`: Cloud Storage object pointers and fetch metadata.
-- `thread_nodes`: post/comment tree nodes with canonical IDs and provider-native IDs.
+- `source_thread_snapshots`: current Cloud Storage object pointers and fetch metadata. This table keeps its legacy name but does not accumulate historical snapshots.
+- `thread_nodes`: current post/comment tree nodes with canonical IDs and provider-native IDs.
 - `coverage_gaps`: explicit missing/incomplete/provider-limited data notes.
 - `source_thread_triage`: eligibility status, reason, confidence, deterministic and AI flags.
 - `analysis_batches`: explicit analysis run metadata.
@@ -347,24 +347,24 @@ Do not add aggregate rollup, RBO, opportunity scoring, segment, chart, or report
 3. Cloud Scheduler triggers the collector Cloud Run Job.
 4. Collector reads the config and latest BigQuery checkpoint.
 5. Collector calls the provider adapter under rate limits.
-6. Collector writes full source-thread snapshots to Cloud Storage.
-7. Collector writes source thread, snapshot, thread node, checkpoint, and coverage rows to BigQuery.
+6. Collector writes the full current source-thread object to Cloud Storage at a stable per-thread path.
+7. Collector upserts source thread, current raw object pointer, and thread node rows; writes checkpoint and coverage rows to BigQuery.
 8. Collector exits.
 9. Repeat scheduled batches until the provider-accessible one-year backfill is complete or blocked.
 10. Operator or scheduler starts source-thread triage.
 11. Triage writes eligibility rows and source-quality notes.
 12. Operator starts an analysis batch for eligible threads.
-13. Analysis reads full snapshots, chunks large trees if needed, creates thread excerpts, evidence claims, JTBD entities, and thread-level JTBD records.
+13. Analysis reads current full raw thread objects, chunks large trees if needed, creates thread excerpts, evidence claims, JTBD entities, and thread-level JTBD records.
 
 ## Security And Compliance
 
 - Keep raw Reddit/community data private.
 - Do not expose the Research data store through the public content site.
-- Do not commit raw source-thread snapshots.
+- Do not commit raw source-thread objects.
 - Do not commit API credentials or provider tokens.
 - Use Secret Manager for provider credentials.
 - Use least-privilege service accounts.
-- Store provider-native IDs and raw snapshots for audit and replay.
+- Store provider-native IDs and the current raw object for audit and replay.
 - Keep deletion/removal capability for provider-required, legal, or operator-required removal even though the normal retention posture has no voluntary expiry.
 - Respect provider rate limits and access rules.
 - Record coverage gaps and provider limitations.
@@ -396,7 +396,7 @@ tofu -chdir=infra/research-data/opentofu validate
 - Provider APIs may not expose exhaustive one-year history for high-volume communities. Mitigate by storing coverage gaps and keeping the provider adapter swappable.
 - Large comment trees may exceed model context limits. Mitigate with deterministic chunking and no truncation.
 - Reddit discussion is not interview data. Mitigate by using source/data-bias notes and avoiding aggregate claims in v1.
-- AI triage can discard useful evidence. Mitigate by preserving all raw snapshots, recording triage reasons, and supporting `needs_review`.
+- AI triage can discard useful evidence. Mitigate by preserving current raw source-thread objects, recording triage reasons, and supporting `needs_review`.
 - Raw community data creates privacy and terms risk. Mitigate with private storage, least privilege, deletion capability, and no public-site integration.
 - Provider coupling can leak into analysis. Mitigate by using canonical research IDs and provider-neutral BigQuery schemas.
 
@@ -406,7 +406,7 @@ tofu -chdir=infra/research-data/opentofu validate
 2. Define BigQuery schemas for v1 tables.
 3. Define and test the JSON collection run config schema.
 4. Build a provider interface with a Reddit adapter as the first implementation.
-5. Build snapshot persistence to Cloud Storage.
+5. Build current raw-thread persistence to Cloud Storage.
 6. Build BigQuery indexing, checkpoints, and coverage-gap writes.
 7. Add Cloud Run Job packaging for the collector.
 8. Add Cloud Scheduler and IAM through OpenTofu.
@@ -429,7 +429,7 @@ Important constraints:
 - Do not build aggregate analysis, RBO, opportunity scoring, segment validation, charts, or report claims.
 - Use JSON collection run configs, not YAML.
 - Keep raw Reddit/community data out of git and out of the public content site.
-- Use GCS for full provider-available raw source-thread snapshots.
+- Use GCS for full provider-available current raw source-thread objects.
 - Use BigQuery for run state, indexes, triage, excerpts, evidence claims, normalized JTBD entities, source-quality notes, and thread-level JTBD records.
 - Use Cloud Run Jobs plus Cloud Scheduler for slow resumable collection.
 - Manage GCP resources with OpenTofu under a new infra/research-data area.

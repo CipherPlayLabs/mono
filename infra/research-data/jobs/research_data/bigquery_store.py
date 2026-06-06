@@ -1,5 +1,13 @@
 import json
+import uuid
 from typing import Any, Iterable
+
+
+CURRENT_COLLECTION_TABLE_KEYS = {
+    "source_threads": ["source_thread_id"],
+    "source_thread_snapshots": ["source_thread_id"],
+    "thread_nodes": ["thread_node_id"],
+}
 
 
 class BigQueryResearchStore:
@@ -31,13 +39,27 @@ class BigQueryResearchStore:
 
     def write_collection_rows(self, rows_by_table: dict[str, list[dict[str, Any]]]) -> None:
         for table, rows in rows_by_table.items():
-            self._insert_rows(table, rows)
+            if table in CURRENT_COLLECTION_TABLE_KEYS:
+                delete_missing_for = None
+                if table == "thread_nodes":
+                    delete_missing_for = {
+                        "field": "source_thread_id",
+                        "values": sorted({row["source_thread_id"] for row in rows if row.get("source_thread_id")}),
+                    }
+                self._merge_rows(
+                    table,
+                    rows,
+                    match_keys=CURRENT_COLLECTION_TABLE_KEYS[table],
+                    delete_missing_for=delete_missing_for,
+                )
+            else:
+                self._insert_rows(table, rows)
 
     def write_checkpoint(self, row: dict[str, Any]) -> None:
         self._insert_rows("collection_checkpoints", [row])
 
     def write_triage_rows(self, rows: list[dict[str, Any]]) -> None:
-        self._insert_rows("source_thread_triage", rows)
+        self._merge_rows("source_thread_triage", rows, match_keys=["source_thread_id"])
 
     def write_analysis_rows(self, output: dict[str, Any]) -> None:
         rows_by_table = {
@@ -53,21 +75,19 @@ class BigQueryResearchStore:
 
     def iter_threads_for_triage(self, limit: int) -> Iterable[dict[str, Any]]:
         query = f"""
-            WITH untriaged_source_threads AS (
-              SELECT
-                s.source_thread_id,
-                ARRAY_AGG(s.latest_snapshot_id ORDER BY s.latest_fetched_at DESC LIMIT 1)[OFFSET(0)] AS latest_snapshot_id,
-                MAX(s.created_at) AS created_at
-              FROM `{self.project_id}.{self.dataset_id}.source_threads` s
-              LEFT JOIN `{self.project_id}.{self.dataset_id}.source_thread_triage` t
-                ON s.source_thread_id = t.source_thread_id
-              WHERE t.source_thread_id IS NULL
-              GROUP BY s.source_thread_id
+            WITH latest_triage AS (
+              SELECT source_thread_id, MAX(observed_at) AS observed_at
+              FROM `{self.project_id}.{self.dataset_id}.source_thread_triage`
+              GROUP BY source_thread_id
             )
             SELECT s.source_thread_id, snap.gcs_uri
-            FROM untriaged_source_threads s
+            FROM `{self.project_id}.{self.dataset_id}.source_threads` s
             JOIN `{self.project_id}.{self.dataset_id}.source_thread_snapshots` snap
-              ON s.latest_snapshot_id = snap.source_thread_snapshot_id
+              ON s.source_thread_id = snap.source_thread_id
+            LEFT JOIN latest_triage t
+              ON s.source_thread_id = t.source_thread_id
+            WHERE t.source_thread_id IS NULL
+               OR s.latest_fetched_at > t.observed_at
             ORDER BY s.created_at DESC
             LIMIT @limit
         """
@@ -120,6 +140,53 @@ class BigQueryResearchStore:
         if errors:
             raise RuntimeError(f"BigQuery insert failed for {table_id}: {errors}")
 
+    def _merge_rows(
+        self,
+        table: str,
+        rows: list[dict[str, Any]],
+        *,
+        match_keys: list[str],
+        delete_missing_for: dict[str, Any] | None = None,
+    ) -> None:
+        if not rows:
+            return
+
+        rows = _dedupe_rows(rows, match_keys)
+        columns = _row_columns(rows)
+        target_table_id = f"{self.project_id}.{self.dataset_id}.{table}"
+        staging_table_id = f"{self.project_id}.{self.dataset_id}._staging_{table}_{uuid.uuid4().hex}"
+        target = self.client.get_table(target_table_id)
+        prepared_rows = [_prepare_row_for_insert(row) for row in rows]
+        load_job_config = self.bigquery.LoadJobConfig(
+            schema=target.schema,
+            source_format=self.bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+            write_disposition=self.bigquery.WriteDisposition.WRITE_TRUNCATE,
+        )
+
+        try:
+            self.client.load_table_from_json(prepared_rows, staging_table_id, job_config=load_job_config).result()
+            merge_sql = _merge_sql(
+                target_table_id=target_table_id,
+                staging_table_id=staging_table_id,
+                columns=columns,
+                match_keys=match_keys,
+                delete_missing_for=delete_missing_for,
+            )
+            job_config = None
+            if delete_missing_for:
+                job_config = self.bigquery.QueryJobConfig(
+                    query_parameters=[
+                        self.bigquery.ArrayQueryParameter(
+                            "delete_missing_values",
+                            "STRING",
+                            delete_missing_for["values"],
+                        )
+                    ]
+                )
+            self.client.query(merge_sql, job_config=job_config).result()
+        finally:
+            self.client.delete_table(staging_table_id, not_found_ok=True)
+
 
 def _row_insert_id(row: dict[str, Any]) -> str | None:
     for key, value in row.items():
@@ -134,3 +201,57 @@ def _prepare_row_for_insert(row: dict[str, Any]) -> dict[str, Any]:
         if key.endswith("_json") and value is not None and not isinstance(value, str):
             prepared[key] = json.dumps(value, sort_keys=True, separators=(",", ":"))
     return prepared
+
+
+def _row_columns(rows: list[dict[str, Any]]) -> list[str]:
+    columns = list(rows[0].keys())
+    seen = set(columns)
+    for row in rows[1:]:
+        for column in row:
+            if column not in seen:
+                columns.append(column)
+                seen.add(column)
+    return columns
+
+
+def _dedupe_rows(rows: list[dict[str, Any]], match_keys: list[str]) -> list[dict[str, Any]]:
+    by_key: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for row in rows:
+        by_key[tuple(row.get(key) for key in match_keys)] = row
+    return list(by_key.values())
+
+
+def _merge_sql(
+    *,
+    target_table_id: str,
+    staging_table_id: str,
+    columns: list[str],
+    match_keys: list[str],
+    delete_missing_for: dict[str, Any] | None,
+) -> str:
+    match_expression = " AND ".join(
+        f"target.{_quote_identifier(column)} = source.{_quote_identifier(column)}" for column in match_keys
+    )
+    update_columns = [column for column in columns if column not in match_keys]
+    update_clause = ",\n  ".join(
+        f"{_quote_identifier(column)} = source.{_quote_identifier(column)}" for column in update_columns
+    )
+    insert_columns = ", ".join(_quote_identifier(column) for column in columns)
+    insert_values = ", ".join(f"source.{_quote_identifier(column)}" for column in columns)
+
+    clauses = [
+        f"MERGE `{target_table_id}` AS target",
+        f"USING `{staging_table_id}` AS source",
+        f"ON {match_expression}",
+    ]
+    if update_clause:
+        clauses.append(f"WHEN MATCHED THEN UPDATE SET\n  {update_clause}")
+    clauses.append(f"WHEN NOT MATCHED THEN INSERT ({insert_columns}) VALUES ({insert_values})")
+    if delete_missing_for:
+        field = _quote_identifier(delete_missing_for["field"])
+        clauses.append(f"WHEN NOT MATCHED BY SOURCE AND target.{field} IN UNNEST(@delete_missing_values) THEN DELETE")
+    return "\n".join(clauses)
+
+
+def _quote_identifier(identifier: str) -> str:
+    return f"`{identifier}`"

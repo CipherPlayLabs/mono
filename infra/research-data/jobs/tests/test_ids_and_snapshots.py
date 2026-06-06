@@ -20,7 +20,7 @@ class IdAndSnapshotTests(unittest.TestCase):
         self.assertNotIn("abc123", first)
         self.assertNotIn("smallbusiness", first)
 
-    def test_snapshot_object_path_is_partitioned_and_deterministic(self):
+    def test_snapshot_object_path_is_current_thread_path(self):
         fetched_at = datetime(2026, 6, 5, 12, 0, tzinfo=timezone.utc)
 
         path = snapshot_object_path(
@@ -33,9 +33,32 @@ class IdAndSnapshotTests(unittest.TestCase):
 
         self.assertEqual(
             path,
-            "raw/provider=reddit/community=smallbusiness/year=2026/month=06/day=05/"
-            "source_thread_id=source_thread_abc/source_thread_snapshot_id=source_thread_snapshot_def.json",
+            "current/reddit/smallbusiness/source_thread_abc.json",
         )
+
+    def test_current_snapshot_id_is_stable_across_refetches(self):
+        raw = json.loads(FIXTURE.read_text())
+        updated_raw = json.loads(FIXTURE.read_text())
+        updated_raw["thread_listing"]["data"]["score"] = 99
+
+        first = build_snapshot_envelope(
+            provider="reddit",
+            community_name="smallbusiness",
+            provider_thread_id="abc123",
+            raw_thread=raw,
+            fetched_at="2026-06-05T12:00:00Z",
+        )
+        second = build_snapshot_envelope(
+            provider="reddit",
+            community_name="smallbusiness",
+            provider_thread_id="abc123",
+            raw_thread=updated_raw,
+            fetched_at="2026-06-06T12:00:00Z",
+        )
+
+        self.assertEqual(first["source_thread_id"], second["source_thread_id"])
+        self.assertEqual(first["source_thread_snapshot_id"], second["source_thread_snapshot_id"])
+        self.assertNotEqual(first["raw_checksum_sha256"], second["raw_checksum_sha256"])
 
     def test_snapshot_envelope_preserves_raw_provider_payload(self):
         raw = json.loads(FIXTURE.read_text())
