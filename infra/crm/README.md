@@ -128,6 +128,7 @@ Use the OpenTofu outputs for the private IP and instance name. Keep a separate p
 `schema/001-crm.sql` defines the initial CRM data contract:
 
 - contacts
+- Founder Institute directory entries
 - groups
 - contact-group membership
 - campaigns

@@ -129,6 +129,17 @@ Use the `crm` database, not the `nocodb` database. `nocodb` is only for NocoDB's
 - `crm_email_events`
 - `crm_notes`
 - `crm_follow_ups`
+- `crm_founder_institute_directory_entries`
+
+## CRM Data Terms
+
+**Founder Institute Data**:
+Low-coupled source data collected from the Founder Institute network directory for CRM enrichment. Founder Institute Data lives first in `crm_founder_institute_directory_entries`, preserving FI-specific source URLs, specializations, mentor notes, page/filter provenance, collection timestamps, and raw card payloads without making FI fields first-class contact fields. Entries can later be linked to `crm_contacts` through nullable `contact_id` after the source dataset has been cleaned.
+_Avoid_: Founders Institute Data, generic contact fields, one CRM group per FI specialization
+
+**Founder Institute Contact Import**:
+After the Founder Institute source dataset is collected and cleaned, each FI person should create or update a canonical `crm_contacts` row with standard contact information such as display name, first name, last name, organization, role title, and reachable public profile fields where available. LinkedIn profile URL is the primary dedupe and identity key for promoted FI contacts. When LinkedIn is missing, the promotion step should use normalized display name, organization, and role title as a weaker fallback identity key.
+_Avoid_: direct-to-contact scraping, FI-only contacts, duplicating standard contact fields only in FI tables after promotion
 
 The seed group is:
 
