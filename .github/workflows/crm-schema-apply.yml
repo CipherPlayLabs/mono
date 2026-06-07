@@ -73,12 +73,26 @@ jobs:
               --project="${CRM_GCP_PROJECT_ID}" \
               --format='value(serviceAccountEmailAddress)'
           )"
+          bucket_uri="gs://${CRM_SCHEMA_IMPORT_BUCKET}"
+
+          cleanup() {
+            gcloud storage rm "${schema_object}" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --quiet || true
+
+            gcloud storage buckets remove-iam-policy-binding "${bucket_uri}" \
+              --member="serviceAccount:${cloud_sql_service_account}" \
+              --role="roles/storage.objectViewer" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --quiet || true
+          }
+          trap cleanup EXIT
 
           gcloud storage cp "${CRM_SCHEMA_PATH}" "${schema_object}" \
             --project="${CRM_GCP_PROJECT_ID}" \
             --quiet
 
-          gcloud storage objects add-iam-policy-binding "${schema_object}" \
+          gcloud storage buckets add-iam-policy-binding "${bucket_uri}" \
             --member="serviceAccount:${cloud_sql_service_account}" \
             --role="roles/storage.objectViewer" \
             --project="${CRM_GCP_PROJECT_ID}" \
@@ -87,10 +101,6 @@ jobs:
           gcloud sql import sql "${CRM_CLOUD_SQL_INSTANCE}" "${schema_object}" \
             --project="${CRM_GCP_PROJECT_ID}" \
             --database="${CRM_DATABASE}" \
-            --quiet
-
-          gcloud storage rm "${schema_object}" \
-            --project="${CRM_GCP_PROJECT_ID}" \
             --quiet
 
       - name: Verify import target
