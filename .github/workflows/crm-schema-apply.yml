@@ -18,12 +18,11 @@ concurrency:
 
 env:
   CRM_DATABASE: ${{ vars.CRM_DATABASE || 'crm' }}
-  CRM_DATABASE_USER: ${{ vars.CRM_DATABASE_USER || 'crm_writer' }}
   CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
   CRM_GCP_REGION: ${{ vars.CRM_GCP_REGION || 'us-east1' }}
-  CRM_CLOUD_SQL_CONNECTION_NAME: ${{ vars.CRM_CLOUD_SQL_CONNECTION_NAME || 'cipherplay-production:us-east1:cipherplay-crm-postgres' }}
-  CRM_POSTGRES_PASSWORD_SECRET: ${{ vars.CRM_POSTGRES_PASSWORD_SECRET || 'cipherplay-crm-postgres-password' }}
+  CRM_CLOUD_SQL_INSTANCE: ${{ vars.CRM_CLOUD_SQL_INSTANCE || 'cipherplay-crm-postgres' }}
   CRM_SCHEMA_PATH: infra/crm/schema/001-crm.sql
+  CRM_SCHEMA_IMPORT_BUCKET: ${{ vars.CRM_SCHEMA_IMPORT_BUCKET || 'cipherplay-production-opentofu-state' }}
 
 jobs:
   apply-schema:
@@ -64,98 +63,39 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v3
 
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Install Cloud SQL Auth Proxy
-        run: |
-          curl -fsSL \
-            "https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.18.2/cloud-sql-proxy.linux.amd64" \
-            -o cloud-sql-proxy
-          chmod +x cloud-sql-proxy
-
       - name: Apply schema
         run: |
           set -euo pipefail
 
-          export PGPASSWORD="$(
-            gcloud secrets versions access latest \
+          schema_object="gs://${CRM_SCHEMA_IMPORT_BUCKET}/crm-schema/${GITHUB_SHA}/001-crm.sql"
+          cloud_sql_service_account="$(
+            gcloud sql instances describe "${CRM_CLOUD_SQL_INSTANCE}" \
               --project="${CRM_GCP_PROJECT_ID}" \
-              --secret="${CRM_POSTGRES_PASSWORD_SECRET}"
+              --format='value(serviceAccountEmailAddress)'
           )"
 
-          ./cloud-sql-proxy "${CRM_CLOUD_SQL_CONNECTION_NAME}" \
-            --address 127.0.0.1 \
-            --port 5432 \
-            --quiet &
+          gcloud storage cp "${CRM_SCHEMA_PATH}" "${schema_object}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --quiet
 
-          proxy_pid="$!"
-          trap 'kill "$proxy_pid"' EXIT
+          gcloud storage objects add-iam-policy-binding "${schema_object}" \
+            --member="serviceAccount:${cloud_sql_service_account}" \
+            --role="roles/storage.objectViewer" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --quiet
 
-          for attempt in $(seq 1 30); do
-            if pg_isready -h 127.0.0.1 -p 5432 -d "${CRM_DATABASE}" -U "${CRM_DATABASE_USER}" >/dev/null 2>&1; then
-              break
-            fi
+          gcloud sql import sql "${CRM_CLOUD_SQL_INSTANCE}" "${schema_object}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --database="${CRM_DATABASE}" \
+            --quiet
 
-            if [ "$attempt" -eq 30 ]; then
-              echo "::error title=Cloud SQL proxy unavailable::Timed out waiting for local proxy"
-              exit 1
-            fi
+          gcloud storage rm "${schema_object}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --quiet
 
-            sleep 1
-          done
-
-          psql \
-            "host=127.0.0.1 port=5432 dbname=${CRM_DATABASE} user=${CRM_DATABASE_USER} sslmode=disable" \
-            --set ON_ERROR_STOP=1 \
-            --file "${CRM_SCHEMA_PATH}"
-
-      - name: Verify Founder Institute table
+      - name: Verify import target
         run: |
-          set -euo pipefail
-
-          export PGPASSWORD="$(
-            gcloud secrets versions access latest \
-              --project="${CRM_GCP_PROJECT_ID}" \
-              --secret="${CRM_POSTGRES_PASSWORD_SECRET}"
-          )"
-
-          ./cloud-sql-proxy "${CRM_CLOUD_SQL_CONNECTION_NAME}" \
-            --address 127.0.0.1 \
-            --port 5432 \
-            --quiet &
-
-          proxy_pid="$!"
-          trap 'kill "$proxy_pid"' EXIT
-
-          for attempt in $(seq 1 30); do
-            if pg_isready -h 127.0.0.1 -p 5432 -d "${CRM_DATABASE}" -U "${CRM_DATABASE_USER}" >/dev/null 2>&1; then
-              break
-            fi
-
-            if [ "$attempt" -eq 30 ]; then
-              echo "::error title=Cloud SQL proxy unavailable::Timed out waiting for local proxy"
-              exit 1
-            fi
-
-            sleep 1
-          done
-
-          psql \
-            "host=127.0.0.1 port=5432 dbname=${CRM_DATABASE} user=${CRM_DATABASE_USER} sslmode=disable" \
-            --set ON_ERROR_STOP=1 \
-            --tuples-only \
-            --command "
-              select table_name
-              from information_schema.tables
-              where table_schema = 'public'
-                and table_name = 'crm_founder_institute_directory_entries';
-
-              select indexname
-              from pg_indexes
-              where schemaname = 'public'
-                and tablename = 'crm_founder_institute_directory_entries'
-              order by indexname;
-            "
+          gcloud sql databases describe "${CRM_DATABASE}" \
+            --instance="${CRM_CLOUD_SQL_INSTANCE}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --format='value(name)'
