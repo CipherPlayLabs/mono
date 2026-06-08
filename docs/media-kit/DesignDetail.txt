@@ -1,0 +1,11 @@
+COLOR:
+	white: #D9D9D9
+	gray: #444444
+	very dark blue: #0E6B99
+	dark blue: #1EA5B4
+	light blue: #37FFDE
+FONT:
+	"You're Gone"
+	* custom R
+	* 20pt font size with inner stroke of weight 1 to thin letters
+	* 2% horizontal spacing
