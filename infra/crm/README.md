@@ -135,6 +135,7 @@ Use the OpenTofu outputs for the private IP and instance name. Keep a separate p
 - campaign recipients
 - email events
 - notes
+- interview source entries
 - follow-up tasks
 
 The seed creates a `potential-investors` group for the first investor-campaign MVP, but it does not store contact data in git.

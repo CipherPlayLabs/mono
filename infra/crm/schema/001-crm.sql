@@ -193,6 +193,56 @@ CREATE INDEX IF NOT EXISTS crm_fi_directory_entries_contact_idx
   ON crm_founder_institute_directory_entries (contact_id)
   WHERE contact_id IS NOT NULL;
 
+CREATE TABLE IF NOT EXISTS crm_interview_source_entries (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  contact_id uuid REFERENCES crm_contacts(id) ON DELETE SET NULL,
+  source_row_number integer NOT NULL,
+  source_name text NOT NULL,
+  picture text,
+  linkedin_url text,
+  interview_status text NOT NULL,
+  source_date_text text NOT NULL,
+  interview_at timestamptz,
+  contact_mode text,
+  company text,
+  role_title text,
+  ecosystem_role text,
+  email text,
+  phone text,
+  about text,
+  interview_strategy text,
+  interview_notes text,
+  transcript text,
+  jtbd_analysis text,
+  industry text,
+  source_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  source_confidence text NOT NULL DEFAULT 'private-sourced',
+  collected_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT crm_interview_source_entries_source_row_number_check CHECK (
+    source_row_number >= 1
+  ),
+  CONSTRAINT crm_interview_source_entries_source_confidence_check CHECK (
+    source_confidence IN ('private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS crm_interview_source_entries_row_unique
+  ON crm_interview_source_entries (source_row_number);
+
+CREATE INDEX IF NOT EXISTS crm_interview_source_entries_email_idx
+  ON crm_interview_source_entries (lower(email))
+  WHERE email IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS crm_interview_source_entries_linkedin_idx
+  ON crm_interview_source_entries (lower(linkedin_url))
+  WHERE linkedin_url IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS crm_interview_source_entries_contact_idx
+  ON crm_interview_source_entries (contact_id)
+  WHERE contact_id IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS crm_follow_ups (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   contact_id uuid REFERENCES crm_contacts(id) ON DELETE CASCADE,
@@ -250,6 +300,12 @@ CREATE TRIGGER crm_follow_ups_set_updated_at
 DROP TRIGGER IF EXISTS crm_fi_directory_entries_set_updated_at ON crm_founder_institute_directory_entries;
 CREATE TRIGGER crm_fi_directory_entries_set_updated_at
   BEFORE UPDATE ON crm_founder_institute_directory_entries
+  FOR EACH ROW
+  EXECUTE FUNCTION crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS crm_interview_source_entries_set_updated_at ON crm_interview_source_entries;
+CREATE TRIGGER crm_interview_source_entries_set_updated_at
+  BEFORE UPDATE ON crm_interview_source_entries
   FOR EACH ROW
   EXECUTE FUNCTION crm_set_updated_at();
 
