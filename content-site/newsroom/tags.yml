@@ -12,3 +12,13 @@ milestone:
   label: Milestone
   permalink: /milestone
   description: Important milestones
+
+funding:
+  label: Funding
+  permalink: /funding
+  description: Funding and backer announcements
+
+backer:
+  label: Backer
+  permalink: /backer
+  description: Backer and financial-support updates
