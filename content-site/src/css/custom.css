@@ -169,6 +169,15 @@ body {
   -webkit-box-orient: unset;
 }
 
+.blog-wrapper [class*='authorSocials'] {
+  height: auto;
+  min-height: 1.9rem;
+  overflow: visible;
+  line-clamp: unset;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
 .blog-wrapper .markdown {
   clear: both;
   margin-top: 1rem;
