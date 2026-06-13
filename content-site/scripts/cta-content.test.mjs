@@ -183,8 +183,8 @@ test('State of Web3 aggregate uses compact overview cards and type-specific repo
   assert.match(aggregateCss, /\.overviewSection/);
   assert.match(aggregateCss, /min-height: 0;/);
   assert.doesNotMatch(aggregateCss, /min-height: 230px;/);
-  assert.match(aggregateCss, /@media \(max-width: 760px\) \{\n  \.summaryGrid/);
-  assert.doesNotMatch(aggregateCss, /@media \(max-width: 996px\) \{\n  \.summaryGrid,/);
+  assert.match(aggregateCss, /@media \(max-width: 760px\) \{\r?\n  \.summaryGrid/);
+  assert.doesNotMatch(aggregateCss, /@media \(max-width: 996px\) \{\r?\n  \.summaryGrid,/);
 });
 
 test('State of Web3 aggregate and people-class report routes exist', () => {
@@ -250,12 +250,14 @@ test('legacy form routes send visitors to hosted n8n forms', () => {
 
 test('public copy avoids stale client, industry, and private report wording', () => {
   const stateData = read('src/data/stateOfWeb3.ts');
-  const launchPost = read('newsroom/2026-04-30-site-launch.mdx');
-  const publicCopy = [stateData, launchPost].join('\n');
+  const vipcPost = read('newsroom/2026-03-01-vipc-grant.mdx');
+  const rampPost = read('newsroom/2026-06-12-ramp-grant.mdx');
+  const reportRequestPage = read('src/pages/forms/report-request.tsx');
+  const publicCopy = [stateData, vipcPost, rampPost, reportRequestPage].join('\n');
 
   assert.doesNotMatch(publicCopy, /\bclients?\b/i);
-  assert.doesNotMatch(launchPost, /industry material/i);
-  assert.doesNotMatch(launchPost, /private reports/i);
-  assert.match(launchPost, /Full Report access/);
-  assert.match(launchPost, /State Of Web3/);
+  assert.doesNotMatch(publicCopy, /industry material/i);
+  assert.doesNotMatch(publicCopy, /private reports/i);
+  assert.match(reportRequestPage, /Full Report access/);
+  assert.match(stateData, /State Of Web3/);
 });
