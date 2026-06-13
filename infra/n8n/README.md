@@ -36,6 +36,7 @@ The service is capped at one instance because Cloud Storage FUSE is not a fully 
 - `.github/workflows/n8n-apply.yml`: manual production-approved OpenTofu plan and apply.
 - `.github/workflows/n8n-redeploy.yml`: manual production-approved Cloud Run redeploy to the current Cloud Run-compatible stable n8n image.
 - `workflows/crm-website-shopify-enrichment.md`: repo-owned contract for CRM Website/email-domain discovery and Shopify enrichment workflows.
+- `workflows/reddit-jtbd-database-pipeline.md`: repo-owned contract for manual Reddit JTBD thread extraction and full-corpus normalization workflows.
 
 All GCP authentication uses GitHub OIDC. Do not add service account JSON keys.
 

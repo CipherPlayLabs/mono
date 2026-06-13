@@ -28,7 +28,6 @@ class CollectEntrypointTests(unittest.TestCase):
             mock.patch.object(research_main, "load_collection_config", return_value=copy.deepcopy(VALID_CONFIG)),
             mock.patch.object(research_main, "load_secret_json", return_value={"client_id": "id", "client_secret": "secret"}),
             mock.patch.object(research_main, "RedditProvider", return_value=object()),
-            mock.patch.object(research_main, "_snapshot_store", return_value=object()),
             mock.patch.object(research_main, "_research_store", return_value=object()),
             mock.patch.object(research_main, "run_collection_batch", side_effect=fake_run_collection_batch),
         ):

@@ -15,5 +15,9 @@
   {"name":"source_url","type":"STRING","mode":"NULLABLE","description":"Provider source URL."},
   {"name":"latest_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Latest source-thread snapshot ID."},
   {"name":"latest_fetched_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Latest fetch timestamp."},
+  {"name":"raw_checksum_sha256","type":"STRING","mode":"REQUIRED","description":"SHA-256 checksum of the provider source-thread raw payload."},
+  {"name":"raw_byte_size","type":"INTEGER","mode":"REQUIRED","description":"Stored JSON byte size for the source-thread envelope."},
+  {"name":"source_thread_json","type":"JSON","mode":"REQUIRED","description":"Full current provider-available source-thread envelope; this row is the source of truth."},
+  {"name":"raw_json","type":"JSON","mode":"REQUIRED","description":"Full current provider-native Reddit thread payload."},
   {"name":"provider_native_json","type":"JSON","mode":"NULLABLE","description":"Provider-native thread metadata for audit."}
 ]

@@ -10,7 +10,6 @@ from .ids import research_id
 from .pipeline import run_analysis_batch, run_triage_batch
 from .reddit_provider import RedditProvider
 from .secrets import load_secret_json
-from .snapshots import GcsSnapshotStore
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -54,7 +53,6 @@ def main(argv: list[str] | None = None) -> int:
             config=config,
             collection_run_id=collection_run_id,
             provider=provider,
-            snapshot_store=_snapshot_store(),
             research_store=_research_store(),
             query_mode_name=args.query_mode,
         )
@@ -64,7 +62,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "triage":
         result = run_triage_batch(
             research_store=_research_store(),
-            snapshot_store=_snapshot_store(),
             limit=args.limit,
         )
         print(json.dumps(result, sort_keys=True))
@@ -73,7 +70,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "analyze":
         result = run_analysis_batch(
             research_store=_research_store(),
-            snapshot_store=_snapshot_store(),
             limit=args.limit,
             max_chunk_chars=args.max_chunk_chars,
         )
@@ -88,10 +84,6 @@ def _research_store() -> BigQueryResearchStore:
         project_id=_required_env("GCP_PROJECT_ID"),
         dataset_id=_required_env("BIGQUERY_DATASET"),
     )
-
-
-def _snapshot_store() -> GcsSnapshotStore:
-    return GcsSnapshotStore(_required_env("SNAPSHOT_BUCKET"))
 
 
 def _default_collection_run_id(*, config_uri: str, config: dict[str, Any], query_mode_name: str | None) -> str:

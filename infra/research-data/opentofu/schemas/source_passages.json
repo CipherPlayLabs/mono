@@ -1,0 +1,14 @@
+[
+  {"name":"source_passage_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral source passage ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID."},
+  {"name":"source_thread_snapshot_id","type":"STRING","mode":"REQUIRED","description":"Current source-thread content version ID used for extraction."},
+  {"name":"thread_node_id","type":"STRING","mode":"REQUIRED","description":"Thread node ID."},
+  {"name":"provider_fullname","type":"STRING","mode":"NULLABLE","description":"Provider fullname for the node."},
+  {"name":"passage_text","type":"STRING","mode":"REQUIRED","description":"Exact source passage used as evidence."},
+  {"name":"passage_score","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible score for the passage node."},
+  {"name":"thread_score","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible score for the source thread."},
+  {"name":"thread_comment_count","type":"INTEGER","mode":"NULLABLE","description":"Provider-visible comment count for the source thread."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Passage extraction timestamp."},
+  {"name":"active","type":"BOOLEAN","mode":"REQUIRED","description":"Whether this passage belongs to the active Thread Extraction Run for the Source Thread."},
+  {"name":"locator_json","type":"JSON","mode":"NULLABLE","description":"Tree locator and permalink context."}
+]

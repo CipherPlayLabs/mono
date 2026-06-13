@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from .ids import research_id
@@ -9,8 +10,6 @@ def build_collection_rows(
     collection_run_id: str,
     config: dict[str, Any],
     snapshot_envelope: dict[str, Any],
-    snapshot_gcs_uri: str,
-    byte_size: int,
     coverage_gaps: list[dict[str, Any]] | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     community = config["community"]
@@ -39,20 +38,11 @@ def build_collection_rows(
         "source_url": post.get("url"),
         "latest_snapshot_id": snapshot_id,
         "latest_fetched_at": snapshot_envelope["fetched_at"],
-        "provider_native_json": post,
-    }
-
-    snapshot_row = {
-        "source_thread_snapshot_id": snapshot_id,
-        "source_thread_id": source_thread_id,
-        "collection_run_id": collection_run_id,
-        "provider": snapshot_envelope["provider"],
-        "gcs_uri": snapshot_gcs_uri,
         "raw_checksum_sha256": snapshot_envelope["raw_checksum_sha256"],
-        "byte_size": byte_size,
-        "fetched_at": snapshot_envelope["fetched_at"],
-        "fetch_metadata_json": raw.get("fetch_metadata", {}),
-        "processing_json": snapshot_envelope["processing"],
+        "raw_byte_size": len(json.dumps(snapshot_envelope, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")),
+        "source_thread_json": snapshot_envelope,
+        "raw_json": raw,
+        "provider_native_json": post,
     }
 
     thread_nodes = []
@@ -81,7 +71,6 @@ def build_collection_rows(
 
     return {
         "source_threads": [source_thread],
-        "source_thread_snapshots": [snapshot_row],
         "thread_nodes": thread_nodes,
         "coverage_gaps": coverage_rows,
     }

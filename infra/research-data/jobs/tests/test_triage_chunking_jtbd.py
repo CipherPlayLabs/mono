@@ -56,12 +56,19 @@ class TriageChunkingAndJtbdTests(unittest.TestCase):
             self.envelope["source_thread_snapshot_id"],
         )
         self.assertGreater(len(output["thread_excerpts"]), 0)
+        self.assertGreater(len(output["source_passages"]), 0)
         self.assertGreater(len(output["evidence_claims"]), 0)
-        self.assertGreater(len(output["jtbd_entities"]), 0)
+        self.assertNotIn("jtbd_entities", output)
 
-        excerpt_ids = {excerpt["thread_excerpt_id"] for excerpt in output["thread_excerpts"]}
+        passage_ids = {passage["source_passage_id"] for passage in output["source_passages"]}
         for claim in output["evidence_claims"]:
-            self.assertTrue(set(claim["thread_excerpt_ids"]).issubset(excerpt_ids))
+            self.assertTrue(set(claim["source_passage_ids"]).issubset(passage_ids))
+            self.assertTrue(claim["active"])
+
+        record = output["thread_level_jtbd_record"]
+        all_claim_ids = {claim["evidence_claim_id"] for claim in output["evidence_claims"]}
+        for field in ("jobs", "criteria", "contexts", "pains", "workarounds", "solutions", "people_roles"):
+            self.assertTrue(set(record[field]).issubset(all_claim_ids))
 
         forbidden = {"opportunity_score", "segment_validation", "rbo", "aggregate_prevalence", "report_claim"}
         serialized = json.dumps(output)
