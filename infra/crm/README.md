@@ -128,13 +128,20 @@ Use the OpenTofu outputs for the private IP and instance name. Keep a separate p
 `schema/001-crm.sql` defines the initial CRM data contract:
 
 - contacts
+- websites
+- email addresses
+- contact-email address associations
+- Founder Institute directory entries
 - groups
 - contact-group membership
 - campaigns
 - campaign recipients
 - email events
 - notes
+- interview source entries
 - follow-up tasks
+
+The schema fully migrates contact email identity out of `crm_contacts.email` and into `crm_email_addresses` plus `crm_contact_email_addresses`. Website rows are canonical registrable domains; common inbox-provider domains such as Gmail, Outlook, iCloud, Yahoo, and ProtonMail are classified as `email_provider` so they can preserve email-domain associations without being treated as Shopify enrichment targets.
 
 The seed creates a `potential-investors` group for the first investor-campaign MVP, but it does not store contact data in git.
 
@@ -155,5 +162,9 @@ n8n should use the CRM data database, not the NocoDB metadata database. The firs
 - wait for operator approval before sending,
 - write send/reply/bounce events back into `crm_email_events`,
 - update `crm_campaign_recipients` and `crm_follow_ups`.
+- poll every 30 minutes for email-domain Website discovery and Shopify Website enrichment work,
+- write Website enrichment results directly to `crm_websites` as `crm_writer`.
 
 This keeps NocoDB as the pleasant review/edit UI while n8n remains the campaign engine.
+
+The website/email enrichment workflow contract lives at `../n8n/workflows/crm-website-shopify-enrichment.md`. Failed or partial Shopify checks should keep `shopify_status = 'unknown'`, record error/retry metadata, and preserve compact detection evidence in `shopify_detection_signals`.

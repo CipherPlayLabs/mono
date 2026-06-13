@@ -122,13 +122,60 @@ Use the `crm` database, not the `nocodb` database. `nocodb` is only for NocoDB's
 `infra/crm/schema/001-crm.sql` defines the initial data contract:
 
 - `crm_contacts`
+- `crm_websites`
+- `crm_email_addresses`
+- `crm_contact_email_addresses`
 - `crm_groups`
 - `crm_contact_groups`
 - `crm_campaigns`
 - `crm_campaign_recipients`
 - `crm_email_events`
 - `crm_notes`
+- `crm_interview_source_entries`
 - `crm_follow_ups`
+- `crm_founder_institute_directory_entries`
+
+## CRM Data Terms
+
+**Founder Institute Data**:
+Low-coupled source data collected from the Founder Institute network directory for CRM enrichment. Founder Institute Data lives first in `crm_founder_institute_directory_entries`, preserving FI-specific source URLs, specializations, mentor notes, page/filter provenance, collection timestamps, and raw card payloads without making FI fields first-class contact fields. Entries can later be linked to `crm_contacts` through nullable `contact_id` after the source dataset has been cleaned.
+_Avoid_: Founders Institute Data, generic contact fields, one CRM group per FI specialization
+
+**Founder Institute Contact Import**:
+After the Founder Institute source dataset is collected and cleaned, each FI person should create or update a canonical `crm_contacts` row with standard contact information such as display name, first name, last name, organization, role title, and reachable public profile fields where available. LinkedIn profile URL is the primary dedupe and identity key for promoted FI contacts. When LinkedIn is missing, the promotion step should use normalized display name, organization, and role title as a weaker fallback identity key.
+_Avoid_: direct-to-contact scraping, FI-only contacts, duplicating standard contact fields only in FI tables after promotion
+
+**Interview Source Data**:
+Low-coupled source data exported from Allan's interview sheet for CRM enrichment and customer-discovery follow-up. Interview Source Data lives first in `crm_interview_source_entries`, preserving source row numbers, Airtable-style attachment/profile fields, interview status/date text, notes, transcripts, JTBD analysis, and raw row payloads without making interview-specific fields first-class contact fields. Entries can later be linked to `crm_contacts` through nullable `contact_id` after the source dataset has been cleaned.
+_Avoid_: direct-to-contact CSV imports, losing raw interview notes, treating the misspelled source column `Ecosytstem Role` as canonical CRM terminology
+
+**Website**:
+A canonical registrable domain tracked as one CRM row, such as `example.com`, with any raw submitted URL or host preserved separately as input provenance. Website does not mean every observed subdomain or URL unless a later source table explicitly models hosts.
+_Avoid_: URL, page, arbitrary host, one row per subdomain
+
+**Website Domain Type**:
+A small CRM classification for Website rows: `unknown`, `business`, or `email_provider`. Email-provider Websites preserve email-domain associations but should not be treated as ecommerce prospects.
+_Avoid_: broad industry taxonomy, one type per source, Shopify status as domain type
+
+**Email Address**:
+A canonical observed email address tracked separately from `crm_contacts`, because seeing an address is not the same as confirming the person identity behind it. Email Address can link to a Website through its domain and to a Contact only after the identity match is trusted.
+_Avoid_: contact field, person, automatic contact promotion
+
+**Email Domain Website Discovery**:
+The CRM enrichment rule that every new Email Address should derive its canonical email domain and link to a Website row, creating the Website when it does not already exist. Common inbox-provider domains still get Website rows for association, but they should be classified as email providers and skipped for Shopify enrichment.
+_Avoid_: manual-only domain creation, contact promotion from email domain alone, Shopify checks for Gmail-style provider domains
+
+**Contact Email Address**:
+A trusted or candidate link between a Contact and an Email Address, allowing one Contact to have multiple observed addresses while keeping email identity outside the canonical Contact row. Contact Email Address replaces `crm_contacts.email` as the source of truth for contact email identity.
+_Avoid_: one email per contact, unverified contact email, `crm_contacts.email`, overwriting contact identity from observed email alone
+
+**Shopify Website Status**:
+A ternary CRM enrichment result for a Website: `unknown`, `true`, or `false`. Unknown means Shopify detection has not produced a conclusion yet, not that the Website is known to be non-Shopify.
+_Avoid_: confidence score as the primary status, DNS-only Shopify proof, treating failed checks as false
+
+**Website Enrichment**:
+An n8n-driven CRM process that evaluates newly created and unresolved Website rows on a 30-minute polling cadence. Website Enrichment should update the Website's ternary Shopify Website Status while preserving detection signals and errors as supporting evidence.
+_Avoid_: manual-only website review, database-trigger automation, one-time imports, NocoDB metadata automation
 
 The seed group is:
 
@@ -157,8 +204,12 @@ First useful workflows:
 - Write draft/send/reply/bounce/manual-note events into `crm_email_events`.
 - Update `crm_campaign_recipients.status`, `sent_at`, `replied_at`, `last_event_at`, and `n8n_execution_id`.
 - Create or close `crm_follow_ups`.
+- Run `website-email-domain-discovery` every 30 minutes to link `crm_email_addresses` to `crm_websites`.
+- Run `website-shopify-enrichment` every 30 minutes to update `crm_websites.shopify_status` without writing to the `nocodb` metadata database.
 
 Keep the first investor-campaign MVP in operator-approved mode. Do not send fully automatic campaigns until deliverability, approval, and logging are proven.
+
+The repo-owned workflow contract for website/email-domain enrichment is `infra/n8n/workflows/crm-website-shopify-enrichment.md`.
 
 ## GitHub Variables And Secrets
 

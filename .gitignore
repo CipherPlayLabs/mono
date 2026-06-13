@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .wrangler/
 .terraform/
+.tools/
 .codex-local/
 infra/research-data/private/
 infra/research-data/run-configs/
