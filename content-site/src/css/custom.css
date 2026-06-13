@@ -156,6 +156,13 @@ body {
   align-items: flex-start;
 }
 
+.blog-wrapper img.avatar__photo[src*='cipherplay/logo-gradient.svg'] {
+  object-fit: contain;
+  padding: 0.1rem;
+  border-radius: 0;
+  background: transparent;
+}
+
 .blog-wrapper [class*='authorDetails'] {
   min-width: 0;
   gap: 0.2rem;
