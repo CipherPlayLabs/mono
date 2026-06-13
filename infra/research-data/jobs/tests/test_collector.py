@@ -42,18 +42,6 @@ class FakeProvider:
         return self.raw_thread
 
 
-class FakeSnapshotStore:
-    def __init__(self):
-        self.saved = []
-
-    def save_snapshot(self, envelope):
-        self.saved.append(envelope)
-        return {
-            "gcs_uri": "gs://research/" + envelope["source_thread_snapshot_id"] + ".json",
-            "byte_size": len(json.dumps(envelope)),
-        }
-
-
 class FakeResearchStore:
     def __init__(self):
         self.collection_rows = []
@@ -73,20 +61,17 @@ class CollectorTests(unittest.TestCase):
     def test_collection_batch_writes_snapshot_rows_gaps_and_checkpoint(self):
         raw_thread = json.loads(FIXTURE.read_text())
         provider = FakeProvider(raw_thread)
-        snapshot_store = FakeSnapshotStore()
         research_store = FakeResearchStore()
 
         result = run_collection_batch(
             config=VALID_CONFIG,
             collection_run_id="collection_run_test",
             provider=provider,
-            snapshot_store=snapshot_store,
             research_store=research_store,
             fetched_at="2026-06-05T12:00:00Z",
         )
 
         self.assertEqual(result["threads_fetched"], 1)
-        self.assertEqual(len(snapshot_store.saved), 1)
         self.assertEqual(len(research_store.collection_rows), 1)
         self.assertEqual(len(research_store.checkpoints), 1)
         rows = research_store.collection_rows[0]
@@ -102,7 +87,6 @@ class CollectorTests(unittest.TestCase):
             config=VALID_CONFIG,
             collection_run_id="collection_run_test",
             provider=provider,
-            snapshot_store=FakeSnapshotStore(),
             research_store=FakeResearchStore(),
             fetched_at="2026-06-05T12:00:00Z",
             query_mode_name="top",

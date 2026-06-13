@@ -1,0 +1,14 @@
+[
+  {"name":"evidence_relationship_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral evidence relationship ID."},
+  {"name":"normalization_run_id","type":"STRING","mode":"REQUIRED","description":"Normalization run ID that produced this relationship."},
+  {"name":"normalized_jtbd_entity_id","type":"STRING","mode":"REQUIRED","description":"Normalized JTBD entity ID."},
+  {"name":"evidence_claim_id","type":"STRING","mode":"REQUIRED","description":"Evidence claim ID."},
+  {"name":"source_thread_id","type":"STRING","mode":"REQUIRED","description":"Source thread ID for lineage and support counts."},
+  {"name":"relationship_type","type":"STRING","mode":"REQUIRED","description":"primary or secondary."},
+  {"name":"passage_score","type":"INTEGER","mode":"NULLABLE","description":"Claim-local passage score used as a support weight."},
+  {"name":"thread_score","type":"INTEGER","mode":"NULLABLE","description":"Thread-level score kept separate from passage score."},
+  {"name":"thread_comment_count","type":"INTEGER","mode":"NULLABLE","description":"Thread-level comment count kept separate from passage score."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Relationship creation timestamp."},
+  {"name":"active","type":"BOOLEAN","mode":"REQUIRED","description":"Whether this relationship belongs to the active JTBD Taxonomy."},
+  {"name":"relationship_json","type":"JSON","mode":"NULLABLE","description":"Additional relationship metadata."}
+]

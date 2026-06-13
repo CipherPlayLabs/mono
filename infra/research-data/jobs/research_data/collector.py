@@ -13,7 +13,6 @@ def run_collection_batch(
     config: dict[str, Any],
     collection_run_id: str,
     provider: Any,
-    snapshot_store: Any,
     research_store: Any,
     fetched_at: str | None = None,
     query_mode_name: str | None = None,
@@ -43,14 +42,11 @@ def run_collection_batch(
             raw_thread=raw_thread,
             fetched_at=fetched_at,
         )
-        saved = snapshot_store.save_snapshot(envelope)
         coverage_gaps = page_gaps if index == 0 else []
         rows = build_collection_rows(
             collection_run_id=collection_run_id,
             config=config,
             snapshot_envelope=envelope,
-            snapshot_gcs_uri=saved["gcs_uri"],
-            byte_size=saved["byte_size"],
             coverage_gaps=coverage_gaps,
         )
         research_store.write_collection_rows(rows)

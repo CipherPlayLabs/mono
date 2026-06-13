@@ -34,26 +34,27 @@ class RedditMappingTests(unittest.TestCase):
         self.assertEqual(parent_by_name["t1_c3"], "t3_abc123")
         self.assertEqual(gaps, [])
 
-    def test_build_collection_rows_preserves_native_ids_raw_json_and_snapshot_pointer(self):
+    def test_build_collection_rows_stores_full_source_thread_as_database_source_of_truth(self):
         rows = build_collection_rows(
             collection_run_id="collection_run_test",
             config={"community": {"platform": "reddit", "name": "smallbusiness"}},
             snapshot_envelope=self.envelope,
-            snapshot_gcs_uri="gs://research/raw/thread.json",
-            byte_size=1234,
         )
 
         self.assertEqual(
             set(rows),
             {
                 "source_threads",
-                "source_thread_snapshots",
                 "thread_nodes",
                 "coverage_gaps",
             },
         )
-        self.assertEqual(rows["source_threads"][0]["provider_thread_id"], "abc123")
-        self.assertEqual(rows["source_thread_snapshots"][0]["gcs_uri"], "gs://research/raw/thread.json")
+        source_thread = rows["source_threads"][0]
+        self.assertEqual(source_thread["provider_thread_id"], "abc123")
+        self.assertEqual(source_thread["source_thread_json"], self.envelope)
+        self.assertEqual(source_thread["raw_json"], self.raw)
+        self.assertEqual(source_thread["raw_checksum_sha256"], self.envelope["raw_checksum_sha256"])
+        self.assertGreater(source_thread["raw_byte_size"], 0)
         self.assertEqual(len(rows["thread_nodes"]), 4)
         self.assertTrue(all("raw_json" in row for row in rows["thread_nodes"]))
 

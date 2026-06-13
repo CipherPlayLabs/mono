@@ -5,7 +5,6 @@ from typing import Any, Iterable
 
 CURRENT_COLLECTION_TABLE_KEYS = {
     "source_threads": ["source_thread_id"],
-    "source_thread_snapshots": ["source_thread_id"],
     "thread_nodes": ["thread_node_id"],
 }
 
@@ -65,10 +64,18 @@ class BigQueryResearchStore:
         rows_by_table = {
             "analysis_batches": [output["analysis_batch"]],
             "source_quality_notes": output["source_quality_notes"],
-            "thread_excerpts": output["thread_excerpts"],
+            "source_passages": output["source_passages"],
             "evidence_claims": output["evidence_claims"],
-            "jtbd_entities": output["jtbd_entities"],
             "thread_level_jtbd_records": [output["thread_level_jtbd_record"]],
+        }
+        for table, rows in rows_by_table.items():
+            self._insert_rows(table, rows)
+
+    def write_normalization_rows(self, output: dict[str, Any]) -> None:
+        rows_by_table = {
+            "normalization_runs": [output["normalization_run"]],
+            "normalized_jtbd_entities": output["normalized_jtbd_entities"],
+            "evidence_relationships": output["evidence_relationships"],
         }
         for table, rows in rows_by_table.items():
             self._insert_rows(table, rows)
@@ -80,10 +87,8 @@ class BigQueryResearchStore:
               FROM `{self.project_id}.{self.dataset_id}.source_thread_triage`
               GROUP BY source_thread_id
             )
-            SELECT s.source_thread_id, snap.gcs_uri
+            SELECT s.source_thread_id, s.source_thread_json
             FROM `{self.project_id}.{self.dataset_id}.source_threads` s
-            JOIN `{self.project_id}.{self.dataset_id}.source_thread_snapshots` snap
-              ON s.source_thread_id = snap.source_thread_id
             LEFT JOIN latest_triage t
               ON s.source_thread_id = t.source_thread_id
             WHERE t.source_thread_id IS NULL
@@ -104,20 +109,10 @@ class BigQueryResearchStore:
                 AND r.source_thread_id IS NULL
               GROUP BY t.source_thread_id
             ),
-            latest_source_threads AS (
-              SELECT
-                s.source_thread_id,
-                ARRAY_AGG(s.latest_snapshot_id ORDER BY s.latest_fetched_at DESC LIMIT 1)[OFFSET(0)] AS latest_snapshot_id,
-                MAX(s.created_at) AS created_at
-              FROM `{self.project_id}.{self.dataset_id}.source_threads` s
-              JOIN eligible_source_threads e
-                ON s.source_thread_id = e.source_thread_id
-              GROUP BY s.source_thread_id
-            )
-            SELECT s.source_thread_id, snap.gcs_uri
-            FROM latest_source_threads s
-            JOIN `{self.project_id}.{self.dataset_id}.source_thread_snapshots` snap
-              ON s.latest_snapshot_id = snap.source_thread_snapshot_id
+            SELECT s.source_thread_id, s.source_thread_json
+            FROM `{self.project_id}.{self.dataset_id}.source_threads` s
+            JOIN eligible_source_threads e
+              ON s.source_thread_id = e.source_thread_id
             ORDER BY s.created_at DESC
             LIMIT @limit
         """

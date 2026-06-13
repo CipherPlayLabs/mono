@@ -82,6 +82,62 @@ _Avoid_: sub report, individual PDF, standalone market category
 Well-sourced information from deep internet research, real market interviews, and validatable data that CipherPlay can stand behind in public Market Research.
 _Avoid_: vibes, unsourced claims, unverifiable assumptions
 
+**Source Thread**:
+A Reddit discussion captured as one canonical current customer-discovery source unit, including the thread metadata, post, comments, provider identifiers, and provider-accessible source content. A Source Thread is the source of truth for the Reddit evidence derived from that discussion.
+_Avoid_: generic Reddit post, scraped page, raw report
+
+**Thread-Level JTBD Record**:
+The customer-discovery analysee for one Source Thread. It summarizes and links the thread-local Evidence Claims for jobs, criteria, contexts, pains, workarounds, solutions, people roles, confidence, and unanswered questions without replacing the underlying evidence rows or making cross-thread claims.
+_Avoid_: aggregate report, market conclusion, segment validation
+
+**Thread Extraction Run**:
+A per-Source Thread customer-discovery pass that creates or replaces Source Passages, Evidence Claims, and the Thread-Level JTBD Record for that Source Thread. Thread Extraction Runs may update active thread-level evidence directly when the replacement stays scoped to the same Source Thread.
+_Avoid_: full-corpus normalization, aggregate rewrite, partial evidence patch
+
+**Evidence Claim**:
+An atomic customer-discovery observation grounded in one or more Source Thread passages. Evidence Claims preserve what the source supports before any normalized rollup language is applied, including weak or low-confidence signals when they are clearly labeled.
+_Avoid_: insight, theme, normalized job, unlabeled weak signal
+
+**Source Passage**:
+An exact passage from a Source Thread used as evidence for customer-discovery analysis. Source Passages keep locator context and the text used at extraction time so Evidence Claims can be traced back precisely.
+_Avoid_: loose quote, summary snippet, unsupported citation
+
+**Normalized JTBD Entity**:
+A canonical job, criterion, context, pain, workaround, solution, or people role derived from Evidence Claims so related evidence can be compared and rolled up later.
+_Avoid_: raw quote, source passage, report bullet
+
+**JTBD Normalization**:
+The separate customer-discovery step that turns source-grounded Evidence Claims into Normalized JTBD Entities across threads. JTBD Normalization aligns wording across evidence, aggregates support for related jobs, criteria, contexts, and other JTBD components, and happens after first-pass thread-level extraction.
+_Avoid_: first-pass extraction, raw evidence capture
+
+**Normalization Run**:
+A complete pass over all active current source-grounded Evidence Claims across all JTBD component categories that rewrites the active Normalized JTBD Entities and their Evidence Relationships. Prior run outputs and stale derived records may remain auditable, but they should not shape the active taxonomy.
+_Avoid_: incremental taxonomy patch, one-off merge, silent mutation
+
+**Staged Normalization Run**:
+A Normalization Run whose output is written for validation before it becomes the active JTBD Taxonomy. Staging lets operators verify counts, lineage, Evidence Relationships, Evidence Support, and representative outputs before promotion.
+_Avoid_: unvalidated rewrite, direct active overwrite
+
+**JTBD Taxonomy**:
+The canonical set of Normalized JTBD Entities for one JTBD component type, such as jobs, criteria, contexts, pains, workarounds, solutions, or people roles. Domain slices can be captured as attributes of evidence or entities, but they are not separate taxonomies by default.
+_Avoid_: one mixed taxonomy, premature domain-specific taxonomy
+
+**Evidence Support**:
+The directional strength behind a Normalized JTBD Entity based on linked Evidence Claims, Source Passages, Source Threads, and relevant Reddit engagement signals such as upvotes. Claim-local engagement and thread-level engagement are separate weighting signals; they can weight support after grouping, but they should not determine canonical JTBD wording or create universal rankings. Evidence Support is not the same as market prevalence, willingness to pay, or validated demand.
+_Avoid_: demand proof, prevalence, opportunity score, fixed ranking
+
+**Evidence Relationship**:
+The link between an Evidence Claim and a Normalized JTBD Entity. A Normalized JTBD Entity should use same-type Evidence Claims as primary grounding, while related claims from other JTBD component types can provide secondary support; the link itself is the required lineage, not a separate written justification.
+_Avoid_: untyped linkage, mixed grounding, evidence dump, rationale essay
+
+**Source Lineage**:
+The trace from a Normalized JTBD Entity back through Evidence Claims and Source Passages to the Source Thread that produced them.
+_Avoid_: loose citation, undocumented inference
+
+**Stale Derived Record**:
+An Evidence Claim, Thread-Level JTBD Record, or Normalized JTBD Entity whose source Source Thread changed after the record was created. Stale Derived Records remain auditable but should not be treated as current customer-discovery evidence until regenerated or reviewed.
+_Avoid_: deleted evidence, current finding, silent mismatch
+
 **Spatial Computing**:
 The creation of digital 3D worlds and spatial interfaces, including virtual reality, augmented reality, games, and interactive 3D experiences.
 _Avoid_: Spacial Computing, VR-only, AR-only

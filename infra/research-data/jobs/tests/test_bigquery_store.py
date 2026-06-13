@@ -85,7 +85,14 @@ class FakeQueryClient:
 
     def query(self, query, job_config=None):
         self.query_texts.append(query)
-        return FakeQueryJob([{"source_thread_id": "source_thread_test", "gcs_uri": "gs://snapshot/test.json"}])
+        return FakeQueryJob(
+            [
+                {
+                    "source_thread_id": "source_thread_test",
+                    "source_thread_json": {"source_thread_id": "source_thread_test", "raw": {"thread_listing": {}}},
+                }
+            ]
+        )
 
 
 class FakeLoadJob:
@@ -133,31 +140,48 @@ class BigQueryThreadSelectionTests(unittest.TestCase):
         store.dataset_id = "research_data"
         return store
 
-    def test_triage_selection_reads_current_threads_with_missing_or_stale_triage(self):
+    def test_triage_selection_reads_current_database_source_threads_with_missing_or_stale_triage(self):
         store = self.make_store()
 
         rows = list(store.iter_threads_for_triage(25))
 
-        self.assertEqual(rows, [{"source_thread_id": "source_thread_test", "gcs_uri": "gs://snapshot/test.json"}])
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "source_thread_id": "source_thread_test",
+                    "source_thread_json": {"source_thread_id": "source_thread_test", "raw": {"thread_listing": {}}},
+                }
+            ],
+        )
         query = store.client.query_texts[0]
         self.assertIn("latest_triage", query)
         self.assertIn("s.latest_fetched_at > t.observed_at", query)
-        self.assertIn("ON s.source_thread_id = snap.source_thread_id", query)
+        self.assertIn("s.source_thread_json", query)
+        self.assertNotIn("source_thread_snapshots", query)
 
-    def test_analysis_selection_deduplicates_source_threads_to_latest_snapshot(self):
+    def test_analysis_selection_reads_active_database_source_threads(self):
         store = self.make_store()
 
         rows = list(store.iter_threads_for_analysis(10))
 
-        self.assertEqual(rows, [{"source_thread_id": "source_thread_test", "gcs_uri": "gs://snapshot/test.json"}])
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "source_thread_id": "source_thread_test",
+                    "source_thread_json": {"source_thread_id": "source_thread_test", "raw": {"thread_listing": {}}},
+                }
+            ],
+        )
         query = store.client.query_texts[0]
         self.assertIn("GROUP BY t.source_thread_id", query)
-        self.assertIn("GROUP BY s.source_thread_id", query)
-        self.assertIn("ARRAY_AGG(s.latest_snapshot_id ORDER BY s.latest_fetched_at DESC LIMIT 1)", query)
+        self.assertIn("s.source_thread_json", query)
+        self.assertNotIn("source_thread_snapshots", query)
 
 
 class BigQueryCurrentWriteTests(unittest.TestCase):
-    def test_collection_rows_upsert_current_tables_and_replace_thread_nodes(self):
+    def test_collection_rows_upsert_current_database_source_threads_and_replace_thread_nodes(self):
         store = BigQueryResearchStore.__new__(BigQueryResearchStore)
         store.bigquery = FakeBigQueryModule
         store.client = FakeMergeClient()
@@ -171,14 +195,8 @@ class BigQueryCurrentWriteTests(unittest.TestCase):
                         "source_thread_id": "source_thread_test",
                         "latest_snapshot_id": "source_thread_snapshot_current",
                         "latest_fetched_at": "2026-06-05T12:00:00Z",
-                    }
-                ],
-                "source_thread_snapshots": [
-                    {
-                        "source_thread_snapshot_id": "source_thread_snapshot_current",
-                        "source_thread_id": "source_thread_test",
-                        "gcs_uri": "gs://research/current/reddit/ecommerce/source_thread_test.json",
-                        "raw_checksum_sha256": "abc",
+                        "source_thread_json": {"source_thread_id": "source_thread_test"},
+                        "raw_json": {"thread_listing": {}},
                     }
                 ],
                 "thread_nodes": [
@@ -195,14 +213,13 @@ class BigQueryCurrentWriteTests(unittest.TestCase):
         self.assertEqual(store.client.inserted, [])
         query_text = "\n".join(query["query"] for query in store.client.queries)
         self.assertIn("MERGE `test-project.research_data.source_threads`", query_text)
-        self.assertIn("MERGE `test-project.research_data.source_thread_snapshots`", query_text)
         self.assertIn("MERGE `test-project.research_data.thread_nodes`", query_text)
         self.assertIn("ON target.`source_thread_id` = source.`source_thread_id`", query_text)
         self.assertIn("ON target.`thread_node_id` = source.`thread_node_id`", query_text)
         self.assertIn("WHEN NOT MATCHED BY SOURCE", query_text)
         self.assertIn("DELETE", query_text)
-        self.assertEqual(len(store.client.loaded), 3)
-        self.assertEqual(len(store.client.deleted), 3)
+        self.assertEqual(len(store.client.loaded), 2)
+        self.assertEqual(len(store.client.deleted), 2)
 
     def test_current_table_merge_deduplicates_rows_by_match_key_before_staging(self):
         store = BigQueryResearchStore.__new__(BigQueryResearchStore)
@@ -227,6 +244,46 @@ class BigQueryCurrentWriteTests(unittest.TestCase):
         )
 
         self.assertEqual(store.client.loaded[0]["rows"], [{"source_thread_id": "source_thread_test", "title": "newer title"}])
+
+
+class BigQueryNormalizationWriteTests(unittest.TestCase):
+    def test_normalization_rows_insert_staged_run_entities_and_relationships(self):
+        store = BigQueryResearchStore.__new__(BigQueryResearchStore)
+        store.bigquery = FakeBigQueryModule
+        store.client = FakeMergeClient()
+        store.project_id = "test-project"
+        store.dataset_id = "research_data"
+
+        store.write_normalization_rows(
+            {
+                "normalization_run": {
+                    "normalization_run_id": "normalization_run_test",
+                    "status": "staged",
+                },
+                "normalized_jtbd_entities": [
+                    {
+                        "normalized_jtbd_entity_id": "normalized_jtbd_entity_test",
+                        "normalization_run_id": "normalization_run_test",
+                    }
+                ],
+                "evidence_relationships": [
+                    {
+                        "evidence_relationship_id": "evidence_relationship_test",
+                        "normalization_run_id": "normalization_run_test",
+                    }
+                ],
+            }
+        )
+
+        table_ids = [insert["table_id"] for insert in store.client.inserted]
+        self.assertEqual(
+            table_ids,
+            [
+                "test-project.research_data.normalization_runs",
+                "test-project.research_data.normalized_jtbd_entities",
+                "test-project.research_data.evidence_relationships",
+            ],
+        )
 
 
 if __name__ == "__main__":

@@ -25,9 +25,8 @@ def extract_thread_level_jtbd(
     snapshot_id = snapshot_envelope["source_thread_snapshot_id"]
     analysis_batch_id = research_id("analysis_batch", snapshot_id, "thread_level_jtbd")
     chunks = chunk_thread_nodes(nodes, max_chunk_chars)
-    excerpts: list[dict[str, Any]] = []
+    passages: list[dict[str, Any]] = []
     claims: list[dict[str, Any]] = []
-    entities: list[dict[str, Any]] = []
     now = utc_now_iso()
 
     for chunk in chunks:
@@ -36,12 +35,11 @@ def extract_thread_level_jtbd(
                 for entity_type, pattern in ENTITY_CUES:
                     if not pattern.search(sentence):
                         continue
-                    excerpt = _build_excerpt(snapshot_envelope, node, sentence, now)
-                    if excerpt["thread_excerpt_id"] not in {item["thread_excerpt_id"] for item in excerpts}:
-                        excerpts.append(excerpt)
-                    claim = _build_claim(snapshot_envelope, excerpt, entity_type, sentence, now)
+                    passage = _build_passage(snapshot_envelope, node, sentence, now)
+                    if passage["source_passage_id"] not in {item["source_passage_id"] for item in passages}:
+                        passages.append(passage)
+                    claim = _build_claim(snapshot_envelope, passage, entity_type, sentence, now)
                     claims.append(claim)
-                    entities.append(_build_entity(snapshot_envelope, claim, entity_type, sentence, now))
 
     source_quality_note = _source_quality_note(snapshot_envelope, now)
     record = {
@@ -51,20 +49,21 @@ def extract_thread_level_jtbd(
         "source_thread_snapshot_id": snapshot_id,
         "created_at": now,
         "thread_summary": _thread_summary(nodes),
-        "jobs": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "job"],
-        "criteria": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "criterion"],
-        "contexts": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "context"],
-        "pains": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "pain"],
-        "workarounds": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "workaround"],
-        "solutions": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "solution"],
-        "people_roles": [entity["jtbd_entity_id"] for entity in entities if entity["entity_type"] == "people_role"],
+        "jobs": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "job"],
+        "criteria": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "criterion"],
+        "contexts": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "context"],
+        "pains": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "pain"],
+        "workarounds": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "workaround"],
+        "solutions": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "solution"],
+        "people_roles": [claim["evidence_claim_id"] for claim in claims if claim["claim_type"] == "people_role"],
         "source_quality_note_ids": [source_quality_note["source_quality_note_id"]],
-        "unanswered_follow_up_questions": _follow_up_questions(entities),
+        "unanswered_follow_up_questions": _follow_up_questions(claims),
         "record_json": {
             "chunk_count": len(chunks),
             "chunk_ids": [chunk["analysis_chunk_id"] for chunk in chunks],
             "lineage_complete": True,
             "thread_level_only": True,
+            "link_type": "evidence_claim_ids",
         },
     }
     return {
@@ -81,28 +80,33 @@ def extract_thread_level_jtbd(
             },
         },
         "source_quality_notes": [source_quality_note],
-        "thread_excerpts": excerpts,
+        "source_passages": passages,
+        "thread_excerpts": passages,
         "evidence_claims": claims,
-        "jtbd_entities": entities,
         "thread_level_jtbd_record": record,
     }
 
 
-def _build_excerpt(
+def _build_passage(
     snapshot_envelope: dict[str, Any],
     node: dict[str, Any],
     sentence: str,
     observed_at: str,
 ) -> dict[str, Any]:
-    excerpt_id = research_id("thread_excerpt", node["thread_node_id"], sentence)
+    passage_id = research_id("source_passage", node["thread_node_id"], sentence)
+    thread_data = snapshot_envelope.get("raw", {}).get("thread_listing", {}).get("data", {})
     return {
-        "thread_excerpt_id": excerpt_id,
+        "source_passage_id": passage_id,
         "source_thread_id": snapshot_envelope["source_thread_id"],
         "source_thread_snapshot_id": snapshot_envelope["source_thread_snapshot_id"],
         "thread_node_id": node["thread_node_id"],
         "provider_fullname": node["provider_fullname"],
-        "excerpt_text": sentence,
+        "passage_text": sentence,
+        "passage_score": node.get("score"),
+        "thread_score": thread_data.get("score"),
+        "thread_comment_count": thread_data.get("num_comments"),
         "created_at": observed_at,
+        "active": True,
         "locator_json": {
             "permalink": node.get("permalink"),
             "node_depth": node.get("node_depth"),
@@ -113,48 +117,28 @@ def _build_excerpt(
 
 def _build_claim(
     snapshot_envelope: dict[str, Any],
-    excerpt: dict[str, Any],
+    passage: dict[str, Any],
     entity_type: str,
     sentence: str,
     observed_at: str,
 ) -> dict[str, Any]:
     return {
-        "evidence_claim_id": research_id("evidence_claim", excerpt["thread_excerpt_id"], entity_type),
+        "evidence_claim_id": research_id("evidence_claim", passage["source_passage_id"], entity_type),
         "source_thread_id": snapshot_envelope["source_thread_id"],
         "source_thread_snapshot_id": snapshot_envelope["source_thread_snapshot_id"],
-        "thread_excerpt_ids": [excerpt["thread_excerpt_id"]],
+        "source_passage_ids": [passage["source_passage_id"]],
         "claim_type": entity_type,
         "claim_text": sentence,
         "inference_level": "direct" if entity_type in {"pain", "workaround", "solution"} else "strong_inference",
         "confidence_level": "medium" if entity_type in {"pain", "workaround", "solution"} else "low",
         "created_at": observed_at,
+        "active": True,
         "claim_json": {
             "source": "thread_level_extraction",
             "requires_human_review_before_rollup": True,
-        },
-    }
-
-
-def _build_entity(
-    snapshot_envelope: dict[str, Any],
-    claim: dict[str, Any],
-    entity_type: str,
-    sentence: str,
-    observed_at: str,
-) -> dict[str, Any]:
-    return {
-        "jtbd_entity_id": research_id("jtbd_entity", claim["evidence_claim_id"], entity_type),
-        "source_thread_id": snapshot_envelope["source_thread_id"],
-        "source_thread_snapshot_id": snapshot_envelope["source_thread_snapshot_id"],
-        "evidence_claim_ids": [claim["evidence_claim_id"]],
-        "entity_type": entity_type,
-        "entity_statement": _normalize_statement(entity_type, sentence),
-        "inference_level": claim["inference_level"],
-        "confidence_level": claim["confidence_level"],
-        "created_at": observed_at,
-        "entity_json": {
-            "thread_level_only": True,
-            "source_sentence": sentence,
+            "passage_score": passage.get("passage_score"),
+            "thread_score": passage.get("thread_score"),
+            "thread_comment_count": passage.get("thread_comment_count"),
         },
     }
 
@@ -208,12 +192,12 @@ def _thread_summary(nodes: list[dict[str, Any]]) -> str:
     return f"{title}: {body[:240]}".strip()
 
 
-def _follow_up_questions(entities: list[dict[str, Any]]) -> list[str]:
+def _follow_up_questions(claims: list[dict[str, Any]]) -> list[str]:
     questions = [
         "Which context makes this job urgent enough to change behavior?",
         "What current solution is being replaced, extended, or worked around?",
         "What criteria would make a solution good enough?",
     ]
-    if not any(entity["entity_type"] == "criterion" for entity in entities):
+    if not any(claim["claim_type"] == "criterion" for claim in claims):
         questions.append("What explicit evaluation criteria did participants use?")
     return questions

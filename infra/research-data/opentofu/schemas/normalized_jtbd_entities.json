@@ -1,0 +1,14 @@
+[
+  {"name":"normalized_jtbd_entity_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral normalized JTBD entity ID."},
+  {"name":"normalization_run_id","type":"STRING","mode":"REQUIRED","description":"Normalization run ID that produced this active or staged entity."},
+  {"name":"entity_type","type":"STRING","mode":"REQUIRED","description":"job, criterion, context, pain, workaround, solution, or people_role."},
+  {"name":"normalized_statement","type":"STRING","mode":"REQUIRED","description":"Canonical JTBD wording for this entity."},
+  {"name":"evidence_claim_count","type":"INTEGER","mode":"REQUIRED","description":"Linked active evidence claim count."},
+  {"name":"source_thread_count","type":"INTEGER","mode":"REQUIRED","description":"Distinct linked source thread count."},
+  {"name":"passage_score_sum","type":"INTEGER","mode":"REQUIRED","description":"Sum of claim-local passage scores across linked evidence."},
+  {"name":"thread_score_sum","type":"INTEGER","mode":"REQUIRED","description":"Sum of source-thread scores across linked evidence."},
+  {"name":"thread_comment_count_sum","type":"INTEGER","mode":"REQUIRED","description":"Sum of source-thread comment counts across linked evidence."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Entity creation timestamp."},
+  {"name":"active","type":"BOOLEAN","mode":"REQUIRED","description":"Whether this entity belongs to the active JTBD Taxonomy."},
+  {"name":"entity_json","type":"JSON","mode":"NULLABLE","description":"Additional support metrics and metadata."}
+]

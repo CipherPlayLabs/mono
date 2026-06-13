@@ -1,0 +1,9 @@
+[
+  {"name":"normalization_run_id","type":"STRING","mode":"REQUIRED","description":"Provider-neutral normalization run ID."},
+  {"name":"created_at","type":"TIMESTAMP","mode":"REQUIRED","description":"Normalization run creation timestamp."},
+  {"name":"status","type":"STRING","mode":"REQUIRED","description":"staged, active, superseded, or failed."},
+  {"name":"evidence_claim_count","type":"INTEGER","mode":"REQUIRED","description":"Active evidence claims considered by the run."},
+  {"name":"normalized_entity_count","type":"INTEGER","mode":"REQUIRED","description":"Normalized entities produced by the run."},
+  {"name":"relationship_count","type":"INTEGER","mode":"REQUIRED","description":"Evidence relationships produced by the run."},
+  {"name":"run_json","type":"JSON","mode":"NULLABLE","description":"Validation and processing metadata."}
+]
