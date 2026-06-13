@@ -1,0 +1,111 @@
+name: Apply CRM Schema
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_apply:
+        description: Type apply-schema to apply the CRM SQL schema.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: crm-schema-apply
+  cancel-in-progress: false
+
+env:
+  CRM_DATABASE: ${{ vars.CRM_DATABASE || 'crm' }}
+  CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
+  CRM_GCP_REGION: ${{ vars.CRM_GCP_REGION || 'us-east1' }}
+  CRM_CLOUD_SQL_INSTANCE: ${{ vars.CRM_CLOUD_SQL_INSTANCE || 'cipherplay-crm-postgres' }}
+  CRM_SCHEMA_PATH: infra/crm/schema/001-crm.sql
+  CRM_SCHEMA_IMPORT_BUCKET: ${{ vars.CRM_SCHEMA_IMPORT_BUCKET || 'cipherplay-production-opentofu-state' }}
+
+jobs:
+  apply-schema:
+    if: inputs.confirm_apply == 'apply-schema'
+    name: Apply CRM SQL schema
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required configuration
+        env:
+          CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
+          CRM_GCP_SERVICE_ACCOUNT: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+          CRM_GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        run: |
+          missing=0
+
+          for name in \
+            CRM_GCP_PROJECT_ID \
+            CRM_GCP_SERVICE_ACCOUNT \
+            CRM_GCP_WORKLOAD_IDENTITY_PROVIDER
+          do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing required configuration::$name is not configured"
+              missing=1
+            fi
+          done
+
+          exit "$missing"
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.CRM_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.CRM_GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Apply schema
+        run: |
+          set -euo pipefail
+
+          schema_object="gs://${CRM_SCHEMA_IMPORT_BUCKET}/crm-schema/${GITHUB_SHA}/001-crm.sql"
+          cloud_sql_service_account="$(
+            gcloud sql instances describe "${CRM_CLOUD_SQL_INSTANCE}" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --format='value(serviceAccountEmailAddress)'
+          )"
+          bucket_uri="gs://${CRM_SCHEMA_IMPORT_BUCKET}"
+
+          cleanup() {
+            gcloud storage rm "${schema_object}" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --quiet || true
+
+            gcloud storage buckets remove-iam-policy-binding "${bucket_uri}" \
+              --member="serviceAccount:${cloud_sql_service_account}" \
+              --role="roles/storage.objectViewer" \
+              --project="${CRM_GCP_PROJECT_ID}" \
+              --quiet || true
+          }
+          trap cleanup EXIT
+
+          gcloud storage cp "${CRM_SCHEMA_PATH}" "${schema_object}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --quiet
+
+          gcloud storage buckets add-iam-policy-binding "${bucket_uri}" \
+            --member="serviceAccount:${cloud_sql_service_account}" \
+            --role="roles/storage.objectViewer" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --quiet
+
+          gcloud sql import sql "${CRM_CLOUD_SQL_INSTANCE}" "${schema_object}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --database="${CRM_DATABASE}" \
+            --quiet
+
+      - name: Verify import target
+        run: |
+          gcloud sql databases describe "${CRM_DATABASE}" \
+            --instance="${CRM_CLOUD_SQL_INSTANCE}" \
+            --project="${CRM_GCP_PROJECT_ID}" \
+            --format='value(name)'

@@ -128,12 +128,14 @@ Use the OpenTofu outputs for the private IP and instance name. Keep a separate p
 `schema/001-crm.sql` defines the initial CRM data contract:
 
 - contacts
+- Founder Institute directory entries
 - groups
 - contact-group membership
 - campaigns
 - campaign recipients
 - email events
 - notes
+- interview source entries
 - follow-up tasks
 
 The seed creates a `potential-investors` group for the first investor-campaign MVP, but it does not store contact data in git.
