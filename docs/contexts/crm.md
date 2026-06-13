@@ -122,6 +122,9 @@ Use the `crm` database, not the `nocodb` database. `nocodb` is only for NocoDB's
 `infra/crm/schema/001-crm.sql` defines the initial data contract:
 
 - `crm_contacts`
+- `crm_websites`
+- `crm_email_addresses`
+- `crm_contact_email_addresses`
 - `crm_groups`
 - `crm_contact_groups`
 - `crm_campaigns`
@@ -201,8 +204,12 @@ First useful workflows:
 - Write draft/send/reply/bounce/manual-note events into `crm_email_events`.
 - Update `crm_campaign_recipients.status`, `sent_at`, `replied_at`, `last_event_at`, and `n8n_execution_id`.
 - Create or close `crm_follow_ups`.
+- Run `website-email-domain-discovery` every 30 minutes to link `crm_email_addresses` to `crm_websites`.
+- Run `website-shopify-enrichment` every 30 minutes to update `crm_websites.shopify_status` without writing to the `nocodb` metadata database.
 
 Keep the first investor-campaign MVP in operator-approved mode. Do not send fully automatic campaigns until deliverability, approval, and logging are proven.
+
+The repo-owned workflow contract for website/email-domain enrichment is `infra/n8n/workflows/crm-website-shopify-enrichment.md`.
 
 ## GitHub Variables And Secrets
 

@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS crm_contacts (
   display_name text NOT NULL,
   first_name text,
   last_name text,
-  email text,
   organization text,
   role_title text,
   relationship_type text NOT NULL DEFAULT 'investor',
@@ -30,9 +29,270 @@ CREATE TABLE IF NOT EXISTS crm_contacts (
   )
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS crm_contacts_email_unique
-  ON crm_contacts (lower(email))
-  WHERE email IS NOT NULL;
+CREATE TABLE IF NOT EXISTS crm_websites (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  domain text NOT NULL,
+  raw_input text,
+  domain_type text NOT NULL DEFAULT 'unknown',
+  shopify_status text NOT NULL DEFAULT 'unknown',
+  shopify_checked_at timestamptz,
+  shopify_detection_signals jsonb NOT NULL DEFAULT '{}'::jsonb,
+  shopify_detection_error text,
+  shopify_check_attempts integer NOT NULL DEFAULT 0,
+  shopify_last_attempt_at timestamptz,
+  shopify_next_check_at timestamptz,
+  enrichment_locked_at timestamptz,
+  enrichment_locked_by text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT crm_websites_domain_type_check CHECK (
+    domain_type IN ('unknown', 'business', 'email_provider')
+  ),
+  CONSTRAINT crm_websites_shopify_status_check CHECK (
+    shopify_status IN ('unknown', 'true', 'false')
+  ),
+  CONSTRAINT crm_websites_shopify_check_attempts_check CHECK (
+    shopify_check_attempts >= 0
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS crm_websites_domain_unique
+  ON crm_websites (lower(domain));
+
+CREATE INDEX IF NOT EXISTS crm_websites_enrichment_poll_idx
+  ON crm_websites (shopify_status, domain_type, shopify_next_check_at, enrichment_locked_at);
+
+CREATE INDEX IF NOT EXISTS crm_websites_enrichment_lock_idx
+  ON crm_websites (enrichment_locked_at, enrichment_locked_by)
+  WHERE enrichment_locked_at IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS crm_email_addresses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  local_part text NOT NULL,
+  email_domain text NOT NULL,
+  website_id uuid REFERENCES crm_websites(id) ON DELETE SET NULL,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  raw_source text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT crm_email_addresses_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS crm_email_addresses_email_unique
+  ON crm_email_addresses (lower(email));
+
+CREATE INDEX IF NOT EXISTS crm_email_addresses_domain_idx
+  ON crm_email_addresses (lower(email_domain));
+
+CREATE INDEX IF NOT EXISTS crm_email_addresses_website_idx
+  ON crm_email_addresses (website_id)
+  WHERE website_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS crm_contact_email_addresses (
+  contact_id uuid NOT NULL REFERENCES crm_contacts(id) ON DELETE CASCADE,
+  email_address_id uuid NOT NULL REFERENCES crm_email_addresses(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (contact_id, email_address_id),
+  CONSTRAINT crm_contact_email_addresses_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT crm_contact_email_addresses_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS crm_contact_email_addresses_primary_contact_unique
+  ON crm_contact_email_addresses (contact_id)
+  WHERE is_primary = true AND relationship_status != 'rejected';
+
+CREATE INDEX IF NOT EXISTS crm_contact_email_addresses_email_idx
+  ON crm_contact_email_addresses (email_address_id);
+
+CREATE TEMP TABLE IF NOT EXISTS crm_contact_email_migration_source (
+  contact_id uuid NOT NULL,
+  normalized_email text NOT NULL,
+  local_part text NOT NULL,
+  email_domain text NOT NULL,
+  source_confidence text NOT NULL
+);
+
+TRUNCATE crm_contact_email_migration_source;
+
+DO $$
+DECLARE
+  has_contact_email_column boolean;
+  has_invalid_contact_email boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = current_schema()
+      AND table_name = 'crm_contacts'
+      AND column_name = 'email'
+  )
+  INTO has_contact_email_column;
+
+  IF has_contact_email_column THEN
+    EXECUTE $migration_check$
+      SELECT EXISTS (
+        SELECT 1
+        FROM crm_contacts
+        WHERE email IS NOT NULL
+          AND btrim(email) != ''
+          AND (
+            position('@' in btrim(email)) <= 1
+            OR split_part(btrim(email), '@', 2) = ''
+            OR split_part(btrim(email), '@', 3) != ''
+          )
+      )
+    $migration_check$
+    INTO has_invalid_contact_email;
+
+    IF has_invalid_contact_email THEN
+      RAISE EXCEPTION 'Cannot migrate crm_contacts.email because at least one non-empty value is not a simple email address';
+    END IF;
+
+    EXECUTE $migration_source$
+      INSERT INTO crm_contact_email_migration_source (
+        contact_id,
+        normalized_email,
+        local_part,
+        email_domain,
+        source_confidence
+      )
+      SELECT
+        id,
+        lower(btrim(email)),
+        split_part(lower(btrim(email)), '@', 1),
+        split_part(lower(btrim(email)), '@', 2),
+        CASE
+          WHEN source_confidence IN (
+            'confirmed-public',
+            'confirmed-user',
+            'private-sourced',
+            'needs-verification'
+          ) THEN source_confidence
+          ELSE 'confirmed-user'
+        END
+      FROM crm_contacts
+      WHERE email IS NOT NULL
+        AND btrim(email) != ''
+    $migration_source$;
+  END IF;
+END;
+$$;
+
+INSERT INTO crm_websites (domain, raw_input, domain_type)
+SELECT DISTINCT
+  email_domain,
+  email_domain,
+  CASE
+    WHEN email_domain IN (
+      'gmail.com',
+      'googlemail.com',
+      'outlook.com',
+      'hotmail.com',
+      'live.com',
+      'msn.com',
+      'icloud.com',
+      'me.com',
+      'mac.com',
+      'yahoo.com',
+      'ymail.com',
+      'aol.com',
+      'proton.me',
+      'protonmail.com'
+    ) THEN 'email_provider'
+    ELSE 'unknown'
+  END
+FROM crm_contact_email_migration_source
+ON CONFLICT (lower(domain)) DO UPDATE
+SET
+  raw_input = COALESCE(crm_websites.raw_input, EXCLUDED.raw_input),
+  domain_type = CASE
+    WHEN EXCLUDED.domain_type = 'email_provider'
+      AND crm_websites.domain_type = 'unknown' THEN 'email_provider'
+    ELSE crm_websites.domain_type
+  END,
+  updated_at = now();
+
+UPDATE crm_websites
+SET
+  domain_type = 'email_provider',
+  updated_at = now()
+WHERE lower(domain) IN (
+    'gmail.com',
+    'googlemail.com',
+    'outlook.com',
+    'hotmail.com',
+    'live.com',
+    'msn.com',
+    'icloud.com',
+    'me.com',
+    'mac.com',
+    'yahoo.com',
+    'ymail.com',
+    'aol.com',
+    'proton.me',
+    'protonmail.com'
+  )
+  AND domain_type != 'email_provider';
+
+INSERT INTO crm_email_addresses (email, local_part, email_domain, website_id, source_confidence, raw_source)
+SELECT DISTINCT ON (source.normalized_email)
+  source.normalized_email,
+  source.local_part,
+  source.email_domain,
+  website.id,
+  source.source_confidence,
+  'crm_contacts.email migration'
+FROM crm_contact_email_migration_source source
+JOIN crm_websites website
+  ON lower(website.domain) = source.email_domain
+ORDER BY source.normalized_email, source.contact_id
+ON CONFLICT (lower(email)) DO UPDATE
+SET
+  website_id = COALESCE(crm_email_addresses.website_id, EXCLUDED.website_id),
+  source_confidence = CASE
+    WHEN crm_email_addresses.source_confidence = 'needs-verification'
+      THEN EXCLUDED.source_confidence
+    ELSE crm_email_addresses.source_confidence
+  END,
+  updated_at = now();
+
+INSERT INTO crm_contact_email_addresses (contact_id, email_address_id, relationship_status, is_primary, source_confidence, association_notes)
+SELECT
+  source.contact_id,
+  email_address.id,
+  'claimed',
+  true,
+  source.source_confidence,
+  'Migrated from crm_contacts.email'
+FROM crm_contact_email_migration_source source
+JOIN crm_email_addresses email_address
+  ON lower(email_address.email) = source.normalized_email
+ON CONFLICT (contact_id, email_address_id) DO UPDATE
+SET
+  relationship_status = 'claimed',
+  is_primary = true,
+  source_confidence = EXCLUDED.source_confidence,
+  association_notes = COALESCE(
+    crm_contact_email_addresses.association_notes,
+    EXCLUDED.association_notes
+  ),
+  updated_at = now();
+
+DROP INDEX IF EXISTS crm_contacts_email_unique;
+
+ALTER TABLE crm_contacts DROP COLUMN IF EXISTS email;
 
 CREATE TABLE IF NOT EXISTS crm_groups (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -270,6 +530,24 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS crm_contacts_set_updated_at ON crm_contacts;
 CREATE TRIGGER crm_contacts_set_updated_at
   BEFORE UPDATE ON crm_contacts
+  FOR EACH ROW
+  EXECUTE FUNCTION crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS crm_websites_set_updated_at ON crm_websites;
+CREATE TRIGGER crm_websites_set_updated_at
+  BEFORE UPDATE ON crm_websites
+  FOR EACH ROW
+  EXECUTE FUNCTION crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS crm_email_addresses_set_updated_at ON crm_email_addresses;
+CREATE TRIGGER crm_email_addresses_set_updated_at
+  BEFORE UPDATE ON crm_email_addresses
+  FOR EACH ROW
+  EXECUTE FUNCTION crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS crm_contact_email_addresses_set_updated_at ON crm_contact_email_addresses;
+CREATE TRIGGER crm_contact_email_addresses_set_updated_at
+  BEFORE UPDATE ON crm_contact_email_addresses
   FOR EACH ROW
   EXECUTE FUNCTION crm_set_updated_at();
 
