@@ -13,7 +13,7 @@ Do not put Cloud SQL passwords, NocoDB credentials, private domains, contact ema
 - Cadence: every 30 minutes
 - Batch size: bounded batches of 25-100 rows per execution
 - Domain registry: `business.websites`
-- Email identity table: `person.email_addresses`
+- Email identity table: `contact_methods.emails`
 - Current Shopify state table: `web_enrichment.website_shopify_status`
 
 ## Workflow: website-email-domain-discovery
@@ -29,7 +29,7 @@ SELECT
   id,
   email,
   split_part(email, '@', 2) AS email_domain
-FROM person.email_addresses
+FROM contact_methods.emails
 WHERE website_id IS NULL
   AND position('@' in email) > 1
 ORDER BY created_at ASC
@@ -41,7 +41,7 @@ For each row:
 1. Normalize `email_domain` to a lower-case registrable domain.
 2. Insert or reuse a `business.websites` row where `lower(domain) = email_domain`.
 3. Set `domain_type = 'email_provider'` for known provider domains such as `gmail.com`, `outlook.com`, `icloud.com`, `yahoo.com`, and `protonmail.com`; otherwise leave new rows as `unknown`.
-4. Update `person.email_addresses.website_id` to the matching Website row.
+4. Update `contact_methods.emails.website_id` to the matching Website row.
 
 This workflow creates Website rows for missing domains; it does not promote an email identity into a Person.
 
@@ -159,10 +159,10 @@ NocoDB should expose schema-native tables and review views:
 
 - `business.websites.domain`
 - `business.websites.domain_type`
-- `person.email_addresses.email`
-- `person.email_addresses.website_id`
-- `person.person_email_addresses.relationship_status`
-- `person.person_email_addresses.is_primary`
+- `contact_methods.emails.email`
+- `contact_methods.emails.website_id`
+- `contact_methods.person_email_links.relationship_status`
+- `contact_methods.person_email_links.is_primary`
 - `web_enrichment.website_shopify_status.status`
 - `web_enrichment.website_shopify_status.checked_at`
 - `web_enrichment.website_shopify_status.detection_error`

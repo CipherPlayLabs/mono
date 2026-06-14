@@ -51,7 +51,7 @@ To connect NocoDB to the CRM data database as an external PostgreSQL source:
 - Host: `10.216.0.3`
 - Port: `5432`
 - Database: `crm`
-- Schema: use schema-native tables in `business`, `person`, `crm`, `public_sources`, and `web_enrichment`; `public.crm_*` names are read-only compatibility views during cutover
+- Schema: use schema-native tables in `business`, `person`, `crm`, `private_sources`, `public_sources`, `contact_methods`, and `web_enrichment`; `public.crm_*` names are read-only compatibility views during cutover
 - User: `crm_writer`
 - Password: Secret Manager value for `cipherplay-crm-postgres-password`
 - SSL: off/disabled
@@ -129,11 +129,15 @@ Use the OpenTofu outputs for the private IP and instance name. Keep a separate p
 
 - `business.websites`: the only canonical domain registry. A Website is domain identity only, not a company, brand, storefront, CRM account, source observation, or enrichment result.
 - `business.website_lists` and `business.website_list_memberships`: domain review cohorts such as `http-archive-shopify-daily`.
+- `business.organizations` and `business.organization_websites`: canonical business identities and evidence-based Website associations.
 - `person.people`: human identities migrated from existing contacts.
-- `person.email_addresses` and `person.person_email_addresses`: observed personal, role, and unknown email identity plus Person associations.
+- `contact_methods.emails`, `contact_methods.linkedin_profiles`, `contact_methods.phone_numbers`, and `contact_methods.telegram_handles`: canonical reachable identities.
+- `contact_methods.person_email_links`, `contact_methods.organization_email_links`, and sibling link tables: evidence associations to People or Business Organizations.
 - `crm.groups`, `crm.person_group_memberships`, `crm.campaigns`, `crm.campaign_recipients`, `crm.email_events`, `crm.notes`, and `crm.follow_ups`: people-only V1 CRM workflow tables.
-- `public_sources.founder_institute_directory_entries`, `public_sources.interview_source_entries`, `public_sources.http_archive_runs`, and `public_sources.http_archive_observations`: source evidence tables.
+- `private_sources.founder_institute_directory_entries` and `private_sources.ramp_interviews`: private-source provenance datasets, not an access-control boundary.
+- `public_sources.http_archive_runs` and `public_sources.http_archive_observations`: public source collection evidence tables.
 - `web_enrichment.website_shopify_status`: current live Shopify status and evidence for a Website.
+- `web_enrichment.website_contact_discovery_status` and `web_enrichment.website_contact_discovery_observations`: sitewide same-domain website contact-discovery status and evidence.
 
 The migration copies existing `public.crm_*` rows into schema-native tables while preserving IDs where corresponding tables exist. Current Shopify status columns move from the old Website table into `web_enrichment.website_shopify_status`. The old physical `public.crm_*` tables are renamed to `_legacy_backup` tables before the old names are recreated as read-only compatibility views. Keep those backups until row-count and association-count validation has passed in production.
 
@@ -161,11 +165,14 @@ n8n should use the CRM data database, not the NocoDB metadata database. The firs
 - write send/reply/bounce events back into `crm.email_events`,
 - update `crm.campaign_recipients` and `crm.follow_ups`,
 - poll every 30 minutes for email-domain Website discovery and Shopify Website enrichment work,
+- crawl same-domain HTML pages for Website Contact Discovery without external search, then write discovered emails and LinkedIn URLs to `contact_methods` plus `web_enrichment.website_contact_discovery_observations`,
 - write Website enrichment results directly to `web_enrichment.website_shopify_status` as `crm_writer`,
 - run the HTTP Archive Shopify daily workflow by querying BigQuery directly and writing `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status`.
 
 This keeps NocoDB as the pleasant review/edit UI while n8n remains the campaign engine.
 
 The website/email enrichment workflow contract lives at `../n8n/workflows/crm-website-shopify-enrichment.md`. Failed or partial Shopify checks should keep `web_enrichment.website_shopify_status.status = 'unknown'`, record error/retry metadata, and preserve compact detection evidence in `detection_signals`.
+
+The sitewide Website Contact Discovery workflow contract lives at `../n8n/workflows/website-contact-discovery.md`. It must crawl all discoverable same-domain HTML pages, skip PDFs/media/binary assets, avoid external search, and persist a status row even when no contact methods are found.
 
 The HTTP Archive Shopify daily workflow contract lives at `../n8n/workflows/http-archive-shopify-daily-pipeline.md`. It must use production service-account auth, not local user auth, and must not use CSV import as its primary path.

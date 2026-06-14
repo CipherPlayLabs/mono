@@ -75,7 +75,7 @@ Cloud Run must include these NocoDB external DB settings:
 Databases:
 
 - `nocodb`: NocoDB internal metadata database.
-- `crm`: shared operational data database for separate Postgres schemas such as `business`, `person`, `crm`, `public_sources`, and `web_enrichment`.
+- `crm`: shared operational data database for separate Postgres schemas such as `business`, `person`, `crm`, `private_sources`, `public_sources`, `contact_methods`, and `web_enrichment`.
 - `postgres`: default admin database.
 
 Users:
@@ -117,7 +117,7 @@ Inside the NocoDB UI, add an external PostgreSQL data source for the CRM data da
 
 Use the `crm` database, not the `nocodb` database. `nocodb` is only for NocoDB's internal metadata.
 
-The `crm` database should use Postgres schemas for domain boundaries. Do not create separate Cloud SQL databases for `business`, `person`, `crm`, `public_sources`, or `web_enrichment` unless a future isolation requirement justifies the extra operational complexity.
+The `crm` database should use Postgres schemas for domain boundaries. Do not create separate Cloud SQL databases for `business`, `person`, `crm`, `private_sources`, `public_sources`, `contact_methods`, or `web_enrichment` unless a future isolation requirement justifies the extra operational complexity.
 
 ## CRM Schema
 
@@ -125,27 +125,54 @@ The `crm` database should use Postgres schemas for domain boundaries. Do not cre
 
 - `business.websites`: the only canonical domain registry.
 - `business.website_lists` and `business.website_list_memberships`: domain review cohorts.
+- `business.organizations` and `business.organization_websites`: canonical business identities and evidence-based Website associations.
 - `person.people`: human identities migrated from contacts.
-- `person.email_addresses` and `person.person_email_addresses`: observed email identity and Person associations.
+- `contact_methods.emails`, `contact_methods.linkedin_profiles`, `contact_methods.phone_numbers`, and `contact_methods.telegram_handles`: canonical reachable identities.
+- `contact_methods.person_email_links`, `contact_methods.organization_email_links`, and sibling contact-method link tables: evidence associations to People or Business Organizations.
 - `crm.groups`, `crm.person_group_memberships`, `crm.campaigns`, `crm.campaign_recipients`, `crm.email_events`, `crm.notes`, and `crm.follow_ups`: people-only V1 CRM workflows.
-- `public_sources.founder_institute_directory_entries` and `public_sources.interview_source_entries`: low-coupled source datasets.
+- `private_sources.founder_institute_directory_entries` and `private_sources.ramp_interviews`: low-coupled source datasets.
 - `public_sources.http_archive_runs` and `public_sources.http_archive_observations`: HTTP Archive collection runs and source evidence.
 - `web_enrichment.website_shopify_status`: current live Shopify status and evidence.
+- `web_enrichment.website_contact_discovery_status` and `web_enrichment.website_contact_discovery_observations`: sitewide same-domain contact-discovery attempts and evidence.
 - `public.crm_*`: temporary read-only compatibility views after migration; new writes must use schema-native tables.
 
 ## CRM Data Terms
 
+**Private Source Data**:
+Source data collected from private, partner, direct, or otherwise non-broad-public origins for CRM enrichment. Private Source Data is a provenance category, not an access-control boundary; privacy, permissions, and operator visibility must be handled separately.
+_Avoid_: restricted table, secret data, access boundary, public/private permissions model
+
+**Contact Method**:
+A canonical reachable identity such as an email address, phone number, LinkedIn profile, or Telegram handle that can be associated with a Person, a Business identity, or both. Contact Methods belong in typed `contact_methods` tables such as `emails`, `phone_numbers`, `linkedin_profiles`, and `telegram_handles` because each method family has different normalization and uniqueness rules.
+_Avoid_: contact field, person-only identity, business-only identity, one-off source column, generic method-type table
+
+**LinkedIn Profile**:
+A canonical LinkedIn URL tracked as a Contact Method, including person profiles, company pages, and unknown LinkedIn URLs observed during source collection or enrichment. V1 Website Contact Discovery only creates LinkedIn Profiles from URLs found on pages in the Website's own crawl scope, not from external search queries.
+_Avoid_: profile field, person-only LinkedIn, company-only LinkedIn, unnormalized URL, source-only URL
+
+**Contact Method Association**:
+An evidence link between a Contact Method and a Person or Business identity. Association rows express confidence, status, primacy, and source notes; they do not prove exclusive ownership of the underlying reachable identity.
+_Avoid_: ownership link, hard claim, automatic person match, overwriting source evidence
+
+**Business Organization**:
+A canonical company, brand, storefront operator, investor firm, or other non-person relationship entity. Business Organizations live separately from Websites because a domain is only a web identity, not the organization itself.
+_Avoid_: Website, domain, account, company-domain row, CRM group
+
+**Organization Website Association**:
+An evidence link between a Business Organization and a Website. Organization Website Association rows express confidence, status, primacy, and source notes; they do not assume that a domain is permanently owned by exactly one organization.
+_Avoid_: website owner field, organization_id on Website, permanent domain ownership, domain equals company
+
 **Founder Institute Data**:
-Low-coupled source data collected from the Founder Institute network directory for CRM enrichment. Founder Institute Data lives first in `public_sources.founder_institute_directory_entries`, preserving FI-specific source URLs, specializations, mentor notes, page/filter provenance, collection timestamps, and raw card payloads without making FI fields first-class person fields. Entries can later be linked to `person.people` through nullable `person_id` after the source dataset has been cleaned.
+Low-coupled source data collected from the Founder Institute network directory for CRM enrichment. Founder Institute Data lives first in `private_sources.founder_institute_directory_entries`, preserving FI-specific source URLs, specializations, mentor notes, page/filter provenance, collection timestamps, and raw card payloads without making FI fields first-class person fields. Entries can later be linked to `person.people` through nullable `person_id` after the source dataset has been cleaned.
 _Avoid_: Founders Institute Data, generic contact fields, one CRM group per FI specialization
 
 **Founder Institute Contact Import**:
 After the Founder Institute source dataset is collected and cleaned, each FI person should create or update a canonical `person.people` row with standard identity information such as display name, first name, last name, organization, role title, and reachable public profile fields where available. LinkedIn profile URL is the primary dedupe and identity key for promoted FI people. When LinkedIn is missing, the promotion step should use normalized display name, organization, and role title as a weaker fallback identity key.
 _Avoid_: direct-to-contact scraping, FI-only contacts, duplicating standard contact fields only in FI tables after promotion
 
-**Interview Source Data**:
-Low-coupled source data exported from Allan's interview sheet for CRM enrichment and customer-discovery follow-up. Interview Source Data lives first in `public_sources.interview_source_entries`, preserving source row numbers, Airtable-style attachment/profile fields, interview status/date text, notes, transcripts, JTBD analysis, and raw row payloads without making interview-specific fields first-class person fields. Entries can later be linked to `person.people` through nullable `person_id` after the source dataset has been cleaned.
-_Avoid_: direct-to-contact CSV imports, losing raw interview notes, treating the misspelled source column `Ecosytstem Role` as canonical CRM terminology
+**Ramp Interview Data**:
+Low-coupled source data exported from Allan's Ramp interview sheet for CRM enrichment and customer-discovery follow-up. Ramp Interview Data lives first in `private_sources.ramp_interviews`, preserving source row numbers, Airtable-style attachment/profile fields, interview status/date text, notes, transcripts, JTBD analysis, and raw row payloads without making interview-specific fields first-class person fields. Entries can later be linked to `person.people` through nullable `person_id` after the source dataset has been cleaned.
+_Avoid_: Interview Source Data, interview_source_entries, direct-to-contact CSV imports, losing raw interview notes, treating the misspelled source column `Ecosytstem Role` as canonical CRM terminology
 
 **Website**:
 A canonical registrable domain tracked as a shared business web identity, such as `example.com`, with any raw submitted URL or host preserved separately as input provenance. In V1, Website means domain identity only, not an organization, company, brand, storefront, or account.
@@ -158,8 +185,12 @@ Website Domain Type belongs on Website because it describes the domain identity 
 _Avoid_: broad industry taxonomy, one type per source, Shopify status as domain type
 
 **Email Address**:
-A canonical observed email address tracked separately from CRM contacts and People, because seeing an address is not the same as confirming the person identity behind it. Email Address can represent a personal inbox, role inbox, or unknown address kind, and can link to a Website without requiring a Person.
-_Avoid_: contact field, person, automatic contact promotion, assuming role inboxes are people
+A canonical observed email address tracked as a Contact Method, because seeing an address is not the same as confirming the person or business identity behind it. Email Address lives first in `contact_methods.emails`, can represent a person address, role inbox, or unknown address kind, and can link to a Website without requiring a Person.
+_Avoid_: contact field, personal, inbox email, person, automatic contact promotion, assuming role inboxes are people
+
+**Role Inbox**:
+An email address that appears to represent a team, function, department, or general receiving inbox rather than one confirmed person. Role Inbox is the canonical term for addresses such as `hello@`, `info@`, `support@`, `sales@`, and similar patterns.
+_Avoid_: inbox email, business email, catch-all, personal email
 
 **Email Domain Website Discovery**:
 The CRM enrichment rule that every new Email Address should derive its canonical email domain and link to a Website row, creating the Website when it does not already exist. Common inbox-provider domains still get Website rows for association, but they should be classified as email providers and skipped for Shopify enrichment.
@@ -189,6 +220,18 @@ _Avoid_: source observation, raw enrichment payload, confidence score as the pri
 **Website Enrichment**:
 An n8n-driven process that evaluates Website rows and produces separate enrichment results. Website Enrichment can relate its results to a Website, but the canonical Website row should not store raw live-check evidence or source-dataset payloads.
 _Avoid_: manual-only website review, database-trigger automation, one-time imports, NocoDB metadata automation, source data on Website rows
+
+**Website Contact Discovery Status**:
+The current enrichment status for sitewide attempts to find Contact Methods associated with a Website, including emails and LinkedIn URLs found within the Website's own crawl scope. Website Contact Discovery Status records attempts, timing, crawl scope, counts, errors, retry state, and lock state even when no Contact Methods are found; actual discovered methods live in `contact_methods`.
+_Avoid_: email table, shallow homepage check, discovered contact, source truth, website field, missing data as no row
+
+**Website Crawl Scope**:
+The set of same-domain pages a Website Contact Discovery workflow is allowed to inspect for Contact Methods. V1 should aim to cover all discoverable HTML pages within that domain scope while skipping PDFs, media, and other binary asset crawling.
+_Avoid_: homepage-only crawl, external search, social-site crawling, PDF extraction, image crawl, video crawl, media archive
+
+**Contact Discovery Observation**:
+An evidence record produced when an enrichment workflow observes a Contact Method on or near a Website. Contact Discovery Observations preserve where and why a method was found without duplicating the canonical Contact Method identity.
+_Avoid_: canonical email row, person claim, business claim, current status, one observation per contact method forever
 
 **Public Source Observation**:
 An observed public-dataset or public-API record that may identify or describe a Website, such as an HTTP Archive technology observation. Source-specific observation tables should be organized by source, query-scoped by fields or metadata, and rolled up to the source grain useful for review, such as one HTTP Archive row per Website per crawl/query.
@@ -233,13 +276,14 @@ First useful workflows:
 - Write draft/send/reply/bounce/manual-note events into `crm.email_events`.
 - Update `crm.campaign_recipients.status`, `sent_at`, `replied_at`, `last_event_at`, and `n8n_execution_id`.
 - Create or close `crm.follow_ups`.
-- Run `website-email-domain-discovery` every 30 minutes to link `person.email_addresses` to `business.websites`.
+- Run `website-email-domain-discovery` every 30 minutes to link `contact_methods.emails` to `business.websites`.
 - Run `website-shopify-enrichment` every 30 minutes to update `web_enrichment.website_shopify_status` without writing to the `nocodb` metadata database.
+- Run `website-contact-discovery` to crawl all discoverable same-domain HTML pages, skip PDFs/media/binary assets, extract emails and LinkedIn URLs found on the site, and write canonical methods plus discovery observations without external search.
 - Run the HTTP Archive Shopify daily pipeline by querying BigQuery directly from n8n and writing `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status`.
 
 Keep the first investor-campaign MVP in operator-approved mode. Do not send fully automatic campaigns until deliverability, approval, and logging are proven.
 
-The repo-owned workflow contracts are `infra/n8n/workflows/crm-website-shopify-enrichment.md` and `infra/n8n/workflows/http-archive-shopify-daily-pipeline.md`.
+The repo-owned workflow contracts are `infra/n8n/workflows/crm-website-shopify-enrichment.md`, `infra/n8n/workflows/website-contact-discovery.md`, and `infra/n8n/workflows/http-archive-shopify-daily-pipeline.md`.
 
 ## GitHub Variables And Secrets
 
