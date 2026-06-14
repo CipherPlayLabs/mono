@@ -79,6 +79,9 @@ Next production rollout steps:
   - Root cause: the GitHub import path did not pass an explicit database user, so Cloud SQL imported as a user without schema ownership/CREATE privileges.
   - Repo fix in this branch: `.github/workflows/crm-schema-apply.yml` now passes `--user="${CRM_IMPORT_USER}"`, defaulting `CRM_IMPORT_USER` to `crm_writer`.
   - Production was not left half-migrated by that failed GitHub import; the successful production apply below used the `CRM Postgres (crm_writer)` credential path.
+- Post-merge official GitHub schema-apply verification run `27506136157` was approved for `production` and passed on `main` after the import-user fix.
+  - `Apply schema`: passed
+  - `Verify import target`: passed
 - Production schema migration was applied through temporary n8n workflow `HbbCq94Drm1yzChk`.
   - Migration execution: `114`
   - Result: success
@@ -171,10 +174,8 @@ git diff --check
 
 Remaining production follow-up:
 
-1. `preview` stage is complete via PR `#28`; merge PR `#29` from `preview -> main` after the required review.
-2. After the workflow fix is on `main`, the official GitHub schema apply path can be re-run as a no-op verification if desired; production schema is already applied through `crm_writer`.
-3. Monitor the next scheduled Website Contact Discovery run and confirm it advances by 2 Websites with `wcd_active_locks = 0` afterward.
-4. Visually confirm NocoDB review surfaces for the new schemas/views; the backing tables and compatibility views are already present and readable in production validation.
+1. Monitor the next scheduled Website Contact Discovery run and confirm it advances by 2 Websites with `wcd_active_locks = 0` afterward.
+2. Visually confirm NocoDB review surfaces for the new schemas/views; the backing tables and compatibility views are already present and readable in production validation.
 
 ## 2026-06-14 n8n Production Rollout Update
 
