@@ -1,5 +1,70 @@
 # CipherPlay Handoff
 
+## 2026-06-14 n8n Production Rollout Update
+
+- Applied the schema-native CRM migration against production Cloud SQL through temporary n8n workflow `I2eLi4gWlee3BZVa`.
+  - Migration execution: `95`
+  - Result: success
+  - Temporary migration workflow archived after use.
+- Pre-migration aggregate counts were captured:
+  - `crm_contacts`: 5073
+  - `crm_websites`: 93
+  - `crm_email_addresses`: 2380
+  - `crm_contact_email_addresses`: 2381
+  - `crm_groups`: 34
+  - `crm_contact_groups`: 2519
+  - `crm_founder_institute_directory_entries`: 5309
+  - `crm_interview_source_entries`: 69
+- Post-migration aggregate validation:
+  - People: legacy backup 5073, compatibility view 5073, `person.people` 5073
+  - Websites: legacy backup 93, compatibility view 94, `business.websites` 94
+  - Emails: legacy backup 2380, compatibility view 2380, `person.email_addresses` 2380
+  - Person-email links: legacy backup 2381, compatibility view 2381, `person.person_email_addresses` 2381
+  - Groups: legacy backup 34, compatibility view 34, `crm.groups` 34
+  - Person-group links: legacy backup 2519, compatibility view 2519, `crm.person_group_memberships` 2519
+  - Founder Institute entries: legacy backup 5309, compatibility view 5309, `public_sources.founder_institute_directory_entries` 5309
+  - Interview source entries: legacy backup 69, compatibility view 69, `public_sources.interview_source_entries` 69
+  - `web_enrichment.website_shopify_status`: 93 rows
+  - `business.website_lists` contains `http-archive-shopify-daily`
+  - Review views exist: `business.website_shopify_review` and `public_sources.http_archive_shopify_review`
+  - Read-only compatibility triggers: 13
+  - Missing preserved IDs: people 0, websites 0, emails 0, groups 0
+  - Extra new website IDs: 1, expected from email-domain normalization into the canonical `business.websites` registry
+  - Dangling email-to-website references: 0
+- Created production n8n workflow `hWlIp4PWuB1D6JDy`.
+  - Name: `CipherPlay Public Sources - HTTP Archive Shopify Daily`
+  - URL: `https://workflows.cipherinternal.com/workflow/hWlIp4PWuB1D6JDy`
+  - Status: inactive / not published
+  - Uses Cloud Run runtime service-account auth through the metadata server and calls BigQuery REST directly.
+  - Manual smoke execution `98` reached BigQuery and wrote a failed run row, but BigQuery returned `403 PERMISSION_DENIED`: the runtime identity lacks `bigquery.jobs.create` on `cipherplay-production`.
+  - n8n run row from the blocked smoke: `bf532bcb-ea33-4e17-8d29-eaefbca5cbd0`, status `failed`, row_count `0`.
+  - Do not publish the daily schedule until IAM is fixed and a 50-row smoke completes.
+- Attempted to apply the missing IAM binding through the gcloud MCP, but the gcloud environment has no active account selected.
+  - Required binding:
+
+```powershell
+gcloud projects add-iam-policy-binding cipherplay-production `
+  --member=serviceAccount:n8n-cloud-run@cipherplay-production.iam.gserviceaccount.com `
+  --role=roles/bigquery.jobUser
+```
+
+- Patched existing workflow `WyrzuFj6mnRocX2w` (`CipherPlay CRM - Website Shopify Enrichment`) to schema-native SQL.
+  - Reads/claims from `business.websites` plus `web_enrichment.website_shopify_status`.
+  - Writes Shopify detection status to `web_enrichment.website_shopify_status`.
+  - No longer writes old `public.crm_websites` compatibility view columns.
+  - Manual smoke execution `101` passed: one row was claimed, persisted, and asserted with `updated_count = 1`.
+  - Published active version: `b0a0fbd4-329e-4e60-859c-042d17a114ac`
+  - Current status: active
+- Temporary diagnostic workflow `vh5ZOtxtH4Jppodv` was archived after validation.
+
+Remaining production rollout steps:
+
+1. Apply the BigQuery IAM binding above from an authenticated GCP environment, or run the checked-in OpenTofu for `infra/n8n/opentofu`.
+2. Re-run a manual 50-row execution of `hWlIp4PWuB1D6JDy`.
+3. Confirm `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status` counts.
+4. Confirm NocoDB can review `business.website_shopify_review` and `public_sources.http_archive_shopify_review`.
+5. Publish `hWlIp4PWuB1D6JDy` only after the 50-row smoke passes.
+
 ## 2026-06-14 HTTP Archive Shopify Schema-Native Pipeline Repo Update
 
 - Implemented repo-side schema-native CRM migration for the HTTP Archive Shopify daily pipeline.
