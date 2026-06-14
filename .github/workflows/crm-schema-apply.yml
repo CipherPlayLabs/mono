@@ -21,6 +21,7 @@ env:
   CRM_GCP_PROJECT_ID: ${{ vars.CRM_GCP_PROJECT_ID }}
   CRM_GCP_REGION: ${{ vars.CRM_GCP_REGION || 'us-east1' }}
   CRM_CLOUD_SQL_INSTANCE: ${{ vars.CRM_CLOUD_SQL_INSTANCE || 'cipherplay-crm-postgres' }}
+  CRM_IMPORT_USER: ${{ vars.CRM_IMPORT_USER || 'crm_writer' }}
   CRM_SCHEMA_PATH: infra/crm/schema/001-crm.sql
   CRM_SCHEMA_IMPORT_BUCKET: ${{ vars.CRM_SCHEMA_IMPORT_BUCKET || 'cipherplay-production-opentofu-state' }}
 
@@ -101,6 +102,7 @@ jobs:
           gcloud sql import sql "${CRM_CLOUD_SQL_INSTANCE}" "${schema_object}" \
             --project="${CRM_GCP_PROJECT_ID}" \
             --database="${CRM_DATABASE}" \
+            --user="${CRM_IMPORT_USER}" \
             --quiet
 
       - name: Verify import target
