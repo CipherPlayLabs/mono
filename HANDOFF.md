@@ -1,5 +1,20 @@
 # CipherPlay Handoff
 
+## 2026-06-14 CRM Private Sources and Contact Methods Planning Update
+
+- Completed a `grill-me` design pass for the next CRM data-amassing step.
+- Added glossary decisions to `docs/contexts/crm.md`.
+- Wrote the implementation design and starter prompt at `docs/superpowers/specs/2026-06-14-crm-private-sources-contact-methods-design.md`.
+- Approved direction:
+  - `private_sources` is a provenance schema, not an access-control boundary.
+  - Move Founder Institute entries to `private_sources.founder_institute_directory_entries`.
+  - Rename interview source entries to `private_sources.ramp_interviews`.
+  - Make `contact_methods` canonical for emails, LinkedIn URLs, phone numbers, Telegram handles, and future contact methods.
+  - Add `business.organizations` and evidence-based organization/website associations instead of treating Websites as companies.
+  - Contact-method links to People or Business Organizations are evidence associations, not ownership claims.
+  - Website contact discovery should crawl all discoverable same-domain HTML pages, skip PDFs/media/binary assets, extract emails and LinkedIn URLs found on the site, and avoid external search in V1.
+- Next agent should work contract-first from `infra/crm/tests/test_schema_contract.py`, then update `infra/crm/schema/001-crm.sql`, docs, the n8n workflow contract, and this handoff.
+
 ## 2026-06-14 n8n Production Rollout Update
 
 - Applied the schema-native CRM migration against production Cloud SQL through temporary n8n workflow `I2eLi4gWlee3BZVa`.
