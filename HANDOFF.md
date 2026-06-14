@@ -34,13 +34,34 @@
 - Created production n8n workflow `hWlIp4PWuB1D6JDy`.
   - Name: `CipherPlay Public Sources - HTTP Archive Shopify Daily`
   - URL: `https://workflows.cipherinternal.com/workflow/hWlIp4PWuB1D6JDy`
-  - Status: inactive / not published
+  - Status: active / published
+  - Active version: `59d9de92-9138-4fd6-985f-858a34284a4a`
+  - Daily schedule trigger: every 1 day at 08:15.
+  - Manual webhook trigger: `/webhook/http-archive-shopify-daily-manual`.
   - Uses Cloud Run runtime service-account auth through the metadata server and calls BigQuery REST directly.
-  - Manual smoke execution `98` reached BigQuery and wrote a failed run row, but BigQuery returned `403 PERMISSION_DENIED`: the runtime identity lacks `bigquery.jobs.create` on `cipherplay-production`.
-  - n8n run row from the blocked smoke: `bf532bcb-ea33-4e17-8d29-eaefbca5cbd0`, status `failed`, row_count `0`.
-  - Do not publish the daily schedule until IAM is fixed and a 50-row smoke completes.
-- Attempted to apply the missing IAM binding through the gcloud MCP, but the gcloud environment has no active account selected.
-  - Required binding:
+  - Does not use CSV import as the primary path.
+- Fixed the BigQuery access blocker from the earlier smoke.
+  - Authenticated local gcloud as `allan@cipherplay.net` with `CLOUDSDK_CONFIG=.codex-local\gcloud-config`.
+  - Applied `roles/bigquery.jobUser` to `serviceAccount:n8n-cloud-run@cipherplay-production.iam.gserviceaccount.com`.
+  - Confirmed the IAM binding includes the n8n runtime service account.
+  - Local gcloud config and generated auth files remain ignored under `.codex-local`.
+- Patched `infra/crm/bigquery/http_archive_shopify_domains.sql` after live BigQuery smoke feedback.
+  - Serialized nested HTTP Archive technology arrays before aggregation with `TO_JSON_STRING`.
+  - Replaced aggregate `ORDER BY rank NULLS LAST` with `ORDER BY IF(rank IS NULL, 1, 0), rank, root_page`.
+- Manual 50-row smoke execution `106` passed.
+  - Run ID: `bf532bcb-ea33-4e17-8d29-eaefbca5cbd0`
+  - Run status: `completed`
+  - Row count: `50`
+  - BigQuery job ID: present
+  - n8n workflow status: `success`
+- Aggregate production validation used temporary workflow `3ep1G5betqs0eE7Z`, execution `108`, then archived it.
+  - Observations for smoke run: 50
+  - Observation website refs: 50
+  - `web_enrichment.website_shopify_status` rows for observations: 50
+  - `business.website_list_memberships` rows for `http-archive-shopify-daily`: 50
+  - `business.website_shopify_review` rows: 144
+  - `public_sources.http_archive_shopify_review` rows for the smoke run: 50
+- The exact IAM command used:
 
 ```powershell
 gcloud projects add-iam-policy-binding cipherplay-production `
@@ -57,13 +78,10 @@ gcloud projects add-iam-policy-binding cipherplay-production `
   - Current status: active
 - Temporary diagnostic workflow `vh5ZOtxtH4Jppodv` was archived after validation.
 
-Remaining production rollout steps:
+Remaining production follow-up:
 
-1. Apply the BigQuery IAM binding above from an authenticated GCP environment, or run the checked-in OpenTofu for `infra/n8n/opentofu`.
-2. Re-run a manual 50-row execution of `hWlIp4PWuB1D6JDy`.
-3. Confirm `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status` counts.
-4. Confirm NocoDB can review `business.website_shopify_review` and `public_sources.http_archive_shopify_review`.
-5. Publish `hWlIp4PWuB1D6JDy` only after the 50-row smoke passes.
+1. Visually confirm NocoDB review surfaces for `business.website_shopify_review` and `public_sources.http_archive_shopify_review`; the backing views exist and returned rows in production validation.
+2. Monitor the next scheduled HTTP Archive run after 08:15 to confirm the daily trigger path behaves the same as manual execution.
 
 ## 2026-06-14 HTTP Archive Shopify Schema-Native Pipeline Repo Update
 
@@ -114,6 +132,7 @@ python -m unittest infra.crm.tests.test_schema_contract infra.crm.tests.test_fou
 
 - Result: 18 tests passed.
 - `git diff --check` passed; only line-ending normalization warnings were reported.
+- Note: the production rollout update at the top of this file supersedes the local limitations and production cutover checklist below. The HTTP Archive workflow has since been smoked, validated, and published.
 - Local limitations:
   - `psql` was not available, so the migration was not executed against a local Postgres parser.
   - `tofu` was not available, so OpenTofu fmt/validate was not run locally.

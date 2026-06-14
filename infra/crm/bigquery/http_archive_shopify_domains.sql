@@ -8,7 +8,9 @@ WITH shopify_pages AS (
     rank,
     t.technology AS technology,
     t.categories AS technology_categories,
-    t.info AS technology_info
+    TO_JSON_STRING(t.categories) AS technology_categories_json,
+    t.info AS technology_info,
+    TO_JSON_STRING(t.info) AS technology_info_json
   FROM
     `httparchive.crawl.pages`,
     UNNEST(technologies) AS t
@@ -29,8 +31,22 @@ domain_rollup AS (
     COUNT(DISTINCT root_page) AS detected_origins,
     COUNT(DISTINCT page) AS detected_pages,
     ARRAY_AGG(DISTINCT technology ORDER BY technology) AS technologies,
-    TO_JSON_STRING(ARRAY_AGG(DISTINCT technology_categories IGNORE NULLS LIMIT 20)) AS technology_categories_json,
-    TO_JSON_STRING(ARRAY_AGG(DISTINCT technology_info IGNORE NULLS LIMIT 20)) AS technology_info_json,
+    COALESCE(
+      CONCAT(
+        '[',
+        STRING_AGG(DISTINCT technology_categories_json, ',' ORDER BY technology_categories_json LIMIT 20),
+        ']'
+      ),
+      '[]'
+    ) AS technology_categories_json,
+    COALESCE(
+      CONCAT(
+        '[',
+        STRING_AGG(DISTINCT technology_info_json, ',' ORDER BY technology_info_json LIMIT 20),
+        ']'
+      ),
+      '[]'
+    ) AS technology_info_json,
     TO_JSON_STRING(
       ARRAY_AGG(
         STRUCT(
@@ -41,7 +57,7 @@ domain_rollup AS (
           technology_categories,
           technology_info
         )
-        ORDER BY rank NULLS LAST, root_page
+        ORDER BY IF(rank IS NULL, 1, 0), rank, root_page
         LIMIT 10
       )
     ) AS evidence_json
