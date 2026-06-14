@@ -171,7 +171,7 @@ git diff --check
 
 Remaining production follow-up:
 
-1. Merge this rollout follow-up through `preview`, then `preview -> main`.
+1. `preview` stage is complete via PR `#28`; merge PR `#29` from `preview -> main` after the required review.
 2. After the workflow fix is on `main`, the official GitHub schema apply path can be re-run as a no-op verification if desired; production schema is already applied through `crm_writer`.
 3. Monitor the next scheduled Website Contact Discovery run and confirm it advances by 2 Websites with `wcd_active_locks = 0` afterward.
 4. Visually confirm NocoDB review surfaces for the new schemas/views; the backing tables and compatibility views are already present and readable in production validation.
