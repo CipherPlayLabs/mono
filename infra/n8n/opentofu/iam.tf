@@ -24,6 +24,12 @@ resource "google_project_iam_member" "runtime_cloudsql_client" {
   member  = "serviceAccount:${google_service_account.n8n_runtime.email}"
 }
 
+resource "google_project_iam_member" "runtime_bigquery_job_user" {
+  project = var.gcp_project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.n8n_runtime.email}"
+}
+
 resource "google_storage_bucket_iam_member" "runtime_binary_data_object_user" {
   bucket = google_storage_bucket.binary_data.name
   role   = "roles/storage.objectUser"

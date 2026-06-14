@@ -13,11 +13,13 @@ This OpenTofu project provisions CipherPlay's self-hosted n8n Community Edition 
 - Global external HTTPS load balancer with a serverless NEG pointing at Cloud Run.
 - Certificate Manager DNS-authorized Google-managed certificate.
 - Optional Cloudflare DNS, forms WAF/rate-limit rules, and optional Cloudflare Access protection for the editor hostname.
-- Dedicated runtime and GitHub deployer service accounts plus IAM bindings.
+- Dedicated runtime and GitHub deployer service accounts plus IAM bindings, including `roles/bigquery.jobUser` for the n8n runtime identity.
 
 ## Authentication
 
 The Google provider uses Application Default Credentials locally or GitHub Actions Workload Identity Federation in CI. Do not commit service account JSON keys.
+
+The n8n Cloud Run runtime service account is the preferred production identity for HTTP Archive BigQuery jobs. Do not create or commit service account JSON keys for the daily Shopify pipeline unless n8n credential limitations require a dedicated key stored out of band in Secret Manager.
 
 The Cloudflare provider reads `CLOUDFLARE_API_TOKEN` from the environment.
 

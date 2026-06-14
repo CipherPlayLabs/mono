@@ -89,7 +89,7 @@ class FounderInstituteImporterTests(unittest.TestCase):
 
         sql = build_import_sql([entry])
 
-        self.assertIn("INSERT INTO crm_founder_institute_directory_entries", sql)
+        self.assertIn("INSERT INTO public_sources.founder_institute_directory_entries", sql)
         self.assertIn("ON CONFLICT (lower(identity_key), lower(specialization_name), lower(city_name))", sql)
         self.assertIn("DO UPDATE SET", sql)
         self.assertIn("'Useful note with ''quote'''", sql)

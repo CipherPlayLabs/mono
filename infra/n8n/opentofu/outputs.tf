@@ -48,6 +48,11 @@ output "runtime_secret_ids" {
   value       = { for key, secret in google_secret_manager_secret.runtime : key => secret.secret_id }
 }
 
+output "runtime_service_account_email" {
+  description = "Cloud Run runtime service account used by n8n, including direct BigQuery job execution."
+  value       = google_service_account.n8n_runtime.email
+}
+
 output "certificate_dns_authorization_records" {
   description = "DNS authorization CNAMEs for the Google-managed certificate. These are also managed in Cloudflare DNS."
   value = {

@@ -1,5 +1,285 @@
 # CipherPlay Handoff
 
+## 2026-06-14 HTTP Archive Shopify Schema-Native Pipeline Repo Update
+
+- Implemented repo-side schema-native CRM migration for the HTTP Archive Shopify daily pipeline.
+- Core schema file: `infra/crm/schema/001-crm.sql`.
+- New Postgres schemas:
+  - `business`
+  - `person`
+  - `crm`
+  - `public_sources`
+  - `web_enrichment`
+- `business.websites` is now the only canonical domain registry. It stores domain identity only and does not own Shopify source/enrichment fields.
+- `web_enrichment.website_shopify_status` owns current live Shopify status, detection evidence, retry timing, and lock fields.
+- `public_sources.http_archive_runs` and `public_sources.http_archive_observations` store HTTP Archive collection runs and source evidence. Observations link to `business.websites.id` and do not duplicate canonical domain.
+- CRM workflow tables moved into schema-native people-only tables:
+  - `crm.groups`
+  - `crm.person_group_memberships`
+  - `crm.campaigns`
+  - `crm.campaign_recipients`
+  - `crm.email_events`
+  - `crm.notes`
+  - `crm.follow_ups`
+- Source dataset tables moved into `public_sources`:
+  - `public_sources.founder_institute_directory_entries`
+  - `public_sources.interview_source_entries`
+- Existing `public.crm_*` data is copied into schema-native tables with IDs preserved where corresponding target tables exist. Old physical `public.crm_*` tables are renamed to `_legacy_backup` tables, then old names are recreated as read-only compatibility views.
+- Added review views:
+  - `business.website_shopify_review`
+  - `public_sources.http_archive_shopify_review`
+- Added parameterized BigQuery query:
+  - `infra/crm/bigquery/http_archive_shopify_domains.sql`
+- Added n8n workflow contract:
+  - `infra/n8n/workflows/http-archive-shopify-daily-pipeline.md`
+- Updated existing Shopify enrichment contract:
+  - Reads `business.websites` joined to `web_enrichment.website_shopify_status`.
+  - Writes current status to `web_enrichment.website_shopify_status`.
+  - Keeps lock fields as `locked_at` and `locked_by`.
+- Updated n8n OpenTofu:
+  - Enables `bigquery.googleapis.com`.
+  - Grants `roles/bigquery.jobUser` to the n8n runtime service account.
+  - Exposes `runtime_service_account_email`.
+- Updated the Founder Institute importer to write `public_sources.founder_institute_directory_entries`.
+- Tests run from repo root:
+
+```powershell
+python -m unittest infra.crm.tests.test_schema_contract infra.crm.tests.test_founder_institute_importer
+```
+
+- Result: 18 tests passed.
+- `git diff --check` passed; only line-ending normalization warnings were reported.
+- Local limitations:
+  - `psql` was not available, so the migration was not executed against a local Postgres parser.
+  - `tofu` was not available, so OpenTofu fmt/validate was not run locally.
+  - No production BigQuery dry-run or 50-row smoke was run from this shell.
+  - No live n8n workflow was created or enabled in this shell.
+- Required production cutover:
+  1. Run schema migration from an approved operator environment.
+  2. Validate old/new row counts before relying on compatibility views:
+
+```sql
+SELECT
+  (SELECT count(*) FROM public.crm_contacts) AS old_people,
+  (SELECT count(*) FROM person.people) AS new_people,
+  (SELECT count(*) FROM public.crm_websites) AS old_websites,
+  (SELECT count(*) FROM business.websites) AS new_websites,
+  (SELECT count(*) FROM public.crm_email_addresses) AS old_emails,
+  (SELECT count(*) FROM person.email_addresses) AS new_emails;
+```
+
+  3. Apply n8n OpenTofu or otherwise confirm `n8n-cloud-run@cipherplay-production.iam.gserviceaccount.com` has `roles/bigquery.jobUser`.
+  4. Run the HTTP Archive BigQuery dry-run and record processed bytes.
+  5. Create `CipherPlay Public Sources - HTTP Archive Shopify Daily` in n8n with schedule disabled.
+  6. Run a manual 50-row smoke and confirm `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status` row counts.
+  7. Confirm NocoDB can review `business.website_shopify_review` and `public_sources.http_archive_shopify_review`.
+  8. Enable daily schedule only after the manual smoke passes.
+
+## 2026-06-13 Apollo Contacts CRM Import Update
+
+- Source file: `C:\Users\allan\Downloads\apollo-contacts-export.csv`.
+- Imported Apollo list: `Small Shopify VA`.
+- Read-only preflight execution `49` saw:
+  - 55 source rows.
+  - 55 primary emails.
+  - 72 total source email addresses including secondary emails.
+  - 55 rows with company websites.
+  - One duplicate primary email group: `emmanuel@reef.digital` for 2 distinct Apollo contacts.
+  - 0 existing contacts by Apollo ID, 0 existing contacts by primary email, 0 existing company websites, and group missing.
+- Import execution `52` successfully inserted the base entities:
+  - 55 contacts inserted.
+  - 71 email address rows upserted.
+  - 54 website rows upserted, including 43 company-domain rows and 11 email-domain-only rows.
+  - 55 `Small Shopify VA` group memberships.
+  - It did not create contact-email association rows because same-statement CTE visibility meant the association CTE could not see the just-upserted email rows through the base table.
+- Final idempotent import execution `53` completed the missing associations:
+  - 0 contacts inserted, 55 contacts updated by Apollo ID.
+  - 71 email address rows upserted.
+  - 72 contact-email links upserted.
+  - 54 website rows upserted.
+  - 55 group links upserted.
+  - Group ID: `85325d5a-3556-4005-bb28-0878ada3b533`.
+- Post-import read-only preflight execution `55` verified:
+  - 55 existing contacts by Apollo ID.
+  - 55 existing contacts by primary email.
+  - 43 existing company websites.
+  - `small-shopify-va` group exists.
+- Temporary n8n workflows were archived:
+  - `zwLRz4p0YCfXI5p2`
+  - `z4FP2NBm9pv3B1K9`
+  - `6b4OUiFaek0C5RCH`
+  - `yNGfhsUiZIbdpHcy`
+  - `I0O6ShkR5mKDSD6w`
+- The active `CipherPlay CRM - Website Shopify Enrichment` workflow should now pick up the newly inserted non-provider website rows on its normal schedule.
+
+## 2026-06-13 CRM Website Shopify Enrichment n8n Handoff
+
+### 2026-06-13 Completion Update
+
+- Read-only diagnostic execution `44` confirmed the post-`43` state had `unknown_non_provider_count: 31`, `eligible_now_count: 31`, `active_lock_count: 0`; no unlock was needed.
+- Manual smoke execution `45` exposed a real batching bug: `Claim Shopify Batch` emitted 5 rows, but `Load Claimed Shopify Batch` emitted 25 rows because it was missing `executeOnce: true` and reran the same locked-row SELECT once per incoming claim item.
+- Patched the main workflow so `Load Claimed Shopify Batch` has `executeOnce: true`. The patch applied with 1 operation and no validation warnings.
+- Read-only diagnostic execution `46` after the failed smoke showed `unknown_non_provider_count: 28`, `eligible_now_count: 26`, `active_lock_count: 0`.
+- Manual smoke execution `47` passed:
+  - `Claim Shopify Batch`, `Load Claimed Shopify Batch`, `Probe Shopify Homepage`, `Detect Shopify Signals`, `Persist Shopify Detection`, and `Assert Detection Persisted` each processed exactly 5 items.
+  - `Persist Shopify Detection` returned five `updated_count: 1` rows.
+  - `Assert Detection Persisted` was the last node and the workflow execution status was `success`.
+- Published main workflow `WyrzuFj6mnRocX2w`; it is now active with active version `c49c23e9-baa8-46c8-a4f6-88a0abf59e5f`.
+- Archived temporary diagnostic workflow `MKrcWLs8S7igH9ms`.
+- GCP cleanup remains blocked in this environment:
+  - Local shell has no `gcloud` executable.
+  - The `gcloud` MCP tool is installed, but `gcloud auth list --format=json(account,status)` returned `[]`, and `run jobs describe` failed with no active account selected.
+  - Still clean up the temporary Cloud Run job `n8n-import-crm-postgres-cred-psc-20260613` and Secret Manager secret `cipherplay-n8n-crm-postgres-credential-import-psc-20260613` from an authenticated GCP environment.
+
+### Goal
+
+Finish taking the `CipherPlay CRM - Website Shopify Enrichment` n8n workflow to production using the private Cloud SQL path. The workflow should run from n8n, connect to CRM Postgres over Private Service Connect, claim CRM website rows, probe homepages for Shopify signals, persist one result per claimed row, and then be published only after a real smoke test proves rows were actually updated.
+
+### Current Progress
+
+- GCP project: `cipherplay-production`.
+- Cloud SQL instance: `cipherplay-crm-postgres`.
+- Private Service Connect is enabled for the CRM Cloud SQL instance.
+- PSC service connection policy created:
+  - Name: `cipherplay-n8n-cloud-sql`
+  - Region: `us-east1`
+  - Network: `projects/cipherplay-production/global/networks/cipherplay-n8n-network`
+  - Subnet: `projects/cipherplay-production/regions/us-east1/subnetworks/cipherplay-n8n-subnet`
+  - Service class: `google-cloud-sql`
+  - Limit: `10`
+- Cloud SQL PSC auto connection is active:
+  - PSC IP: `10.58.0.2`
+  - Forwarding rule: `sca-auto-fr-aeb23453-016f-48bb-879c-bee60e8d7f5d`
+  - PSC connection status: `ACCEPTED`
+- n8n Postgres credential was re-imported to use the PSC IP:
+  - Credential ID: `crmPgWriter20260613`
+  - Credential name: `CRM Postgres (crm_writer)`
+  - Host: `10.58.0.2`
+  - Database: `crm`
+  - User: `crm_writer`
+- Main n8n workflow:
+  - ID: `WyrzuFj6mnRocX2w`
+  - Name: `CipherPlay CRM - Website Shopify Enrichment`
+  - URL: `https://workflows.cipherinternal.com/workflow/WyrzuFj6mnRocX2w`
+  - Active/published: `false` as of the last check
+  - `availableInMCP`: true
+- Main workflow graph after patches:
+  - `Every 30 Minutes`
+  - `Link Email Domains To Websites`
+  - `Claim Shopify Batch`
+  - `Load Claimed Shopify Batch`
+  - `Probe Shopify Homepage`
+  - `Detect Shopify Signals`
+  - `Persist Shopify Detection`
+  - `Assert Detection Persisted`
+  - Sticky note
+- The workflow is now deliberately split so the claim step can output `{ success: true }` without breaking downstream work. `Load Claimed Shopify Batch` does a separate SELECT by `enrichment_locked_by = '{{ $execution.id }}'` and provides real `id/domain/enrichment_locked_by` rows to the HTTP node.
+- `Detect Shopify Signals` now fails loudly if a claimed website row is missing, instead of allowing `https://undefined/`.
+- `Persist Shopify Detection` now uses a CTE update returning `updated_count`, and `Assert Detection Persisted` throws unless `updated_count === 1`.
+- Pinned test execution `39` passed with a synthetic Shopify homepage:
+  - `Load Claimed Shopify Batch` had a real test row.
+  - `Detect Shopify Signals` found `homepage_shopify_marker`.
+  - `Persist Shopify Detection` returned `updated_count: 1`.
+  - `Assert Detection Persisted` passed.
+- Real execution `40` reached the private database but loaded zero rows because all eligible rows were still locked by earlier failed execution `36`.
+- Temporary diagnostic workflow:
+  - ID: `MKrcWLs8S7igH9ms`
+  - Name: `Codex CRM Shopify Eligibility Diagnostic`
+  - It was created with `create_workflow_from_code` and auto-attached to the `CRM Postgres (crm_writer)` credential.
+  - Diagnostic execution `41` showed `unknown_non_provider_count: 31`, `eligible_now_count: 0`, `active_lock_count: 31`, all locked by execution `36`.
+  - Targeted unlock execution `42` cleared exactly `31` stale execution-36 locks for rows still `shopify_status = 'unknown'` and `domain_type != 'email_provider'`.
+- Real execution `43` was run after unlocking but before the small-batch tuning. It crashed before useful node run data was retained.
+- After execution `43`, the main workflow was patched to a safer small-batch profile:
+  - Claim limit: `5`
+  - Load limit: `5`
+  - Homepage HTTP timeout: `6000`
+  - HTTP retry disabled
+  - Patch applied successfully with no validation warnings.
+- The next read-only diagnostic execution was about to be run, but the user interrupted after the approval timeout. Treat the current lock/eligibility state as unverified after execution `43`.
+
+### What Worked
+
+- The private PSC path is live and usable from n8n.
+- Updating the n8n Postgres credential to host `10.58.0.2` worked.
+- n8n MCP access works through the local helper:
+
+```powershell
+node .codex-local\mcp-client\call-n8n-tool.mjs <tool> <args.json>
+```
+
+- Use the default local MCP config route in `.codex-local`; it was able to call most tools after cooldowns.
+- `get_workflow_details`, `update_workflow`, `validate_node_config`, `test_workflow`, `execute_workflow`, `get_execution`, `create_workflow_from_code`, `search_workflows`, and `archive_workflow` are expected useful MCP tools.
+- `create_workflow_from_code` works for temporary workflows. The older attempted `create_workflow` tool does not exist.
+- Extending the helper timeout works for slow MCP calls:
+
+```powershell
+$env:N8N_TOOL_TIMEOUT_MS='180000'; node .codex-local\mcp-client\call-n8n-tool.mjs create_workflow_from_code .codex-local\args-create-crm-shopify-diagnostic.json
+```
+
+- The pinned test is the best fast verification loop. It caught the item-linking and SQL-generation shape without touching real CRM rows.
+- The temporary diagnostic workflow is useful for read-only aggregate counts and targeted repair queries.
+
+### What Did Not Work
+
+- Do not commit anything under `.codex-local`. It contains local MCP config, Cloudflare Access artifacts, generated args, and other local operational files. It is gitignored.
+- Do not print, paste, or commit tokens/passwords. The user explicitly provided an n8n MCP bearer token only for local use.
+- Do not try an n8n Execute Command node for homepage probing unless the user explicitly approves host shell command execution. The safer path is the n8n HTTP Request node.
+- A Code node using `fetch` failed in n8n with `fetch is not defined`.
+- Joining SQL with `'\\n'` produced literal backslash-n sequences and caused SQL syntax errors.
+- The Postgres `UPDATE ... RETURNING` claim node returned only `{ success: true }` in real executions, not row items. This is why the explicit `Load Claimed Shopify Batch` SELECT node exists.
+- Before the load split, the HTTP node built `https://undefined/`, and the persist step falsely returned success while updating zero rows.
+- The `workflows.cipherinternal.com` MCP URL returned a Cloudflare Access 403 from this environment. The local helper default route worked more consistently.
+- The MCP endpoint can rate-limit or temporarily return route errors. Back off 20 to 30 seconds before retrying instead of stacking requests.
+- A full 31-row real run crashed before useful node data. Keep the batch small until repeated scheduled runs prove stable.
+
+### Next Steps
+
+1. Run the temporary diagnostic workflow in read-only count mode and inspect the result. Confirm whether execution `43` left any active locks.
+2. If execution `43` left stale locks, clear only those locks with a narrow query matching the prior pattern:
+
+```sql
+UPDATE crm_websites
+SET
+  enrichment_locked_at = NULL,
+  enrichment_locked_by = NULL,
+  updated_at = now()
+WHERE enrichment_locked_by = '43'
+  AND shopify_status = 'unknown'
+  AND domain_type != 'email_provider';
+```
+
+3. Execute the main workflow once in manual mode after the small-batch patch.
+4. Inspect the real execution data. A good smoke must show:
+   - `Load Claimed Shopify Batch` emits up to 5 real rows with `id`, `domain`, and `enrichment_locked_by`.
+   - `Probe Shopify Homepage` uses real domains, not `undefined`.
+   - `Detect Shopify Signals` emits an `updateQuery` for each row.
+   - `Persist Shopify Detection` returns `updated_count: 1` for each row.
+   - `Assert Detection Persisted` is the last node and succeeds.
+5. Only publish the workflow after the real smoke passes. Use the n8n MCP `publish_workflow` tool on workflow `WyrzuFj6mnRocX2w`.
+6. Archive the temporary diagnostic workflow `MKrcWLs8S7igH9ms` after the final smoke.
+7. Clean up temporary GCP import resources:
+   - Cloud Run job: `n8n-import-crm-postgres-cred-psc-20260613`
+   - Secret Manager secret: `cipherplay-n8n-crm-postgres-credential-import-psc-20260613`
+8. Consider codifying/importing the PSC resources into OpenTofu. The manual prod resources are already live; IaC drift cleanup was not finished.
+
+### Useful Local Files
+
+- `.codex-local\mcp-client\call-n8n-tool.mjs`
+- `.codex-local\mcp-client\probe-n8n-mcp.mjs`
+- `.codex-local\mcp-client\build-crm-workflow-claim-load-patch.mjs`
+- `.codex-local\args-update-crm-workflow-claim-load-patch.json`
+- `.codex-local\args-test-crm-workflow-claim-load.json`
+- `.codex-local\args-update-crm-workflow-small-batch.json`
+- `.codex-local\args-create-crm-shopify-diagnostic.json`
+- `.codex-local\args-update-crm-shopify-diagnostic-counts.json`
+- `.codex-local\args-execute-crm-workflow-manual.json`
+
+### Git State Notes
+
+- The repo branch at the last check was `codex/news-grants-2026-06-12`.
+- `git status --short --branch` was clean before this handoff update.
+- This `HANDOFF.md` update is intentionally a tracked repo change unless the next agent/user decides to move the handoff elsewhere.
+
 ## Goal
 
 Document everything currently known about CipherPlay inside `mono`, then align the content site with that canonical brand and operating context.
