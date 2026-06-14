@@ -35,7 +35,8 @@ The service is capped at one instance because Cloud Storage FUSE is not a fully 
 - `.github/workflows/n8n-validate.yml`: validates formatting and OpenTofu configuration for n8n changes.
 - `.github/workflows/n8n-apply.yml`: manual production-approved OpenTofu plan and apply.
 - `.github/workflows/n8n-redeploy.yml`: manual production-approved Cloud Run redeploy to the current Cloud Run-compatible stable n8n image.
-- `workflows/crm-website-shopify-enrichment.md`: repo-owned contract for Website/email-domain discovery and Shopify enrichment workflows. It reads Website identity from `business.websites`, email identity from `person.email_addresses`, and current Shopify status from `web_enrichment.website_shopify_status`.
+- `workflows/crm-website-shopify-enrichment.md`: repo-owned contract for Website/email-domain discovery and Shopify enrichment workflows. It reads Website identity from `business.websites`, email identity from `contact_methods.emails`, and current Shopify status from `web_enrichment.website_shopify_status`.
+- `workflows/website-contact-discovery.md`: repo-owned contract for sitewide same-domain Website Contact Discovery. It writes canonical emails and LinkedIn URLs to `contact_methods`, stores attempt state in `web_enrichment.website_contact_discovery_status`, and stores evidence in `web_enrichment.website_contact_discovery_observations`.
 - `workflows/http-archive-shopify-daily-pipeline.md`: repo-owned contract for the `CipherPlay Public Sources - HTTP Archive Shopify Daily` workflow. It runs HTTP Archive BigQuery directly on a daily schedule and writes `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status`.
 
 All GCP authentication uses GitHub OIDC for deploys and Cloud Run runtime identity for the n8n service. Do not add service account JSON keys.
@@ -81,11 +82,16 @@ Before the first successful Cloud Run startup, create the `n8n` Cloud SQL user o
 n8n should connect to the CRM Cloud SQL database as `crm_writer`. The schema-native CRM boundary is:
 
 - `business.websites`: the only canonical domain registry.
+- `business.organizations`: canonical business identities, separate from Websites.
 - `person.people`: human identities.
-- `person.email_addresses`: observed personal, role, and unknown email identities.
+- `contact_methods.emails`: canonical person, role_inbox, and unknown email identities.
+- `contact_methods.linkedin_profiles`: canonical LinkedIn URLs discovered from source collection or Website Contact Discovery.
+- `private_sources.ramp_interviews`: Ramp interview provenance rows.
 - `crm.groups` and `crm.campaigns`: people-only V1 campaign workflow tables.
 - `public_sources.http_archive_observations`: source evidence for HTTP Archive Website observations.
 - `web_enrichment.website_shopify_status`: current live Shopify status and evidence.
+- `web_enrichment.website_contact_discovery_status`: current state for Website Contact Discovery attempts.
+- `web_enrichment.website_contact_discovery_observations`: evidence rows for emails and LinkedIn URLs found on same-domain HTML pages.
 
 The old `public.crm_*` names are read-only compatibility views during migration. n8n workflows must write schema-native tables only.
 
