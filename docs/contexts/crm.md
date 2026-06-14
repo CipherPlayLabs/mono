@@ -75,7 +75,7 @@ Cloud Run must include these NocoDB external DB settings:
 Databases:
 
 - `nocodb`: NocoDB internal metadata database.
-- `crm`: shared operational data database for separate Postgres schemas such as `business`, `person`, `crm`, `public_sources`, and `web_enrichment`.
+- `crm`: shared operational data database for separate Postgres schemas such as `business`, `person`, `crm`, `private_sources`, `public_sources`, `contact_methods`, and `web_enrichment`.
 - `postgres`: default admin database.
 
 Users:
@@ -117,7 +117,7 @@ Inside the NocoDB UI, add an external PostgreSQL data source for the CRM data da
 
 Use the `crm` database, not the `nocodb` database. `nocodb` is only for NocoDB's internal metadata.
 
-The `crm` database should use Postgres schemas for domain boundaries. Do not create separate Cloud SQL databases for `business`, `person`, `crm`, `public_sources`, or `web_enrichment` unless a future isolation requirement justifies the extra operational complexity.
+The `crm` database should use Postgres schemas for domain boundaries. Do not create separate Cloud SQL databases for `business`, `person`, `crm`, `private_sources`, `public_sources`, `contact_methods`, or `web_enrichment` unless a future isolation requirement justifies the extra operational complexity.
 
 ## CRM Schema
 
@@ -125,12 +125,15 @@ The `crm` database should use Postgres schemas for domain boundaries. Do not cre
 
 - `business.websites`: the only canonical domain registry.
 - `business.website_lists` and `business.website_list_memberships`: domain review cohorts.
+- `business.organizations` and `business.organization_websites`: canonical business identities and evidence-based Website associations.
 - `person.people`: human identities migrated from contacts.
-- `person.email_addresses` and `person.person_email_addresses`: observed email identity and Person associations.
+- `contact_methods.emails`, `contact_methods.linkedin_profiles`, `contact_methods.phone_numbers`, and `contact_methods.telegram_handles`: canonical reachable identities.
+- `contact_methods.person_email_links`, `contact_methods.organization_email_links`, and sibling contact-method link tables: evidence associations to People or Business Organizations.
 - `crm.groups`, `crm.person_group_memberships`, `crm.campaigns`, `crm.campaign_recipients`, `crm.email_events`, `crm.notes`, and `crm.follow_ups`: people-only V1 CRM workflows.
 - `private_sources.founder_institute_directory_entries` and `private_sources.ramp_interviews`: low-coupled source datasets.
 - `public_sources.http_archive_runs` and `public_sources.http_archive_observations`: HTTP Archive collection runs and source evidence.
 - `web_enrichment.website_shopify_status`: current live Shopify status and evidence.
+- `web_enrichment.website_contact_discovery_status` and `web_enrichment.website_contact_discovery_observations`: sitewide same-domain contact-discovery attempts and evidence.
 - `public.crm_*`: temporary read-only compatibility views after migration; new writes must use schema-native tables.
 
 ## CRM Data Terms
@@ -273,13 +276,14 @@ First useful workflows:
 - Write draft/send/reply/bounce/manual-note events into `crm.email_events`.
 - Update `crm.campaign_recipients.status`, `sent_at`, `replied_at`, `last_event_at`, and `n8n_execution_id`.
 - Create or close `crm.follow_ups`.
-- Run `website-email-domain-discovery` every 30 minutes to link `person.email_addresses` to `business.websites`.
+- Run `website-email-domain-discovery` every 30 minutes to link `contact_methods.emails` to `business.websites`.
 - Run `website-shopify-enrichment` every 30 minutes to update `web_enrichment.website_shopify_status` without writing to the `nocodb` metadata database.
+- Run `website-contact-discovery` to crawl all discoverable same-domain HTML pages, skip PDFs/media/binary assets, extract emails and LinkedIn URLs found on the site, and write canonical methods plus discovery observations without external search.
 - Run the HTTP Archive Shopify daily pipeline by querying BigQuery directly from n8n and writing `business.websites`, `public_sources.http_archive_runs`, `public_sources.http_archive_observations`, and `web_enrichment.website_shopify_status`.
 
 Keep the first investor-campaign MVP in operator-approved mode. Do not send fully automatic campaigns until deliverability, approval, and logging are proven.
 
-The repo-owned workflow contracts are `infra/n8n/workflows/crm-website-shopify-enrichment.md` and `infra/n8n/workflows/http-archive-shopify-daily-pipeline.md`.
+The repo-owned workflow contracts are `infra/n8n/workflows/crm-website-shopify-enrichment.md`, `infra/n8n/workflows/website-contact-discovery.md`, and `infra/n8n/workflows/http-archive-shopify-daily-pipeline.md`.
 
 ## GitHub Variables And Secrets
 

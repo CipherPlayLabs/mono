@@ -3,7 +3,9 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS business;
 CREATE SCHEMA IF NOT EXISTS person;
 CREATE SCHEMA IF NOT EXISTS crm;
+CREATE SCHEMA IF NOT EXISTS private_sources;
 CREATE SCHEMA IF NOT EXISTS public_sources;
+CREATE SCHEMA IF NOT EXISTS contact_methods;
 CREATE SCHEMA IF NOT EXISTS web_enrichment;
 CREATE SCHEMA IF NOT EXISTS migration_backup;
 
@@ -52,6 +54,54 @@ CREATE TABLE IF NOT EXISTS business.website_list_memberships (
   )
 );
 
+CREATE TABLE IF NOT EXISTS business.organizations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  display_name text NOT NULL,
+  legal_name text,
+  organization_kind text NOT NULL DEFAULT 'unknown',
+  relationship_type text,
+  relationship_stage text,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  owner text NOT NULL DEFAULT 'Allan',
+  notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT organizations_organization_kind_check CHECK (
+    organization_kind IN ('company', 'brand', 'storefront_operator', 'investor_firm', 'agency', 'unknown')
+  ),
+  CONSTRAINT organizations_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE INDEX IF NOT EXISTS organizations_display_name_idx
+  ON business.organizations (lower(display_name));
+
+CREATE TABLE IF NOT EXISTS business.organization_websites (
+  organization_id uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE,
+  website_id uuid NOT NULL REFERENCES business.websites(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (organization_id, website_id),
+  CONSTRAINT organization_websites_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT organization_websites_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS organization_websites_primary_organization_unique
+  ON business.organization_websites (organization_id)
+  WHERE is_primary = true AND relationship_status != 'rejected';
+
+CREATE INDEX IF NOT EXISTS organization_websites_website_idx
+  ON business.organization_websites (website_id);
+
 CREATE TABLE IF NOT EXISTS person.people (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   display_name text NOT NULL,
@@ -81,7 +131,7 @@ CREATE TABLE IF NOT EXISTS person.people (
   )
 );
 
-CREATE TABLE IF NOT EXISTS person.email_addresses (
+CREATE TABLE IF NOT EXISTS contact_methods.emails (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text NOT NULL,
   local_part text NOT NULL,
@@ -92,7 +142,7 @@ CREATE TABLE IF NOT EXISTS person.email_addresses (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT email_addresses_address_kind_check CHECK (
-    address_kind IN ('personal', 'role', 'unknown')
+    address_kind IN ('person', 'role_inbox', 'unknown')
   ),
   CONSTRAINT email_addresses_source_confidence_check CHECK (
     source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
@@ -100,22 +150,22 @@ CREATE TABLE IF NOT EXISTS person.email_addresses (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS email_addresses_email_unique
-  ON person.email_addresses (lower(email));
+  ON contact_methods.emails (lower(email));
 
 CREATE INDEX IF NOT EXISTS email_addresses_website_idx
-  ON person.email_addresses (website_id)
+  ON contact_methods.emails (website_id)
   WHERE website_id IS NOT NULL;
 
-CREATE TABLE IF NOT EXISTS person.person_email_addresses (
+CREATE TABLE IF NOT EXISTS contact_methods.person_email_links (
   person_id uuid NOT NULL REFERENCES person.people(id) ON DELETE CASCADE,
-  email_address_id uuid NOT NULL REFERENCES person.email_addresses(id) ON DELETE CASCADE,
+  email_id uuid NOT NULL REFERENCES contact_methods.emails(id) ON DELETE CASCADE,
   relationship_status text NOT NULL DEFAULT 'candidate',
   is_primary boolean NOT NULL DEFAULT false,
   source_confidence text NOT NULL DEFAULT 'needs-verification',
   association_notes text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (person_id, email_address_id),
+  PRIMARY KEY (person_id, email_id),
   CONSTRAINT person_email_addresses_relationship_status_check CHECK (
     relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
   ),
@@ -125,11 +175,207 @@ CREATE TABLE IF NOT EXISTS person.person_email_addresses (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS person_email_addresses_primary_person_unique
-  ON person.person_email_addresses (person_id)
+  ON contact_methods.person_email_links (person_id)
   WHERE is_primary = true AND relationship_status != 'rejected';
 
 CREATE INDEX IF NOT EXISTS person_email_addresses_email_idx
-  ON person.person_email_addresses (email_address_id);
+  ON contact_methods.person_email_links (email_id);
+
+CREATE TABLE IF NOT EXISTS contact_methods.organization_email_links (
+  organization_id uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE,
+  email_id uuid NOT NULL REFERENCES contact_methods.emails(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (organization_id, email_id),
+  CONSTRAINT organization_email_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT organization_email_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS organization_email_links_primary_organization_unique
+  ON contact_methods.organization_email_links (organization_id)
+  WHERE is_primary = true AND relationship_status != 'rejected';
+
+CREATE INDEX IF NOT EXISTS organization_email_links_email_idx
+  ON contact_methods.organization_email_links (email_id);
+
+CREATE TABLE IF NOT EXISTS contact_methods.linkedin_profiles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  linkedin_url text NOT NULL,
+  normalized_url text NOT NULL,
+  profile_kind text NOT NULL DEFAULT 'unknown',
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  raw_source text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT linkedin_profiles_profile_kind_check CHECK (
+    profile_kind IN ('person', 'organization', 'unknown')
+  ),
+  CONSTRAINT linkedin_profiles_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS linkedin_profiles_normalized_unique
+  ON contact_methods.linkedin_profiles (lower(normalized_url));
+
+CREATE TABLE IF NOT EXISTS contact_methods.person_linkedin_profile_links (
+  person_id uuid NOT NULL REFERENCES person.people(id) ON DELETE CASCADE,
+  linkedin_profile_id uuid NOT NULL REFERENCES contact_methods.linkedin_profiles(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (person_id, linkedin_profile_id),
+  CONSTRAINT person_linkedin_profile_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT person_linkedin_profile_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS contact_methods.organization_linkedin_profile_links (
+  organization_id uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE,
+  linkedin_profile_id uuid NOT NULL REFERENCES contact_methods.linkedin_profiles(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (organization_id, linkedin_profile_id),
+  CONSTRAINT organization_linkedin_profile_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT organization_linkedin_profile_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS contact_methods.phone_numbers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone_number text NOT NULL,
+  normalized_phone_number text,
+  country_hint text,
+  phone_kind text NOT NULL DEFAULT 'unknown',
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  raw_source text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT phone_numbers_phone_kind_check CHECK (
+    phone_kind IN ('person', 'organization', 'role_inbox', 'unknown')
+  ),
+  CONSTRAINT phone_numbers_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS phone_numbers_normalized_unique
+  ON contact_methods.phone_numbers (normalized_phone_number)
+  WHERE normalized_phone_number IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS contact_methods.person_phone_number_links (
+  person_id uuid NOT NULL REFERENCES person.people(id) ON DELETE CASCADE,
+  phone_number_id uuid NOT NULL REFERENCES contact_methods.phone_numbers(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (person_id, phone_number_id),
+  CONSTRAINT person_phone_number_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT person_phone_number_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS contact_methods.organization_phone_number_links (
+  organization_id uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE,
+  phone_number_id uuid NOT NULL REFERENCES contact_methods.phone_numbers(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (organization_id, phone_number_id),
+  CONSTRAINT organization_phone_number_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT organization_phone_number_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS contact_methods.telegram_handles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  telegram_handle text NOT NULL,
+  normalized_handle text NOT NULL,
+  telegram_url text,
+  handle_kind text NOT NULL DEFAULT 'unknown',
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  raw_source text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT telegram_handles_handle_kind_check CHECK (
+    handle_kind IN ('person', 'organization', 'unknown')
+  ),
+  CONSTRAINT telegram_handles_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS telegram_handles_normalized_unique
+  ON contact_methods.telegram_handles (lower(normalized_handle));
+
+CREATE TABLE IF NOT EXISTS contact_methods.person_telegram_handle_links (
+  person_id uuid NOT NULL REFERENCES person.people(id) ON DELETE CASCADE,
+  telegram_handle_id uuid NOT NULL REFERENCES contact_methods.telegram_handles(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (person_id, telegram_handle_id),
+  CONSTRAINT person_telegram_handle_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT person_telegram_handle_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
+
+CREATE TABLE IF NOT EXISTS contact_methods.organization_telegram_handle_links (
+  organization_id uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE,
+  telegram_handle_id uuid NOT NULL REFERENCES contact_methods.telegram_handles(id) ON DELETE CASCADE,
+  relationship_status text NOT NULL DEFAULT 'candidate',
+  is_primary boolean NOT NULL DEFAULT false,
+  source_confidence text NOT NULL DEFAULT 'needs-verification',
+  association_notes text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (organization_id, telegram_handle_id),
+  CONSTRAINT organization_telegram_handle_links_relationship_status_check CHECK (
+    relationship_status IN ('candidate', 'likely', 'claimed', 'rejected')
+  ),
+  CONSTRAINT organization_telegram_handle_links_source_confidence_check CHECK (
+    source_confidence IN ('confirmed-public', 'confirmed-user', 'private-sourced', 'needs-verification')
+  )
+);
 
 CREATE TABLE IF NOT EXISTS crm.groups (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -250,7 +496,7 @@ CREATE TABLE IF NOT EXISTS crm.follow_ups (
   )
 );
 
-CREATE TABLE IF NOT EXISTS public_sources.founder_institute_directory_entries (
+CREATE TABLE IF NOT EXISTS private_sources.founder_institute_directory_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id uuid REFERENCES person.people(id) ON DELETE SET NULL,
   identity_key text NOT NULL,
@@ -289,24 +535,24 @@ CREATE TABLE IF NOT EXISTS public_sources.founder_institute_directory_entries (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS fi_directory_entries_source_unique
-  ON public_sources.founder_institute_directory_entries (
+  ON private_sources.founder_institute_directory_entries (
     lower(identity_key),
     lower(specialization_name),
     lower(city_name)
   );
 
 CREATE INDEX IF NOT EXISTS fi_directory_entries_specialization_idx
-  ON public_sources.founder_institute_directory_entries (lower(specialization_name));
+  ON private_sources.founder_institute_directory_entries (lower(specialization_name));
 
 CREATE INDEX IF NOT EXISTS fi_directory_entries_linkedin_idx
-  ON public_sources.founder_institute_directory_entries (lower(linkedin_url))
+  ON private_sources.founder_institute_directory_entries (lower(linkedin_url))
   WHERE linkedin_url IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS fi_directory_entries_person_idx
-  ON public_sources.founder_institute_directory_entries (person_id)
+  ON private_sources.founder_institute_directory_entries (person_id)
   WHERE person_id IS NOT NULL;
 
-CREATE TABLE IF NOT EXISTS public_sources.interview_source_entries (
+CREATE TABLE IF NOT EXISTS private_sources.ramp_interviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   person_id uuid REFERENCES person.people(id) ON DELETE SET NULL,
   source_row_number integer NOT NULL,
@@ -342,18 +588,18 @@ CREATE TABLE IF NOT EXISTS public_sources.interview_source_entries (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS interview_source_entries_row_unique
-  ON public_sources.interview_source_entries (source_row_number);
+  ON private_sources.ramp_interviews (source_row_number);
 
 CREATE INDEX IF NOT EXISTS interview_source_entries_email_idx
-  ON public_sources.interview_source_entries (lower(email))
+  ON private_sources.ramp_interviews (lower(email))
   WHERE email IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS interview_source_entries_linkedin_idx
-  ON public_sources.interview_source_entries (lower(linkedin_url))
+  ON private_sources.ramp_interviews (lower(linkedin_url))
   WHERE linkedin_url IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS interview_source_entries_person_idx
-  ON public_sources.interview_source_entries (person_id)
+  ON private_sources.ramp_interviews (person_id)
   WHERE person_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS public_sources.http_archive_runs (
@@ -445,6 +691,68 @@ CREATE TABLE IF NOT EXISTS web_enrichment.website_shopify_status (
 
 CREATE INDEX IF NOT EXISTS website_shopify_status_poll_idx
   ON web_enrichment.website_shopify_status (status, next_check_at, locked_at);
+
+CREATE TABLE IF NOT EXISTS web_enrichment.website_contact_discovery_status (
+  website_id uuid PRIMARY KEY REFERENCES business.websites(id) ON DELETE CASCADE,
+  status text NOT NULL DEFAULT 'unknown',
+  checked_at timestamptz,
+  crawl_started_at timestamptz,
+  crawl_finished_at timestamptz,
+  page_count integer NOT NULL DEFAULT 0,
+  found_email_count integer NOT NULL DEFAULT 0,
+  found_linkedin_count integer NOT NULL DEFAULT 0,
+  check_attempts integer NOT NULL DEFAULT 0,
+  last_attempt_at timestamptz,
+  next_check_at timestamptz,
+  crawl_scope jsonb NOT NULL DEFAULT '{}'::jsonb,
+  discovery_summary jsonb NOT NULL DEFAULT '{}'::jsonb,
+  discovery_error text,
+  locked_at timestamptz,
+  locked_by text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT website_contact_discovery_status_check CHECK (
+    status IN ('unknown', 'running', 'completed', 'partial', 'failed')
+  ),
+  CONSTRAINT website_contact_discovery_status_counts_check CHECK (
+    page_count >= 0
+    AND found_email_count >= 0
+    AND found_linkedin_count >= 0
+    AND check_attempts >= 0
+  )
+);
+
+CREATE INDEX IF NOT EXISTS website_contact_discovery_status_poll_idx
+  ON web_enrichment.website_contact_discovery_status (status, next_check_at, locked_at);
+
+CREATE TABLE IF NOT EXISTS web_enrichment.website_contact_discovery_observations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  website_id uuid NOT NULL REFERENCES business.websites(id) ON DELETE CASCADE,
+  email_id uuid REFERENCES contact_methods.emails(id) ON DELETE SET NULL,
+  linkedin_profile_id uuid REFERENCES contact_methods.linkedin_profiles(id) ON DELETE SET NULL,
+  source_url text NOT NULL,
+  observation_kind text NOT NULL,
+  observed_value text NOT NULL,
+  classification text NOT NULL DEFAULT 'unknown',
+  classification_reason text,
+  n8n_execution_id text,
+  observed_at timestamptz NOT NULL DEFAULT now(),
+  evidence jsonb NOT NULL DEFAULT '{}'::jsonb,
+  CONSTRAINT website_contact_discovery_observations_kind_check CHECK (
+    observation_kind IN ('email', 'linkedin_profile')
+  )
+);
+
+CREATE INDEX IF NOT EXISTS website_contact_discovery_observations_website_idx
+  ON web_enrichment.website_contact_discovery_observations (website_id);
+
+CREATE INDEX IF NOT EXISTS website_contact_discovery_observations_email_idx
+  ON web_enrichment.website_contact_discovery_observations (email_id)
+  WHERE email_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS website_contact_discovery_observations_linkedin_idx
+  ON web_enrichment.website_contact_discovery_observations (linkedin_profile_id)
+  WHERE linkedin_profile_id IS NOT NULL;
 
 DO $$
 DECLARE
@@ -608,10 +916,10 @@ BEGIN
     EXECUTE format($copy_email_domains$
       INSERT INTO business.websites AS website (domain, raw_input, domain_type)
       SELECT DISTINCT
-        legacy.email_domain,
-        legacy.email_domain,
+        split_part(legacy.email, '@', 2),
+        split_part(legacy.email, '@', 2),
         CASE
-          WHEN lower(legacy.email_domain) IN (
+          WHEN lower(split_part(legacy.email, '@', 2)) IN (
             'gmail.com',
             'googlemail.com',
             'outlook.com',
@@ -630,8 +938,8 @@ BEGIN
           ELSE 'unknown'
         END
       FROM %s legacy
-      WHERE legacy.email_domain IS NOT NULL
-        AND btrim(legacy.email_domain) != ''
+      WHERE split_part(legacy.email, '@', 2) IS NOT NULL
+        AND btrim(split_part(legacy.email, '@', 2)) != ''
       ON CONFLICT (lower(domain)) DO UPDATE
       SET
         raw_input = COALESCE(website.raw_input, EXCLUDED.raw_input),
@@ -644,7 +952,7 @@ BEGIN
     $copy_email_domains$, legacy_table);
 
     EXECUTE format($copy_email_addresses$
-      INSERT INTO person.email_addresses (
+      INSERT INTO contact_methods.emails (
         id,
         email,
         local_part,
@@ -662,7 +970,7 @@ BEGIN
         COALESCE(legacy.website_id, website.id),
         CASE
           WHEN legacy.local_part IN ('hello', 'info', 'support', 'sales', 'contact', 'team', 'admin', 'wholesale')
-            THEN 'role'
+            THEN 'role_inbox'
           ELSE 'unknown'
         END,
         legacy.source_confidence,
@@ -671,7 +979,7 @@ BEGIN
         legacy.updated_at
       FROM %s legacy
       LEFT JOIN business.websites website
-        ON lower(website.domain) = lower(legacy.email_domain)
+        ON lower(website.domain) = lower(split_part(legacy.email, '@', 2))
       ON CONFLICT (id) DO UPDATE
       SET
         email = EXCLUDED.email,
@@ -690,12 +998,61 @@ DO $$
 DECLARE
   legacy_table regclass;
 BEGIN
+  legacy_table := COALESCE(to_regclass('person.email_addresses'), to_regclass('person.email_addresses_legacy_backup'));
+  IF legacy_table IS NOT NULL THEN
+    EXECUTE format($copy_person_schema_email_addresses$
+      INSERT INTO contact_methods.emails (
+        id,
+        email,
+        local_part,
+        website_id,
+        address_kind,
+        source_confidence,
+        raw_source,
+        created_at,
+        updated_at
+      )
+      SELECT
+        legacy.id,
+        legacy.email,
+        legacy.local_part,
+        legacy.website_id,
+        CASE legacy.address_kind
+          WHEN 'personal' THEN 'person'
+          WHEN 'role' THEN 'role_inbox'
+          WHEN 'person' THEN 'person'
+          WHEN 'role_inbox' THEN 'role_inbox'
+          ELSE 'unknown'
+        END,
+        legacy.source_confidence,
+        legacy.raw_source,
+        legacy.created_at,
+        legacy.updated_at
+      FROM %s legacy
+      ON CONFLICT (id) DO UPDATE
+      SET
+        email = EXCLUDED.email,
+        local_part = EXCLUDED.local_part,
+        website_id = EXCLUDED.website_id,
+        address_kind = EXCLUDED.address_kind,
+        source_confidence = EXCLUDED.source_confidence,
+        raw_source = EXCLUDED.raw_source,
+        updated_at = EXCLUDED.updated_at
+    $copy_person_schema_email_addresses$, legacy_table);
+  END IF;
+END;
+$$;
+
+DO $$
+DECLARE
+  legacy_table regclass;
+BEGIN
   legacy_table := COALESCE(to_regclass('public.crm_contact_email_addresses'), to_regclass('public.crm_contact_email_addresses_legacy_backup'));
   IF legacy_table IS NOT NULL THEN
     EXECUTE format($copy_person_email_addresses$
-      INSERT INTO person.person_email_addresses (
+      INSERT INTO contact_methods.person_email_links (
         person_id,
-        email_address_id,
+        email_id,
         relationship_status,
         is_primary,
         source_confidence,
@@ -713,7 +1070,7 @@ BEGIN
         legacy.created_at,
         legacy.updated_at
       FROM %s legacy
-      ON CONFLICT (person_id, email_address_id) DO UPDATE
+      ON CONFLICT (person_id, email_id) DO UPDATE
       SET
         relationship_status = EXCLUDED.relationship_status,
         is_primary = EXCLUDED.is_primary,
@@ -1059,7 +1416,7 @@ BEGIN
   legacy_table := COALESCE(to_regclass('public.crm_founder_institute_directory_entries'), to_regclass('public.crm_founder_institute_directory_entries_legacy_backup'));
   IF legacy_table IS NOT NULL THEN
     EXECUTE format($copy_fi_entries$
-      INSERT INTO public_sources.founder_institute_directory_entries (
+      INSERT INTO private_sources.founder_institute_directory_entries (
         id,
         person_id,
         identity_key,
@@ -1144,7 +1501,7 @@ BEGIN
   legacy_table := COALESCE(to_regclass('public.crm_interview_source_entries'), to_regclass('public.crm_interview_source_entries_legacy_backup'));
   IF legacy_table IS NOT NULL THEN
     EXECUTE format($copy_interview_entries$
-      INSERT INTO public_sources.interview_source_entries (
+      INSERT INTO private_sources.ramp_interviews (
         id,
         person_id,
         source_row_number,
@@ -1321,21 +1678,93 @@ CREATE TRIGGER website_lists_set_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
+DROP TRIGGER IF EXISTS organizations_set_updated_at ON business.organizations;
+CREATE TRIGGER organizations_set_updated_at
+  BEFORE UPDATE ON business.organizations
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS organization_websites_set_updated_at ON business.organization_websites;
+CREATE TRIGGER organization_websites_set_updated_at
+  BEFORE UPDATE ON business.organization_websites
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
 DROP TRIGGER IF EXISTS people_set_updated_at ON person.people;
 CREATE TRIGGER people_set_updated_at
   BEFORE UPDATE ON person.people
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
-DROP TRIGGER IF EXISTS email_addresses_set_updated_at ON person.email_addresses;
+DROP TRIGGER IF EXISTS email_addresses_set_updated_at ON contact_methods.emails;
 CREATE TRIGGER email_addresses_set_updated_at
-  BEFORE UPDATE ON person.email_addresses
+  BEFORE UPDATE ON contact_methods.emails
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
-DROP TRIGGER IF EXISTS person_email_addresses_set_updated_at ON person.person_email_addresses;
+DROP TRIGGER IF EXISTS person_email_addresses_set_updated_at ON contact_methods.person_email_links;
 CREATE TRIGGER person_email_addresses_set_updated_at
-  BEFORE UPDATE ON person.person_email_addresses
+  BEFORE UPDATE ON contact_methods.person_email_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS organization_email_links_set_updated_at ON contact_methods.organization_email_links;
+CREATE TRIGGER organization_email_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.organization_email_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS linkedin_profiles_set_updated_at ON contact_methods.linkedin_profiles;
+CREATE TRIGGER linkedin_profiles_set_updated_at
+  BEFORE UPDATE ON contact_methods.linkedin_profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS person_linkedin_profile_links_set_updated_at ON contact_methods.person_linkedin_profile_links;
+CREATE TRIGGER person_linkedin_profile_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.person_linkedin_profile_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS organization_linkedin_profile_links_set_updated_at ON contact_methods.organization_linkedin_profile_links;
+CREATE TRIGGER organization_linkedin_profile_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.organization_linkedin_profile_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS phone_numbers_set_updated_at ON contact_methods.phone_numbers;
+CREATE TRIGGER phone_numbers_set_updated_at
+  BEFORE UPDATE ON contact_methods.phone_numbers
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS person_phone_number_links_set_updated_at ON contact_methods.person_phone_number_links;
+CREATE TRIGGER person_phone_number_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.person_phone_number_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS organization_phone_number_links_set_updated_at ON contact_methods.organization_phone_number_links;
+CREATE TRIGGER organization_phone_number_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.organization_phone_number_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS telegram_handles_set_updated_at ON contact_methods.telegram_handles;
+CREATE TRIGGER telegram_handles_set_updated_at
+  BEFORE UPDATE ON contact_methods.telegram_handles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS person_telegram_handle_links_set_updated_at ON contact_methods.person_telegram_handle_links;
+CREATE TRIGGER person_telegram_handle_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.person_telegram_handle_links
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS organization_telegram_handle_links_set_updated_at ON contact_methods.organization_telegram_handle_links;
+CREATE TRIGGER organization_telegram_handle_links_set_updated_at
+  BEFORE UPDATE ON contact_methods.organization_telegram_handle_links
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
@@ -1363,15 +1792,15 @@ CREATE TRIGGER follow_ups_set_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
-DROP TRIGGER IF EXISTS fi_directory_entries_set_updated_at ON public_sources.founder_institute_directory_entries;
+DROP TRIGGER IF EXISTS fi_directory_entries_set_updated_at ON private_sources.founder_institute_directory_entries;
 CREATE TRIGGER fi_directory_entries_set_updated_at
-  BEFORE UPDATE ON public_sources.founder_institute_directory_entries
+  BEFORE UPDATE ON private_sources.founder_institute_directory_entries
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
-DROP TRIGGER IF EXISTS interview_source_entries_set_updated_at ON public_sources.interview_source_entries;
+DROP TRIGGER IF EXISTS interview_source_entries_set_updated_at ON private_sources.ramp_interviews;
 CREATE TRIGGER interview_source_entries_set_updated_at
-  BEFORE UPDATE ON public_sources.interview_source_entries
+  BEFORE UPDATE ON private_sources.ramp_interviews
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
 
@@ -1392,6 +1821,29 @@ CREATE TRIGGER website_shopify_status_set_updated_at
   BEFORE UPDATE ON web_enrichment.website_shopify_status
   FOR EACH ROW
   EXECUTE FUNCTION public.crm_set_updated_at();
+
+DROP TRIGGER IF EXISTS website_contact_discovery_status_set_updated_at ON web_enrichment.website_contact_discovery_status;
+CREATE TRIGGER website_contact_discovery_status_set_updated_at
+  BEFORE UPDATE ON web_enrichment.website_contact_discovery_status
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_set_updated_at();
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'person' AND c.relname = 'person_email_addresses' AND c.relkind IN ('r', 'p')) AND to_regclass('person.person_email_addresses_legacy_backup') IS NULL THEN
+    ALTER TABLE person.person_email_addresses RENAME TO person_email_addresses_legacy_backup;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'person' AND c.relname = 'email_addresses' AND c.relkind IN ('r', 'p')) AND to_regclass('person.email_addresses_legacy_backup') IS NULL THEN
+    ALTER TABLE person.email_addresses RENAME TO email_addresses_legacy_backup;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public_sources' AND c.relname = 'founder_institute_directory_entries' AND c.relkind IN ('r', 'p')) AND to_regclass('public_sources.founder_institute_directory_entries_legacy_backup') IS NULL THEN
+    ALTER TABLE public_sources.founder_institute_directory_entries RENAME TO founder_institute_directory_entries_legacy_backup;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public_sources' AND c.relname = 'interview_source_entries' AND c.relkind IN ('r', 'p')) AND to_regclass('public_sources.interview_source_entries_legacy_backup') IS NULL THEN
+    ALTER TABLE public_sources.interview_source_entries RENAME TO interview_source_entries_legacy_backup;
+  END IF;
+END;
+$$;
 
 DO $$
 BEGIN
@@ -1444,6 +1896,88 @@ BEGIN
     regexp_replace(TG_TABLE_NAME, '^crm_', '');
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE VIEW person.email_addresses AS
+SELECT
+  id,
+  email,
+  local_part,
+  website_id,
+  address_kind,
+  source_confidence,
+  raw_source,
+  created_at,
+  updated_at
+FROM contact_methods.emails;
+
+CREATE OR REPLACE VIEW person.person_email_addresses AS
+SELECT
+  person_id,
+  email_id AS email_address_id,
+  relationship_status,
+  is_primary,
+  source_confidence,
+  association_notes,
+  created_at,
+  updated_at
+FROM contact_methods.person_email_links;
+
+CREATE OR REPLACE VIEW public_sources.founder_institute_directory_entries AS
+SELECT
+  id,
+  person_id,
+  identity_key,
+  identity_key_type,
+  display_name,
+  first_name,
+  last_name,
+  organization,
+  role_title,
+  linkedin_url,
+  profile_image_url,
+  specialization_name,
+  city_name,
+  source_url,
+  source_page,
+  source_position,
+  card_text,
+  mentor_notes,
+  raw_card,
+  source_confidence,
+  collected_at,
+  created_at,
+  updated_at
+FROM private_sources.founder_institute_directory_entries;
+
+CREATE OR REPLACE VIEW public_sources.interview_source_entries AS
+SELECT
+  id,
+  person_id,
+  source_row_number,
+  source_name,
+  picture,
+  linkedin_url,
+  interview_status,
+  source_date_text,
+  interview_at,
+  contact_mode,
+  company,
+  role_title,
+  ecosystem_role,
+  email,
+  phone,
+  about,
+  interview_strategy,
+  interview_notes,
+  transcript,
+  jtbd_analysis,
+  industry,
+  source_payload,
+  source_confidence,
+  collected_at,
+  created_at,
+  updated_at
+FROM private_sources.ramp_interviews;
 
 CREATE OR REPLACE VIEW public.crm_contacts AS
 SELECT
@@ -1501,19 +2035,19 @@ SELECT
   raw_source,
   created_at,
   updated_at
-FROM person.email_addresses;
+FROM contact_methods.emails;
 
 CREATE OR REPLACE VIEW public.crm_contact_email_addresses AS
 SELECT
   person_id AS contact_id,
-  email_address_id,
+  email_id AS email_address_id,
   relationship_status,
   is_primary,
   source_confidence,
   association_notes,
   created_at,
   updated_at
-FROM person.person_email_addresses;
+FROM contact_methods.person_email_links;
 
 CREATE OR REPLACE VIEW public.crm_groups AS
 SELECT
@@ -1640,7 +2174,7 @@ SELECT
   collected_at,
   created_at,
   updated_at
-FROM public_sources.founder_institute_directory_entries;
+FROM private_sources.founder_institute_directory_entries;
 
 CREATE OR REPLACE VIEW public.crm_interview_source_entries AS
 SELECT
@@ -1670,7 +2204,31 @@ SELECT
   collected_at,
   created_at,
   updated_at
-FROM public_sources.interview_source_entries;
+FROM private_sources.ramp_interviews;
+
+DROP TRIGGER IF EXISTS person_email_addresses_read_only ON person.email_addresses;
+CREATE TRIGGER person_email_addresses_read_only
+  INSTEAD OF INSERT OR UPDATE OR DELETE ON person.email_addresses
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_compatibility_view_is_read_only();
+
+DROP TRIGGER IF EXISTS person_person_email_addresses_read_only ON person.person_email_addresses;
+CREATE TRIGGER person_person_email_addresses_read_only
+  INSTEAD OF INSERT OR UPDATE OR DELETE ON person.person_email_addresses
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_compatibility_view_is_read_only();
+
+DROP TRIGGER IF EXISTS public_sources_fi_directory_entries_read_only ON public_sources.founder_institute_directory_entries;
+CREATE TRIGGER public_sources_fi_directory_entries_read_only
+  INSTEAD OF INSERT OR UPDATE OR DELETE ON public_sources.founder_institute_directory_entries
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_compatibility_view_is_read_only();
+
+DROP TRIGGER IF EXISTS public_sources_interview_source_entries_read_only ON public_sources.interview_source_entries;
+CREATE TRIGGER public_sources_interview_source_entries_read_only
+  INSTEAD OF INSERT OR UPDATE OR DELETE ON public_sources.interview_source_entries
+  FOR EACH ROW
+  EXECUTE FUNCTION public.crm_compatibility_view_is_read_only();
 
 DROP TRIGGER IF EXISTS crm_contacts_read_only ON public.crm_contacts;
 CREATE TRIGGER crm_contacts_read_only

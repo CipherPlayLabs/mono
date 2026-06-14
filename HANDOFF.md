@@ -15,6 +15,64 @@
   - Website contact discovery should crawl all discoverable same-domain HTML pages, skip PDFs/media/binary assets, extract emails and LinkedIn URLs found on the site, and avoid external search in V1.
 - Next agent should work contract-first from `infra/crm/tests/test_schema_contract.py`, then update `infra/crm/schema/001-crm.sql`, docs, the n8n workflow contract, and this handoff.
 
+## 2026-06-14 CRM Private Sources and Contact Methods Implementation Update
+
+- Implemented the approved schema contract for private-source provenance, canonical contact methods, business organizations, and Website Contact Discovery.
+- Key repo changes:
+  - `infra/crm/tests/test_schema_contract.py`: expanded contract tests for `private_sources`, `contact_methods`, `business.organizations`, organization/Website evidence links, contact-method evidence links, Website Contact Discovery tables, compatibility views, and docs/workflow contracts.
+  - `infra/crm/schema/001-crm.sql`: added `private_sources` and `contact_methods`; moved FI/Ramp source tables to `private_sources`; made `contact_methods.emails` canonical; added LinkedIn, phone, and Telegram contact-method tables; added person/organization contact-method evidence links; added `business.organizations` and `business.organization_websites`; added Website Contact Discovery status/observation tables; added migration copies, backup renames, read-only compatibility views, and updated triggers.
+  - `infra/crm/importers/founder_institute.py` and `infra/crm/tests/test_founder_institute_importer.py`: changed the FI importer target to `private_sources.founder_institute_directory_entries`.
+  - `docs/contexts/crm.md`, `infra/crm/README.md`, and `infra/n8n/README.md`: updated schema boundaries and workflow targets.
+  - `infra/n8n/workflows/crm-website-shopify-enrichment.md`: changed email-domain discovery from `person.email_addresses` to `contact_methods.emails`.
+  - `infra/n8n/workflows/website-contact-discovery.md`: added the repo-owned workflow contract for sitewide same-domain HTML crawling, email/LinkedIn extraction, canonical method upserts, observations, and status rows.
+- Verification run from repo root:
+
+```powershell
+python -m unittest infra.crm.tests.test_schema_contract infra.crm.tests.test_founder_institute_importer
+```
+
+  - Result: 23 tests passed.
+
+```powershell
+git diff --check
+```
+
+  - Result: passed; Git printed only existing Windows line-ending normalization warnings.
+- Local limitation: no local Postgres parser/smoke was run here; production schema application still needs an approved operator path.
+
+Next production rollout steps:
+
+1. Push this branch and open the preview PR first, then merge preview to main after review.
+2. From an approved operator environment, apply `infra/crm/schema/001-crm.sql` to the `crm` database.
+3. Capture pre/post counts for:
+   - `private_sources.founder_institute_directory_entries`
+   - `private_sources.ramp_interviews`
+   - `contact_methods.emails`
+   - `contact_methods.person_email_links`
+   - `business.organizations`
+   - `business.organization_websites`
+   - `web_enrichment.website_contact_discovery_status`
+   - `web_enrichment.website_contact_discovery_observations`
+4. Validate no dangling contact-method links and confirm old compatibility views still read:
+   - `person.email_addresses`
+   - `person.person_email_addresses`
+   - `public.crm_email_addresses`
+   - `public.crm_contact_email_addresses`
+   - `public.crm_founder_institute_directory_entries`
+   - `public.crm_interview_source_entries`
+   - `public_sources.founder_institute_directory_entries`
+   - `public_sources.interview_source_entries`
+5. Visually confirm NocoDB review surfaces can see the new canonical tables/views before retiring operator reliance on old names.
+6. Create `CipherPlay Website Contact Discovery` in n8n with a small batch, then run a manual smoke that confirms:
+   - claimed rows are explicitly loaded by `locked_by = $execution.id`
+   - same-domain HTML pages are crawled
+   - PDFs/media/binary assets are skipped
+   - emails land in `contact_methods.emails`
+   - LinkedIn URLs land in `contact_methods.linkedin_profiles`
+   - observations land in `web_enrichment.website_contact_discovery_observations`
+   - every attempted Website gets a `web_enrichment.website_contact_discovery_status` row, including zero-result crawls
+7. Record the production workflow ID, execution IDs, row counts, and any lock cleanup in this `HANDOFF.md`.
+
 ## 2026-06-14 n8n Production Rollout Update
 
 - Applied the schema-native CRM migration against production Cloud SQL through temporary n8n workflow `I2eLi4gWlee3BZVa`.

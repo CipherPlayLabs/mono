@@ -17,6 +17,9 @@ N8N_WORKFLOW_CONTRACT_PATH = (
 HTTP_ARCHIVE_WORKFLOW_CONTRACT_PATH = (
     REPO_ROOT / "infra" / "n8n" / "workflows" / "http-archive-shopify-daily-pipeline.md"
 )
+WEBSITE_CONTACT_DISCOVERY_WORKFLOW_CONTRACT_PATH = (
+    REPO_ROOT / "infra" / "n8n" / "workflows" / "website-contact-discovery.md"
+)
 
 
 class CrmSchemaContractTests(unittest.TestCase):
@@ -47,7 +50,9 @@ class CrmSchemaContractTests(unittest.TestCase):
             "business",
             "person",
             "crm",
+            "private_sources",
             "public_sources",
+            "contact_methods",
             "web_enrichment",
         ]:
             with self.subTest(schema_name=schema_name):
@@ -129,10 +134,67 @@ class CrmSchemaContractTests(unittest.TestCase):
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, self.schema)
 
-    def test_person_tables_store_people_email_identity_and_person_email_links(self):
+    def test_web_enrichment_tracks_website_contact_discovery_status_and_observations(self):
+        status = self.table_block("web_enrichment.website_contact_discovery_status")
+        observations = self.table_block("web_enrichment.website_contact_discovery_observations")
+
+        for column_name, column_type in [
+            ("website_id", "uuid PRIMARY KEY REFERENCES business.websites(id) ON DELETE CASCADE"),
+            ("status", "text NOT NULL DEFAULT 'unknown'"),
+            ("checked_at", "timestamptz"),
+            ("crawl_started_at", "timestamptz"),
+            ("crawl_finished_at", "timestamptz"),
+            ("page_count", "integer NOT NULL DEFAULT 0"),
+            ("found_email_count", "integer NOT NULL DEFAULT 0"),
+            ("found_linkedin_count", "integer NOT NULL DEFAULT 0"),
+            ("check_attempts", "integer NOT NULL DEFAULT 0"),
+            ("crawl_scope", "jsonb NOT NULL DEFAULT '{}'::jsonb"),
+            ("discovery_summary", "jsonb NOT NULL DEFAULT '{}'::jsonb"),
+            ("discovery_error", "text"),
+            ("locked_at", "timestamptz"),
+            ("locked_by", "text"),
+        ]:
+            with self.subTest(table="web_enrichment.website_contact_discovery_status", column_name=column_name):
+                self.assertColumn(status, column_name, column_type)
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("website_id", "uuid NOT NULL REFERENCES business.websites(id) ON DELETE CASCADE"),
+            ("email_id", "uuid REFERENCES contact_methods.emails(id) ON DELETE SET NULL"),
+            (
+                "linkedin_profile_id",
+                "uuid REFERENCES contact_methods.linkedin_profiles(id) ON DELETE SET NULL",
+            ),
+            ("source_url", "text NOT NULL"),
+            ("observation_kind", "text NOT NULL"),
+            ("observed_value", "text NOT NULL"),
+            ("classification", "text NOT NULL DEFAULT 'unknown'"),
+            ("classification_reason", "text"),
+            ("n8n_execution_id", "text"),
+            ("evidence", "jsonb NOT NULL DEFAULT '{}'::jsonb"),
+        ]:
+            with self.subTest(
+                table="web_enrichment.website_contact_discovery_observations",
+                column_name=column_name,
+            ):
+                self.assertColumn(observations, column_name, column_type)
+
+        expected_schema_fragments = [
+            "status IN ('unknown', 'running', 'completed', 'partial', 'failed')",
+            "observation_kind IN ('email', 'linkedin_profile')",
+            "CREATE INDEX IF NOT EXISTS website_contact_discovery_status_poll_idx",
+            "ON web_enrichment.website_contact_discovery_status (status, next_check_at, locked_at)",
+            "CREATE INDEX IF NOT EXISTS website_contact_discovery_observations_website_idx",
+            "ON web_enrichment.website_contact_discovery_observations (website_id)",
+            "DROP TRIGGER IF EXISTS website_contact_discovery_status_set_updated_at ON web_enrichment.website_contact_discovery_status",
+        ]
+
+        for fragment in expected_schema_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, self.schema)
+
+    def test_person_people_stores_human_identity_only(self):
         people = self.table_block("person.people")
-        email_addresses = self.table_block("person.email_addresses")
-        person_email_addresses = self.table_block("person.person_email_addresses")
 
         for column_name, column_type in [
             ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
@@ -146,6 +208,11 @@ class CrmSchemaContractTests(unittest.TestCase):
             with self.subTest(table="person.people", column_name=column_name):
                 self.assertColumn(people, column_name, column_type)
 
+    def test_contact_methods_store_email_identity_and_evidence_links(self):
+        emails = self.table_block("contact_methods.emails")
+        person_email_links = self.table_block("contact_methods.person_email_links")
+        organization_email_links = self.table_block("contact_methods.organization_email_links")
+
         for column_name, column_type in [
             ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
             ("email", "text NOT NULL"),
@@ -154,28 +221,110 @@ class CrmSchemaContractTests(unittest.TestCase):
             ("address_kind", "text NOT NULL DEFAULT 'unknown'"),
             ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
         ]:
-            with self.subTest(table="person.email_addresses", column_name=column_name):
-                self.assertColumn(email_addresses, column_name, column_type)
+            with self.subTest(table="contact_methods.emails", column_name=column_name):
+                self.assertColumn(emails, column_name, column_type)
 
         for column_name, column_type in [
             ("person_id", "uuid NOT NULL REFERENCES person.people(id) ON DELETE CASCADE"),
             (
-                "email_address_id",
-                "uuid NOT NULL REFERENCES person.email_addresses(id) ON DELETE CASCADE",
+                "email_id",
+                "uuid NOT NULL REFERENCES contact_methods.emails(id) ON DELETE CASCADE",
             ),
             ("relationship_status", "text NOT NULL DEFAULT 'candidate'"),
             ("is_primary", "boolean NOT NULL DEFAULT false"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+            ("association_notes", "text"),
         ]:
-            with self.subTest(table="person.person_email_addresses", column_name=column_name):
-                self.assertColumn(person_email_addresses, column_name, column_type)
+            with self.subTest(table="contact_methods.person_email_links", column_name=column_name):
+                self.assertColumn(person_email_links, column_name, column_type)
+
+        for column_name, column_type in [
+            (
+                "organization_id",
+                "uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE",
+            ),
+            (
+                "email_id",
+                "uuid NOT NULL REFERENCES contact_methods.emails(id) ON DELETE CASCADE",
+            ),
+            ("relationship_status", "text NOT NULL DEFAULT 'candidate'"),
+            ("is_primary", "boolean NOT NULL DEFAULT false"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+            ("association_notes", "text"),
+        ]:
+            with self.subTest(table="contact_methods.organization_email_links", column_name=column_name):
+                self.assertColumn(organization_email_links, column_name, column_type)
 
         expected_schema_fragments = [
-            "address_kind IN ('personal', 'role', 'unknown')",
+            "address_kind IN ('person', 'role_inbox', 'unknown')",
             "CREATE UNIQUE INDEX IF NOT EXISTS email_addresses_email_unique",
-            "ON person.email_addresses (lower(email))",
-            "PRIMARY KEY (person_id, email_address_id)",
+            "ON contact_methods.emails (lower(email))",
+            "PRIMARY KEY (person_id, email_id)",
             "CREATE UNIQUE INDEX IF NOT EXISTS person_email_addresses_primary_person_unique",
-            "ON person.person_email_addresses (person_id)",
+            "ON contact_methods.person_email_links (person_id)",
+            "CREATE UNIQUE INDEX IF NOT EXISTS organization_email_links_primary_organization_unique",
+            "ON contact_methods.organization_email_links (organization_id)",
+            "CREATE OR REPLACE VIEW person.email_addresses AS",
+            "FROM contact_methods.emails",
+            "CREATE OR REPLACE VIEW person.person_email_addresses AS",
+            "FROM contact_methods.person_email_links",
+        ]
+
+        for fragment in expected_schema_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, self.schema)
+
+    def test_contact_methods_store_linkedin_phone_telegram_identity_and_evidence_links(self):
+        linkedin_profiles = self.table_block("contact_methods.linkedin_profiles")
+        phone_numbers = self.table_block("contact_methods.phone_numbers")
+        telegram_handles = self.table_block("contact_methods.telegram_handles")
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("linkedin_url", "text NOT NULL"),
+            ("normalized_url", "text NOT NULL"),
+            ("profile_kind", "text NOT NULL DEFAULT 'unknown'"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+        ]:
+            with self.subTest(table="contact_methods.linkedin_profiles", column_name=column_name):
+                self.assertColumn(linkedin_profiles, column_name, column_type)
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("phone_number", "text NOT NULL"),
+            ("normalized_phone_number", "text"),
+            ("country_hint", "text"),
+            ("phone_kind", "text NOT NULL DEFAULT 'unknown'"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+        ]:
+            with self.subTest(table="contact_methods.phone_numbers", column_name=column_name):
+                self.assertColumn(phone_numbers, column_name, column_type)
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("telegram_handle", "text NOT NULL"),
+            ("normalized_handle", "text NOT NULL"),
+            ("telegram_url", "text"),
+            ("handle_kind", "text NOT NULL DEFAULT 'unknown'"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+        ]:
+            with self.subTest(table="contact_methods.telegram_handles", column_name=column_name):
+                self.assertColumn(telegram_handles, column_name, column_type)
+
+        expected_schema_fragments = [
+            "profile_kind IN ('person', 'organization', 'unknown')",
+            "CREATE UNIQUE INDEX IF NOT EXISTS linkedin_profiles_normalized_unique",
+            "ON contact_methods.linkedin_profiles (lower(normalized_url))",
+            "CREATE UNIQUE INDEX IF NOT EXISTS phone_numbers_normalized_unique",
+            "ON contact_methods.phone_numbers (normalized_phone_number)",
+            "CREATE UNIQUE INDEX IF NOT EXISTS telegram_handles_normalized_unique",
+            "ON contact_methods.telegram_handles (lower(normalized_handle))",
+            "CREATE TABLE IF NOT EXISTS contact_methods.person_linkedin_profile_links",
+            "CREATE TABLE IF NOT EXISTS contact_methods.organization_linkedin_profile_links",
+            "CREATE TABLE IF NOT EXISTS contact_methods.person_phone_number_links",
+            "CREATE TABLE IF NOT EXISTS contact_methods.organization_phone_number_links",
+            "CREATE TABLE IF NOT EXISTS contact_methods.person_telegram_handle_links",
+            "CREATE TABLE IF NOT EXISTS contact_methods.organization_telegram_handle_links",
         ]
 
         for fragment in expected_schema_fragments:
@@ -265,8 +414,75 @@ class CrmSchemaContractTests(unittest.TestCase):
         )
         self.assertIn("'http-archive-shopify-daily'", self.schema)
 
-    def test_public_source_tables_preserve_existing_source_dataset_contracts(self):
-        table = self.table_block("public_sources.interview_source_entries")
+    def test_business_organizations_and_website_links_are_evidence_associations(self):
+        organizations = self.table_block("business.organizations")
+        organization_websites = self.table_block("business.organization_websites")
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("display_name", "text NOT NULL"),
+            ("legal_name", "text"),
+            ("organization_kind", "text NOT NULL DEFAULT 'unknown'"),
+            ("relationship_type", "text"),
+            ("relationship_stage", "text"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+            ("owner", "text NOT NULL DEFAULT 'Allan'"),
+            ("notes", "text"),
+        ]:
+            with self.subTest(table="business.organizations", column_name=column_name):
+                self.assertColumn(organizations, column_name, column_type)
+
+        for column_name, column_type in [
+            (
+                "organization_id",
+                "uuid NOT NULL REFERENCES business.organizations(id) ON DELETE CASCADE",
+            ),
+            (
+                "website_id",
+                "uuid NOT NULL REFERENCES business.websites(id) ON DELETE CASCADE",
+            ),
+            ("relationship_status", "text NOT NULL DEFAULT 'candidate'"),
+            ("is_primary", "boolean NOT NULL DEFAULT false"),
+            ("source_confidence", "text NOT NULL DEFAULT 'needs-verification'"),
+            ("association_notes", "text"),
+        ]:
+            with self.subTest(table="business.organization_websites", column_name=column_name):
+                self.assertColumn(organization_websites, column_name, column_type)
+
+        expected_schema_fragments = [
+            "organization_kind IN ('company', 'brand', 'storefront_operator', 'investor_firm', 'agency', 'unknown')",
+            "PRIMARY KEY (organization_id, website_id)",
+            "CREATE UNIQUE INDEX IF NOT EXISTS organization_websites_primary_organization_unique",
+            "ON business.organization_websites (organization_id)",
+            "WHERE is_primary = true AND relationship_status != 'rejected'",
+        ]
+
+        for fragment in expected_schema_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, self.schema)
+
+        self.assertNotIn("organization_id uuid", self.table_block("business.websites"))
+
+    def test_private_source_tables_preserve_existing_source_dataset_contracts(self):
+        fi_table = self.table_block("private_sources.founder_institute_directory_entries")
+        ramp_table = self.table_block("private_sources.ramp_interviews")
+
+        for column_name, column_type in [
+            ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
+            ("person_id", "uuid REFERENCES person.people(id) ON DELETE SET NULL"),
+            ("identity_key", "text NOT NULL"),
+            ("identity_key_type", "text NOT NULL"),
+            ("display_name", "text NOT NULL"),
+            ("linkedin_url", "text"),
+            ("specialization_name", "text NOT NULL"),
+            ("city_name", "text NOT NULL DEFAULT 'All'"),
+            ("source_url", "text NOT NULL"),
+            ("source_page", "integer NOT NULL"),
+            ("raw_card", "jsonb NOT NULL DEFAULT '{}'::jsonb"),
+            ("source_confidence", "text NOT NULL DEFAULT 'private-sourced'"),
+        ]:
+            with self.subTest(table="private_sources.founder_institute_directory_entries", column_name=column_name):
+                self.assertColumn(fi_table, column_name, column_type)
 
         expected_columns = [
             ("id", "uuid PRIMARY KEY DEFAULT gen_random_uuid()"),
@@ -299,29 +515,34 @@ class CrmSchemaContractTests(unittest.TestCase):
 
         for column_name, column_type in expected_columns:
             with self.subTest(column_name=column_name):
-                self.assertColumn(table, column_name, column_type)
+                self.assertColumn(ramp_table, column_name, column_type)
 
         expected_schema_fragments = [
+            "CREATE UNIQUE INDEX IF NOT EXISTS fi_directory_entries_source_unique",
+            "ON private_sources.founder_institute_directory_entries",
             "CREATE UNIQUE INDEX IF NOT EXISTS interview_source_entries_row_unique",
-            "ON public_sources.interview_source_entries (source_row_number)",
+            "ON private_sources.ramp_interviews (source_row_number)",
             "CREATE INDEX IF NOT EXISTS interview_source_entries_email_idx",
-            "ON public_sources.interview_source_entries (lower(email))",
+            "ON private_sources.ramp_interviews (lower(email))",
             "CREATE INDEX IF NOT EXISTS interview_source_entries_linkedin_idx",
-            "ON public_sources.interview_source_entries (lower(linkedin_url))",
+            "ON private_sources.ramp_interviews (lower(linkedin_url))",
             "CREATE INDEX IF NOT EXISTS interview_source_entries_person_idx",
-            "ON public_sources.interview_source_entries (person_id)",
-            "DROP TRIGGER IF EXISTS interview_source_entries_set_updated_at ON public_sources.interview_source_entries",
+            "ON private_sources.ramp_interviews (person_id)",
+            "DROP TRIGGER IF EXISTS fi_directory_entries_set_updated_at ON private_sources.founder_institute_directory_entries",
+            "DROP TRIGGER IF EXISTS interview_source_entries_set_updated_at ON private_sources.ramp_interviews",
             "CREATE TRIGGER interview_source_entries_set_updated_at",
-            "BEFORE UPDATE ON public_sources.interview_source_entries",
+            "BEFORE UPDATE ON private_sources.ramp_interviews",
         ]
 
         for fragment in expected_schema_fragments:
             with self.subTest(fragment=fragment):
                 self.assertIn(fragment, self.schema)
 
-    def test_crm_context_mentions_interview_source_data(self):
-        self.assertIn("public_sources.interview_source_entries", self.crm_context)
-        self.assertIn("Interview Source Data", self.crm_context)
+    def test_crm_context_mentions_private_source_provenance_and_ramp_interviews(self):
+        self.assertIn("private_sources.founder_institute_directory_entries", self.crm_context)
+        self.assertIn("private_sources.ramp_interviews", self.crm_context)
+        self.assertIn("Private Source Data is a provenance category", self.crm_context)
+        self.assertIn("Ramp Interview Data", self.crm_context)
 
     def test_schema_native_migration_copies_existing_public_tables_and_preserves_ids(self):
         expected_ordered_fragments = [
@@ -331,8 +552,8 @@ class CrmSchemaContractTests(unittest.TestCase):
             "legacy.id",
             "INSERT INTO business.websites",
             "INSERT INTO web_enrichment.website_shopify_status",
-            "INSERT INTO person.email_addresses",
-            "INSERT INTO person.person_email_addresses",
+            "INSERT INTO contact_methods.emails",
+            "INSERT INTO contact_methods.person_email_links",
             "INSERT INTO crm.groups",
             "INSERT INTO crm.person_group_memberships",
             "INSERT INTO crm.campaigns",
@@ -340,7 +561,11 @@ class CrmSchemaContractTests(unittest.TestCase):
             "INSERT INTO crm.email_events",
             "INSERT INTO crm.notes",
             "INSERT INTO crm.follow_ups",
+            "INSERT INTO private_sources.founder_institute_directory_entries",
+            "INSERT INTO private_sources.ramp_interviews",
+            "ALTER TABLE person.email_addresses RENAME TO email_addresses_legacy_backup",
             "ALTER TABLE public.crm_contacts RENAME TO crm_contacts_legacy_backup",
+            "CREATE OR REPLACE VIEW person.email_addresses AS",
             "CREATE OR REPLACE VIEW public.crm_contacts AS",
         ]
 
@@ -370,6 +595,16 @@ class CrmSchemaContractTests(unittest.TestCase):
             "FROM crm.person_group_memberships membership",
             "CREATE OR REPLACE VIEW public.crm_campaign_recipients AS",
             "person_id AS contact_id",
+            "CREATE OR REPLACE VIEW public.crm_email_addresses AS",
+            "FROM contact_methods.emails",
+            "CREATE OR REPLACE VIEW public.crm_contact_email_addresses AS",
+            "FROM contact_methods.person_email_links",
+            "CREATE OR REPLACE VIEW public.crm_founder_institute_directory_entries AS",
+            "FROM private_sources.founder_institute_directory_entries",
+            "CREATE OR REPLACE VIEW public.crm_interview_source_entries AS",
+            "FROM private_sources.ramp_interviews",
+            "CREATE OR REPLACE VIEW public_sources.founder_institute_directory_entries AS",
+            "CREATE OR REPLACE VIEW public_sources.interview_source_entries AS",
         ]
 
         for fragment in expected_fragments:
@@ -429,10 +664,39 @@ class CrmSchemaContractTests(unittest.TestCase):
             "status.status = 'unknown'",
             "Failed or partial checks keep `web_enrichment.website_shopify_status.status = 'unknown'`",
             "business.websites",
-            "person.email_addresses",
+            "contact_methods.emails",
             "web_enrichment.website_shopify_status",
             "locked_at",
             "locked_by",
+        ]
+
+        for fragment in expected_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, contract)
+
+    def test_website_contact_discovery_workflow_contract_documents_sitewide_same_domain_crawl(self):
+        self.assertTrue(
+            WEBSITE_CONTACT_DISCOVERY_WORKFLOW_CONTRACT_PATH.exists(),
+            "Website contact discovery workflow contract doc should exist",
+        )
+        contract = WEBSITE_CONTACT_DISCOVERY_WORKFLOW_CONTRACT_PATH.read_text(encoding="utf-8")
+
+        expected_fragments = [
+            "CipherPlay Website Contact Discovery",
+            "crm database",
+            "business.websites",
+            "web_enrichment.website_contact_discovery_status",
+            "web_enrichment.website_contact_discovery_observations",
+            "contact_methods.emails",
+            "contact_methods.linkedin_profiles",
+            "contact_methods.organization_email_links",
+            "all discoverable same-domain HTML pages",
+            "Skip PDFs, images, video, audio, archives, fonts, scripts, stylesheets",
+            "Do not use external search",
+            "Do not fetch LinkedIn pages",
+            "Persist a status row even when no contact methods are found",
+            "explicitly load claimed rows by `locked_by = $execution.id`",
+            "role_inbox",
         ]
 
         for fragment in expected_fragments:
@@ -476,9 +740,13 @@ class CrmSchemaContractTests(unittest.TestCase):
         ]:
             for fragment in [
                 "business.websites",
+                "business.organizations",
                 "person.people",
+                "contact_methods.emails",
+                "private_sources.ramp_interviews",
                 "public_sources.http_archive_observations",
                 "web_enrichment.website_shopify_status",
+                "web_enrichment.website_contact_discovery_status",
                 "people-only",
                 "read-only compatibility",
             ]:
