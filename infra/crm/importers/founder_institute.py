@@ -241,7 +241,7 @@ def fetch_network_json(url: str, cookie: str) -> dict:
 def build_import_sql(entries: list[FounderInstituteEntry]) -> str:
     lines = [
         "BEGIN;",
-        "INSERT INTO crm_founder_institute_directory_entries (",
+        "INSERT INTO public_sources.founder_institute_directory_entries (",
         "  identity_key, identity_key_type, display_name, first_name, last_name,",
         "  organization, role_title, linkedin_url, profile_image_url,",
         "  specialization_name, city_name, source_url, source_page, source_position,",

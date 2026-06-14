@@ -1,8 +1,8 @@
 # CRM Website Shopify Enrichment Workflow Contract
 
-This contract defines the n8n workflow boundary for CRM website and email-domain enrichment. n8n connects as `crm_writer` to the `crm database`, not the `nocodb` metadata database, and writes directly to the PostgreSQL tables that NocoDB exposes as the operator UI.
+This contract defines the n8n workflow boundary for website and email-domain enrichment. n8n connects as `crm_writer` to the `crm database`, not the `nocodb` metadata database, and writes directly to schema-native PostgreSQL tables that NocoDB exposes for review.
 
-Do not put Cloud SQL passwords, NocoDB credentials, private domains, or contact email samples in this file or in exported workflow JSON.
+Do not put Cloud SQL passwords, NocoDB credentials, private domains, contact email samples, or exported workflow secrets in this file.
 
 ## Runtime Boundary
 
@@ -12,6 +12,9 @@ Do not put Cloud SQL passwords, NocoDB credentials, private domains, or contact 
 - Forbidden target: the `nocodb` metadata database
 - Cadence: every 30 minutes
 - Batch size: bounded batches of 25-100 rows per execution
+- Domain registry: `business.websites`
+- Email identity table: `person.email_addresses`
+- Current Shopify state table: `web_enrichment.website_shopify_status`
 
 ## Workflow: website-email-domain-discovery
 
@@ -22,54 +25,85 @@ Run every 30 minutes, or as the first phase of `website-shopify-enrichment`.
 Select rows that still need a Website association:
 
 ```sql
-SELECT id, email, email_domain
-FROM crm_email_addresses
+SELECT
+  id,
+  email,
+  split_part(email, '@', 2) AS email_domain
+FROM person.email_addresses
 WHERE website_id IS NULL
+  AND position('@' in email) > 1
 ORDER BY created_at ASC
 LIMIT 100;
 ```
 
 For each row:
 
-1. Normalize `email_domain` to the canonical lower-case registrable domain already stored on `crm_email_addresses`.
-2. Insert or reuse a `crm_websites` row where `lower(domain) = email_domain`.
+1. Normalize `email_domain` to a lower-case registrable domain.
+2. Insert or reuse a `business.websites` row where `lower(domain) = email_domain`.
 3. Set `domain_type = 'email_provider'` for known provider domains such as `gmail.com`, `outlook.com`, `icloud.com`, `yahoo.com`, and `protonmail.com`; otherwise leave new rows as `unknown`.
-4. Update `crm_email_addresses.website_id` to the matching Website row.
+4. Update `person.email_addresses.website_id` to the matching Website row.
 
-This workflow creates website rows for missing domains; it does not promote an email identity into a contact.
+This workflow creates Website rows for missing domains; it does not promote an email identity into a Person.
 
 ## Workflow: website-shopify-enrichment
 
-Purpose: detect Shopify usage for eligible business-domain Website rows while preserving supporting signals.
+Purpose: detect current Shopify usage for eligible business-domain Website rows while preserving supporting signals.
+
+Before claiming a batch, ensure every Website has a current-state row:
+
+```sql
+INSERT INTO web_enrichment.website_shopify_status (website_id)
+SELECT website.id
+FROM business.websites website
+ON CONFLICT (website_id) DO NOTHING;
+```
 
 Run every 30 minutes and claim a bounded batch:
 
 ```sql
-UPDATE crm_websites
-SET
-  enrichment_locked_at = now(),
-  enrichment_locked_by = $1,
-  shopify_last_attempt_at = now(),
-  shopify_check_attempts = shopify_check_attempts + 1,
-  updated_at = now()
-WHERE id IN (
-  SELECT id
-  FROM crm_websites
-  WHERE shopify_status = 'unknown'
-    AND domain_type != 'email_provider'
-    AND (shopify_next_check_at IS NULL OR shopify_next_check_at <= now())
+WITH claimed AS (
+  UPDATE web_enrichment.website_shopify_status status
+  SET
+    locked_at = now(),
+    locked_by = $1,
+    last_attempt_at = now(),
+    check_attempts = status.check_attempts + 1,
+    updated_at = now()
+  FROM business.websites website
+  WHERE status.website_id = website.id
+    AND status.status = 'unknown'
+    AND website.domain_type != 'email_provider'
+    AND (status.next_check_at IS NULL OR status.next_check_at <= now())
     AND (
-      enrichment_locked_at IS NULL
-      OR enrichment_locked_at < now() - interval '45 minutes'
+      status.locked_at IS NULL
+      OR status.locked_at < now() - interval '45 minutes'
     )
-  ORDER BY created_at ASC
-  LIMIT 50
-  FOR UPDATE SKIP LOCKED
+    AND status.website_id IN (
+      SELECT status_inner.website_id
+      FROM web_enrichment.website_shopify_status status_inner
+      JOIN business.websites website_inner
+        ON website_inner.id = status_inner.website_id
+      WHERE status_inner.status = 'unknown'
+        AND website_inner.domain_type != 'email_provider'
+        AND (status_inner.next_check_at IS NULL OR status_inner.next_check_at <= now())
+        AND (
+          status_inner.locked_at IS NULL
+          OR status_inner.locked_at < now() - interval '45 minutes'
+        )
+      ORDER BY website_inner.created_at ASC
+      LIMIT 50
+      FOR UPDATE SKIP LOCKED
+    )
+  RETURNING
+    website.id,
+    website.domain,
+    status.locked_by
 )
-RETURNING id, domain;
+SELECT id, domain, locked_by
+FROM claimed;
 ```
 
-Use a unique n8n execution id for `enrichment_locked_by`.
+Use a unique n8n execution id for `locked_by`.
 
 ## Detection Signals
 
@@ -82,56 +116,58 @@ Treat Shopify as a multi-signal conclusion:
 - HTTP: `https://<domain>/cart.js` returns Shopify cart JSON.
 - HTML: homepage contains `cdn.shopify.com`, `window.Shopify`, `Shopify.theme`, or `myshopify.com`.
 
-Set `shopify_status = 'true'` when at least one strong Shopify signal is present. Set `shopify_status = 'false'` only when checks completed and no Shopify signals were found.
+Set `web_enrichment.website_shopify_status.status = 'true'` when at least one strong Shopify signal is present. Set status to `false` only when checks completed and no Shopify signals were found.
 
-Failed or partial checks keep `shopify_status = 'unknown'`. Store concise failure text in `shopify_detection_error`, preserve compact debug evidence in `shopify_detection_signals`, set `shopify_next_check_at` for retry, and always clear `enrichment_locked_at` plus `enrichment_locked_by` before the execution exits.
+Failed or partial checks keep `web_enrichment.website_shopify_status.status = 'unknown'`. Store concise failure text in `detection_error`, preserve compact debug evidence in `detection_signals`, set `next_check_at` for retry, and always clear `locked_at` plus `locked_by` before the execution exits.
 
 ## Successful Update Shape
 
 ```sql
-UPDATE crm_websites
+UPDATE web_enrichment.website_shopify_status
 SET
-  shopify_status = $2,
-  shopify_checked_at = now(),
-  shopify_detection_signals = $3::jsonb,
-  shopify_detection_error = NULL,
-  shopify_next_check_at = NULL,
-  enrichment_locked_at = NULL,
-  enrichment_locked_by = NULL,
+  status = $2,
+  checked_at = now(),
+  detection_signals = $3::jsonb,
+  detection_error = NULL,
+  next_check_at = NULL,
+  locked_at = NULL,
+  locked_by = NULL,
   updated_at = now()
-WHERE id = $1
-  AND enrichment_locked_by = $4;
+WHERE website_id = $1
+  AND locked_by = $4;
 ```
 
 ## Failed Or Partial Update Shape
 
 ```sql
-UPDATE crm_websites
+UPDATE web_enrichment.website_shopify_status
 SET
-  shopify_status = 'unknown',
-  shopify_detection_signals = $2::jsonb,
-  shopify_detection_error = $3,
-  shopify_next_check_at = now() + interval '1 day',
-  enrichment_locked_at = NULL,
-  enrichment_locked_by = NULL,
+  status = 'unknown',
+  detection_signals = $2::jsonb,
+  detection_error = $3,
+  next_check_at = now() + interval '1 day',
+  locked_at = NULL,
+  locked_by = NULL,
   updated_at = now()
-WHERE id = $1
-  AND enrichment_locked_by = $4;
+WHERE website_id = $1
+  AND locked_by = $4;
 ```
 
 ## Operator Surface
 
-NocoDB should expose these CRM data fields from the external `crm` data source:
+NocoDB should expose schema-native tables and review views:
 
-- `crm_websites.domain`
-- `crm_websites.domain_type`
-- `crm_websites.shopify_status`
-- `crm_websites.shopify_checked_at`
-- `crm_websites.shopify_detection_error`
-- `crm_email_addresses.email`
-- `crm_email_addresses.email_domain`
-- `crm_email_addresses.website_id`
-- `crm_contact_email_addresses.relationship_status`
-- `crm_contact_email_addresses.is_primary`
+- `business.websites.domain`
+- `business.websites.domain_type`
+- `person.email_addresses.email`
+- `person.email_addresses.website_id`
+- `person.person_email_addresses.relationship_status`
+- `person.person_email_addresses.is_primary`
+- `web_enrichment.website_shopify_status.status`
+- `web_enrichment.website_shopify_status.checked_at`
+- `web_enrichment.website_shopify_status.detection_error`
+- `business.website_shopify_review`
 
-`shopify_detection_signals` should remain available for debugging but should not be the primary operator-facing status.
+`detection_signals` should remain available for debugging but should not be the primary operator-facing status.
+
+The old `public.crm_websites` and related `public.crm_*` names are read-only compatibility views during cutover. n8n must write schema-native tables only.

@@ -63,6 +63,7 @@ locals {
   )
 
   required_services = toset([
+    "bigquery.googleapis.com",
     "certificatemanager.googleapis.com",
     "compute.googleapis.com",
     "iam.googleapis.com",
