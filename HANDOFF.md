@@ -73,6 +73,109 @@ Next production rollout steps:
    - every attempted Website gets a `web_enrichment.website_contact_discovery_status` row, including zero-result crawls
 7. Record the production workflow ID, execution IDs, row counts, and any lock cleanup in this `HANDOFF.md`.
 
+## 2026-06-14 CRM Private Sources Production Rollout Update
+
+- Official GitHub schema-apply run `27504319972` reached the protected production environment and was approved, but failed during Cloud SQL import with `permission denied for schema business` at `CREATE TABLE IF NOT EXISTS business.websites`.
+  - Root cause: the GitHub import path did not pass an explicit database user, so Cloud SQL imported as a user without schema ownership/CREATE privileges.
+  - Repo fix in this branch: `.github/workflows/crm-schema-apply.yml` now passes `--user="${CRM_IMPORT_USER}"`, defaulting `CRM_IMPORT_USER` to `crm_writer`.
+  - Production was not left half-migrated by that failed GitHub import; the successful production apply below used the `CRM Postgres (crm_writer)` credential path.
+- Production schema migration was applied through temporary n8n workflow `HbbCq94Drm1yzChk`.
+  - Migration execution: `114`
+  - Result: success
+  - Status marker: `crm_private_sources_contact_methods_schema_applied`
+- Pre/post diagnostics used temporary n8n workflow `uOcgb9BNrIXbd7R9`.
+  - Preflight execution `113`: `private_sources` and `contact_methods` schemas were absent before the migration; existing compatibility sources were readable.
+  - Post-migration execution `115`: new schemas were present and writable for `crm_writer`.
+- Post-migration production counts:
+  - `business.websites`: 144
+  - `business.organizations`: 0
+  - `business.organization_websites`: 0
+  - `private_sources.founder_institute_directory_entries`: 5309
+  - `private_sources.ramp_interviews`: 69
+  - `contact_methods.emails`: 2380 before Website Contact Discovery smoke inserts
+  - `contact_methods.person_email_links`: 2381
+  - `contact_methods.linkedin_profiles`: 0 before Website Contact Discovery smoke inserts
+  - `contact_methods.phone_numbers`: 0
+  - `contact_methods.telegram_handles`: 0
+  - `web_enrichment.website_contact_discovery_status`: 0 before Website Contact Discovery smoke
+  - `web_enrichment.website_contact_discovery_observations`: 0 before Website Contact Discovery smoke
+- Integrity validation used temporary n8n workflow `nlAro43cf25BLTzv`, execution `117`.
+  - All dangling contact-method, organization-website, Website Contact Discovery, FI, and Ramp references returned `0`.
+  - Read-only compatibility trigger count: 17.
+  - Compatibility views were readable with preserved counts:
+    - `person.email_addresses`: 2380
+    - `person.person_email_addresses`: 2381
+    - `public.crm_email_addresses`: 2380
+    - `public.crm_contact_email_addresses`: 2381
+    - `public.crm_founder_institute_directory_entries`: 5309
+    - `public.crm_interview_source_entries`: 69
+    - `public_sources.founder_institute_directory_entries`: 5309
+    - `public_sources.interview_source_entries`: 69
+- Created production n8n workflow `IjSA24kmjFwc4IhZ`.
+  - Name: `CipherPlay Website Contact Discovery`
+  - URL: `https://workflows.cipherinternal.com/workflow/IjSA24kmjFwc4IhZ`
+  - Status: active / published
+  - Active version: `4e606c6a-ba84-43a2-8a22-8c0fdabea633`
+  - Schedule trigger: every 6 hours
+  - Batch size: 2 Websites per run
+  - Uses `CRM Postgres (crm_writer)`.
+  - Claims rows and then explicitly loads claimed rows by `locked_by = $execution.id`.
+  - Crawls same-domain HTML pages only, skips PDF/media/binary-looking assets, extracts emails and LinkedIn URLs found on the site, does not fetch LinkedIn pages, and uses no external search in V1.
+- Website Contact Discovery smoke history:
+  - Execution `120`: failed before fetching pages because the n8n Code sandbox did not expose global `URL`.
+  - Cleanup execution `121`: released the 2 locks from execution `120`.
+  - Workflow patch: replaced global `URL` usage with an internal URL parser.
+  - Execution `122`: passed; processed 2 Websites, crawled 12 pages each, inserted 37 observations, and updated both status rows to `partial`.
+  - Workflow patch: filtered common placeholder email domains after one placeholder-style page artifact was observed.
+  - Cleanup execution `123`: deleted 1 placeholder observation.
+  - Cleanup execution `124`: deleted 1 now-orphan placeholder email.
+  - Execution `126`: passed after the placeholder filter; processed 2 Websites, inserted 24 observations for one Website and cleanly updated a zero-result Website status.
+- Aggregate Website Contact Discovery validation used temporary workflow `P5KbWYMFp4327dg4`, execution `127`.
+  - `business.websites`: 144
+  - `contact_methods.emails`: 2383 after smoke inserts and cleanup
+  - `contact_methods.linkedin_profiles`: 3
+  - `web_enrichment.website_contact_discovery_status`: 144
+  - `web_enrichment.website_contact_discovery_observations`: 61
+  - `wcd_active_locks`: 0
+  - `wcd_status_running`: 0
+  - `wcd_status_partial`: 4
+  - `wcd_placeholder_observations_122_126`: 0
+- Temporary rollout workflows were archived after validation:
+  - `uOcgb9BNrIXbd7R9`
+  - `HbbCq94Drm1yzChk`
+  - `z5E8vOM3Wt2ylnpu`
+  - `nlAro43cf25BLTzv`
+  - `cjTL0OZJJ54JZHza`
+  - `6SilIrYzlTCwd7vD`
+  - `aGDV5gSwYdLIMAZZ`
+  - `PLcKvvj3KkNbNUo6`
+  - `ex94p0dOKZvhvk10`
+  - `P5KbWYMFp4327dg4`
+  - Final n8n search for temporary `Codex` workflows returned `0`.
+- Files changed in this rollout follow-up:
+  - `.github/workflows/crm-schema-apply.yml`
+  - `HANDOFF.md`
+- Verification run from repo root:
+
+```powershell
+python -m unittest infra.crm.tests.test_schema_contract infra.crm.tests.test_founder_institute_importer
+```
+
+  - Result: 23 tests passed.
+
+```powershell
+git diff --check
+```
+
+  - Result: passed; Git printed only Windows line-ending normalization warnings for `.github/workflows/crm-schema-apply.yml` and `HANDOFF.md`.
+
+Remaining production follow-up:
+
+1. `preview` stage is complete via PR `#28`; merge PR `#29` from `preview -> main` after the required review.
+2. After the workflow fix is on `main`, the official GitHub schema apply path can be re-run as a no-op verification if desired; production schema is already applied through `crm_writer`.
+3. Monitor the next scheduled Website Contact Discovery run and confirm it advances by 2 Websites with `wcd_active_locks = 0` afterward.
+4. Visually confirm NocoDB review surfaces for the new schemas/views; the backing tables and compatibility views are already present and readable in production validation.
+
 ## 2026-06-14 n8n Production Rollout Update
 
 - Applied the schema-native CRM migration against production Cloud SQL through temporary n8n workflow `I2eLi4gWlee3BZVa`.
